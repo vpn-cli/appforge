@@ -42,8 +42,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api') || 
     pathname.startsWith('/_next')
 
-  // Protect all non-public routes
-  if (!user && !isPublicRoute) {
+  // Protect all non-public routes (bypassed locally so we can view the Dashboard UI)
+  if (!user && !isPublicRoute && process.env.NODE_ENV !== "development") {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

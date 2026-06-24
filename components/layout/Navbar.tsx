@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AppWindow } from "lucide-react";
 import confetti from "canvas-confetti";
 
-export function Navbar() {
+export function Navbar({ userLoggedIn }: { userLoggedIn?: boolean }) {
   const [clickCount, setClickCount] = useState(0);
 
   const container: Variants = {
@@ -95,20 +95,32 @@ export function Navbar() {
         animate="show"
         className="flex items-center gap-4"
       >
-        <motion.div variants={item}>
-          <Link href="/login" tabIndex={-1}>
-            <Button variant="ghost" className="text-sm font-medium hover:bg-surface-secondary">
-              Log in
-            </Button>
-          </Link>
-        </motion.div>
-        <motion.div variants={item} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link href="/login" tabIndex={-1}>
-            <Button className="bg-brand hover:bg-brand-dark text-text-inverse shadow-md shadow-brand/20">
-              Start for free
-            </Button>
-          </Link>
-        </motion.div>
+        {userLoggedIn ? (
+          <motion.div variants={item}>
+            <form action="/auth/signout" method="post">
+              <Button type="submit" variant="ghost" className="text-sm font-medium text-text-secondary hover:text-red-400 hover:bg-surface-secondary">
+                Sign Out
+              </Button>
+            </form>
+          </motion.div>
+        ) : (
+          <>
+            <motion.div variants={item}>
+              <Link href="/login" tabIndex={-1}>
+                <Button variant="ghost" className="text-sm font-medium hover:bg-surface-secondary">
+                  Log in
+                </Button>
+              </Link>
+            </motion.div>
+            <motion.div variants={item} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link href="/login" tabIndex={-1}>
+                <Button className="bg-brand hover:bg-brand-dark text-text-inverse shadow-md shadow-brand/20">
+                  Start for free
+                </Button>
+              </Link>
+            </motion.div>
+          </>
+        )}
       </motion.div>
     </motion.header>
   );
