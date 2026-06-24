@@ -1,9 +1,17 @@
-import React from 'react'
+import { Navbar } from "@/components/layout/Navbar";
+import { Hero } from "@/components/homepage/Hero";
+import { Features } from "@/components/homepage/Features";
+import { Footer } from "@/components/layout/Footer";
 
-const Appforge = () => {
+export default function Home() {
   return (
-    <div>Appforge</div>
-  )
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
+      <main className="flex-1 w-full">
+        <Hero />
+        <Features />
+      </main>
+      <Footer />
+    </div>
+  );
 }
-
-export default Appforge;

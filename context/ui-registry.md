@@ -14,6 +14,41 @@ Before building any component:
 
 ---
 
+## Component Layouts — Imprinted Phase 1
+
+### Layout Structural Blocks
+*Navbar, Footer, Hero Containers*
+```text
+Container class: max-w-7xl mx-auto px-4 w-full
+Flex Row Layout class: flex flex-row items-center gap-X
+Flex Stack Layout class: flex flex-col gap-X
+Responsive Grid class: grid grid-cols-1 md:grid-cols-2 lg:grid-cols-X gap-X
+```
+
+### Standard Base Components
+
+**Card Containers**
+```text
+bg-surface p-6 rounded-lg border border-border shadow-sm
+```
+
+**Primary Buttons**
+```text
+bg-brand hover:bg-brand-dark text-text-inverse px-4 py-2 rounded-md font-medium transition-colors
+```
+
+**Secondary / Outline Buttons**
+```text
+bg-surface hover:bg-surface-secondary border border-border text-text-primary px-4 py-2 rounded-md font-medium transition-colors
+```
+
+**Badges / Pills**
+```text
+inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-success-light text-success border border-success/20
+```
+
+---
+
 ## Base Architecture Components
 
 ### ValidationPanelItem

@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Page and surface backgrounds */
+  --color-background: #FAFAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-secondary: #F4F2F8;
+  --color-surface-tertiary: #E4E1EA;
+
+  /* Borders */
+  --color-border: #E4E1EA;
+  --color-border-dark: #CFC9DA;
+
+  /* Text (Pastel Ink mapped) */
+  --color-text-primary: #2B2A33;    /* var(--color-ink-900) */
+  --color-text-secondary: #494756;  /* var(--color-ink-700) */
+  --color-text-muted: #A6A3AE;      /* var(--color-ink-400) */
+  --color-text-inverse: #FFFFFF;
+
+  /* Brand / Primary — Lavender from Patel Theme */
+  --color-brand: #9C87DA;           /* var(--color-primary-500) */
+  --color-brand-dark: #6B549F;      /* var(--color-primary-700) */
+  --color-brand-light: #F1EEFB;     /* var(--color-primary-50) */
+
+  /* Validation & State Colors mapped from Mint, Blush, Peach */
+  --color-error: #DC7088;           /* Blush 500 */
+  --color-error-light: #FBEAEE;     /* Blush 50 */
+  --color-error-border: #EBA3B4;    /* Blush 300 */
+  --color-error-text: #A23A52;      /* Blush 700 */
+
+  --color-warning: #E6A256;         /* Peach 500 */
+  --color-warning-light: #FDF1E7;   /* Peach 50 */
+  --color-warning-border: #F3C189;  /* Peach 300 */
+  --color-warning-text: #9C6526;    /* Peach 700 */
+
+  --color-success: #6FC79C;         /* Mint 500 */
+  --color-success-light: #EAF7F0;   /* Mint 50 */
+  --color-success-border: #A6DEC0;  /* Mint 300 */
+  --color-success-text: #2F7A55;    /* Mint 700 */
+
+  /* Overlays */
+  --color-overlay: rgba(43, 42, 51, 0.4);
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(43, 42, 51, 0.06);
+  --shadow-md: 0 4px 12px rgba(108, 87, 164, 0.10);
+  --shadow-lg: 0 12px 32px rgba(108, 87, 164, 0.14);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary font-sans antialiased;
+  }
+}
