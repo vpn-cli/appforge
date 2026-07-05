@@ -1,12 +1,12 @@
 "use server";
-
+//acts as a parser
 import { createInsforgeServer } from "@/lib/insforge-server";
 
 export async function syncAppSchema(appId: string, entities: any) {
   const supabase = await createInsforgeServer();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // DEV BYPASS FALLBACK
+  // DEV BYPASS FALLBACK ( for dev mode only)
   if (process.env.NODE_ENV === "development" && !user) {
     console.log("[DEV BYPASS] Mocking Schema Extraction for:", appId);
     return { success: true, message: "Mock schema generated successfully." };
