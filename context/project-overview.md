@@ -12,7 +12,7 @@ The defining requirement of the runtime is resilience: configs are written by ha
 
 Building even a simple internal tool — a form, a table, a small dashboard — usually means standing up a frontend, wiring API routes, designing a database table, and writing the glue between them, every single time. Most of that work is mechanical: the shape of the data dictates most of the UI and most of the API.
 
-AppForge collapses that pipeline. The author describes the data and the screens once, in JSON, and the runtime does the rest — rendering, persistence, and the workflows that connect actions to effects. The author's job becomes shaping the config and fixing what the validator flags, not writing boilerplate.
+By marrying a generative **Gemini AI Copilot** with a deterministic React runtime, AppForge collapses that pipeline. The author describes the data and screens using natural language prompts, the Gemini API strictly generates the matching JSON configuration, and the runtime does the rest — rendering, persistence, and safe API generation. The author's job becomes simply conversing with the Copilot to shape the config, not writing boilerplate code.
 
 ---
 

@@ -56,3 +56,15 @@ text: text-text-primary
 ## Invariants
 - Never use raw Hex codes inside components.
 - Never invent color utilities not specified via `@theme`.
+
+---
+
+## Glassmorphism (Bento Grid)
+
+**Surfaces & Borders:**
+```
+background (base): bg-glass-surface
+background (hover): bg-glass-surface-hover
+border: border-glass-border
+backdrop-filter: backdrop-blur-md
+```

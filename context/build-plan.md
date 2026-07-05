@@ -37,7 +37,8 @@ All InsForge platform tables created before data writes.
 ### 04 Dashboard Page — UI First
 Build the complete dashboard UI with mock data.
 **UI:**
-- Four stat cards: Apps Created, Components Rendered, Validation Issues, Active Workflows.
+- Apple-style **Bento Grid** layout using glassmorphism cards.
+- Four stat cards: Apps Created, Components Rendered, Validation Issues, Active Workflows (with hover micro-interactions).
 - Recent activity section — last edits/publishes.
 - Your Apps grid — cards showing app name, last updated, and "Open Builder" / "Run App" links.
 - "Create New App" blank entry point card.
@@ -112,6 +113,18 @@ Wire the dashboard to InsForge DB data.
 - Wire generic API to fetch data into the runtime components.
 - End-to-end user testing of a small full app without backend code.
 
+## Phase 6 — Gemini AI Copilot
+### 15 Generative Configuration
+**Logic:**
+- Integrate Google Gemini API inside the Builder workspace.
+- Supply System Prompts outlining the AppForge Registry JSON schema rules.
+- Transform user text prompts into perfectly structured `config` states targeting the existing deterministic engine.
+
+### 16 UI Chat Interface
+**UI:**
+- Add a Copilot chat drawer to the Builder.
+- Stream JSON outputs into the Monaco editor via SSE or WebSockets for instant visual generation.
+
 ---
 
 ## Feature Count
@@ -123,4 +136,5 @@ Wire the dashboard to InsForge DB data.
 | Phase 3 — App Builder     | 3        |
 | Phase 4 — Core Runtime    | 3        |
 | Phase 5 — Dynamic Backend | 3        |
-| **Total**                 | **14**   |
+| Phase 6 — AI Copilot      | 2        |
+| **Total**                 | **16**   |

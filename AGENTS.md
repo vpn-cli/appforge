@@ -28,6 +28,7 @@ Read in this exact order before any implementation:
   then read `context/library-docs.md` for project-specific rules
 - If the same problem persists after one corrective prompt —
   stop immediately and run /recover
+- **AI Integration Workflow**: When working on Gemini Copilot endpoints, explicitly ensure the System Prompts heavily constrain the AI to outputting strict JSON conforming to our registry, never raw JSX code.
 
 ## Available Skills
 
