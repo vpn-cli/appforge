@@ -1,5 +1,5 @@
 "use server";
-//acts as a parser
+//acts as a parser for the app config and generates the ddl commands for the app
 import { createInsforgeServer } from "@/lib/insforge-server";
 
 export async function syncAppSchema(appId: string, entities: any) {
