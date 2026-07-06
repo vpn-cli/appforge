@@ -2,20 +2,20 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Save, Play, Plus, Search } from "lucide-react";
 
 export function ButtonAction({ label, variant = "default", icon, size = "default" }: { label?: string, variant?: "default" | "outline" | "secondary" | "ghost", icon?: string, size?: "default" | "sm" | "lg" | "icon" }) {
-  const IconMap: Record<string, any> = {
-    "arrow-right": ArrowRight,
-    "save": Save,
-    "play": Play,
-    "plus": Plus,
-    "search": Search,
+  const iconMap: Record<string, React.FC<any>> = {
+    search: Search,
+    play: Play,
+    plus: Plus,
+    save: Save,
+    "arrow-right": ArrowRight
   };
-  
-  const IconComponent = icon ? IconMap[icon] : null;
+
+  const IconComponent = icon ? iconMap[icon] : null;
 
   return (
-    <Button variant={variant} size={size} className="gap-2 font-medium">
-      {IconComponent && <IconComponent className={size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4"} />}
-      {label || (icon && !label ? "" : "Action")}
+    <Button variant={variant || "default"} size="sm" className="rounded-full px-5 py-4 font-semibold shadow-none transition-transform active:scale-95">
+      {IconComponent && <IconComponent className="w-4 h-4 mr-2" />}
+      {label || "Action"}
     </Button>
   );
 }
