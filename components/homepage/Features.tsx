@@ -104,7 +104,7 @@ export function Features() {
           ref={headingRef}
           className="text-center text-4xl md:text-5xl font-extrabold mb-32 text-foreground tracking-tight"
         >
-          Configuration over Boilerplate
+          Instant Architecture. Zero Friction.
         </h2>
 
         <div className="flex flex-col gap-32">

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { rateLimit } from "@/lib/rate-limit";
 
 const SYSTEM_PROMPT = `
 You are the AppForge AI Copilot. Your role is to translate user natural language requests directly into a valid AppForge JSON configuration array.
@@ -45,6 +46,27 @@ Example Output:
 
 export async function POST(req: Request) {
   try {
+    // 1. Resolve Client Origin
+    const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    
+    // 2. Validate against sliding window threshold (10 req / 10s)
+    const { success, limit, remaining, reset } = await rateLimit.limit(ip);
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: "Too many AI generation requests. Please slow down and try again shortly." },
+        { 
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString()
+          }
+        }
+      );
+    }
+
+    // 3. Extract parameters
     const { prompt } = await req.json();
 
     if (!prompt) {

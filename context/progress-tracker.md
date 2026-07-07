@@ -43,7 +43,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [x] 16 UI Chat Interface
 
 ### Phase 7 — Final Tweaks
-- [ ] 17 Visual Polish & Theming (Global Dark Mode, Shadcn/Anime.js/Framer Parallax, Smooth Loading Animations, Bento Component Overhaul)
+- [x] 17 Visual Polish & Theming (Global Dark Mode, Shadcn/Anime.js/Framer Parallax, Smooth Loading Animations, Bento Component Overhaul, Logo Animation Pending)
 
 ### Phase 8 — Enterprise Readiness & Deployment
 - [ ] 18 Security & Observability (Redis Rate Limit + Sentry)
