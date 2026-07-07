@@ -1,6 +1,10 @@
 ﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import localFont from 'next/font/local';
+import { SmoothScroller } from "@/components/layout/SmoothScroller";
+import { CustomCursor } from "@/components/layout/CustomCursor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,12 +16,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { SmoothScroller } from "@/components/layout/SmoothScroller";
-import { GlobalCursor } from "@/components/layout/GlobalCursor";
-
 export const metadata: Metadata = {
-  title: "AppForge - Next Gen Builder",
-  description: "Live Config-driven Apps with graceful degradation.",
+  title: "AppForge | Configure. Generate. Launch.",
+  description: "Stop writing boilerplate. Build enterprise React applications instantly with AppForge's JSON compiler.",
 };
 
 export default function RootLayout({
@@ -32,7 +33,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans cursor-none">
-        <GlobalCursor />
+        <CustomCursor />
         {/* Native SSR-safe dark mode injection to bypass React 19 use-client script warnings */}
         <script dangerouslySetInnerHTML={{
           __html: `

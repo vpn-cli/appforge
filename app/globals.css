@@ -101,6 +101,7 @@
   }
   * {
     @apply border-border outline-ring/50;
+    cursor: none !important;
   }
   html {
     @apply font-sans;
