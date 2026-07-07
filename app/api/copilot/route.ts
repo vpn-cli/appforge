@@ -58,8 +58,8 @@ export async function POST(req: Request) {
     // Initialize the new Google GenAI SDK
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    // Ensure we use flash for fast latency
-    const response = await ai.models.generateContent({
+    // Use generateContentStream instead for real-time output
+    const responseStream = await ai.models.generateContentStream({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
@@ -68,26 +68,31 @@ export async function POST(req: Request) {
       },
     });
 
-    let jsonString = response.text || "[]";
-    
-    // Strip markdown formatting if the AI ignores our rule
-    if (jsonString.startsWith("\`\`\`json")) {
-        jsonString = jsonString.replace(/\`\`\`json/g, "").replace(/\`\`\`/g, "").trim();
-    }
-    if (jsonString.startsWith("\`\`\`")) {
-        jsonString = jsonString.replace(/\`\`\`/g, "").trim();
-    }
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of responseStream) {
+            if (chunk.text) {
+              controller.enqueue(encoder.encode(chunk.text));
+            }
+          }
+          controller.close();
+        } catch (error: any) {
+          console.error("[Copilot Streaming Error]", error);
+          controller.enqueue(encoder.encode(`\n[ERROR]: ${error.message}`));
+          controller.close();
+        }
+      }
+    });
 
-    // Validate if it parses safely
-    let parsedArray = [];
-    try {
-       parsedArray = JSON.parse(jsonString);
-    } catch (e: any) {
-       console.error("AI returned malformed JSON:", jsonString);
-       return NextResponse.json({ error: "AI output syntax error." }, { status: 500 });
-    }
-
-    return NextResponse.json({ components: parsedArray }, { status: 200 });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
 
   } catch (error: any) {
     console.error("[Copilot API Error]", error);

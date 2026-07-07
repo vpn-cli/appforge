@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, X, Loader2, Send } from "lucide-react";
 
-export function CopilotPanel({ onApply }: { onApply: (components: any[]) => void }) {
+export function CopilotPanel({ onApply, onStreamStart, onStream }: { onApply: (components: any[]) => void, onStreamStart?: () => void, onStream?: (text: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -12,18 +12,40 @@ export function CopilotPanel({ onApply }: { onApply: (components: any[]) => void
     if (!prompt.trim() || isGenerating) return;
 
     setIsGenerating(true);
+    let streamedText = "";
+    
     try {
+      if (onStreamStart) onStreamStart();
       const res = await fetch("/api/copilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt })
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to generate.");
+      if (!res.ok) throw new Error("Failed to generate.");
 
-      if (data.components) {
-        onApply(data.components);
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("No readable stream.");
+      
+      const decoder = new TextDecoder("utf-8");
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        streamedText += chunk;
+        
+        // Strip markdown if present to ensure clean JSON injection
+        const cleanText = streamedText.replace(/```json/g, "").replace(/```/g, "").trim();
+        if (onStream) {
+           onStream(cleanText);
+        }
+      }
+
+      const finalText = streamedText.replace(/```json/g, "").replace(/```/g, "").trim();
+      if (finalText) {
+        onApply(JSON.parse(finalText));
         setPrompt("");
       }
     } catch (e: any) {

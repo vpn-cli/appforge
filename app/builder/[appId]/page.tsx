@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
 import { CopilotPanel } from "@/components/builder/CopilotPanel";
 import { LivePreview } from "@/components/builder/LivePreview";
@@ -133,6 +133,25 @@ export default function BuilderPage() {
     }
   };
 
+  const streamTemplateRef = useRef<string | null>(null);
+
+  const handleStreamStart = () => {
+    try {
+      const currentConfig = JSON.parse(configStr);
+      if (!currentConfig.pages) currentConfig.pages = [{}];
+      currentConfig.pages[0].components = "<<<REPLACE>>>";
+      streamTemplateRef.current = JSON.stringify(currentConfig, null, 2);
+    } catch(e) {
+      streamTemplateRef.current = JSON.stringify({ app: "AI Generated Template", pages: [{ components: "<<<REPLACE>>>" }] }, null, 2);
+    }
+  };
+
+  const handleStream = (rawText: string) => {
+    if (streamTemplateRef.current) {
+      setConfigStr(streamTemplateRef.current.replace('"<<<REPLACE>>>"', rawText));
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen w-full bg-background overflow-hidden">
       {/* Builder Toolbar */}
@@ -187,7 +206,11 @@ export default function BuilderPage() {
                value={configStr} 
                onChange={(val) => setConfigStr(val || "")} 
              />
-             <CopilotPanel onApply={handleApplyCopilotComponents} />
+             <CopilotPanel 
+               onApply={handleApplyCopilotComponents} 
+               onStreamStart={handleStreamStart}
+               onStream={handleStream}
+             />
           </div>
           <div className="h-48 shrink-0">
              <ValidationPanel errors={errors} warnings={warnings} />

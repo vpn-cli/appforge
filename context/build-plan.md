@@ -125,6 +125,36 @@ Wire the dashboard to InsForge DB data.
 - Add a Copilot chat drawer to the Builder.
 - Stream JSON outputs into the Monaco editor via SSE or WebSockets for instant visual generation.
 
+## Phase 7 — Final Tweaks
+### 17 Visual Polish & Theming
+**UI & Logic:**
+- Implement global dark mode toggle in the AppBuilder toolbar.
+- Ensure the builder registry components correctly inherit and display dark mode styles (`bg-surface`, `text-primary`, etc.).
+- Complete visual overhaul of rendered registry components (Cards, Grids, Buttons) targeting a premium Bento-grid aesthetic with glassmorphism, proper spacing, and elegant micro-interactions.
+
+## Phase 8 — Enterprise Readiness & Deployment
+### 18 Security & Observability 
+**UI & Logic:**
+- Implement global rate limiting (Upstash Redis) on API routes (like `/api/copilot`) to prevent quota abuse.
+- Integrate Sentry SDK for unhandled error tracking, monitoring silent background errors in the builder gracefully.
+
+### 19 Workflow Event Queue
+**Logic:**
+- Integrate Upstash Serverless Kafka.
+- Push standard AppForge events (`app_published`, `workflow_executed`) to an event queue.
+- Background consumer for decoupled analytics generation.
+
+### 20 Enterprise Integrations & DevOps
+**Logic & Config:**
+- Add "Create Jira Ticket" action to the AppForge Workflow engine.
+- Containerize application (Docker) for manual Cloud/VPS deployment (Render/AWS).
+
+### 21 Enterprise Auth Migration (Clerk)
+**Logic:**
+- Strip custom Supabase Auth routes.
+- Integrate `@clerk/nextjs` for premium `<SignIn />` and B2B Organization support.
+- Setup Clerk Webhooks and JWT Templates to securely sync users with the Supabase Row-Level Security Database.
+
 ---
 
 ## Feature Count
@@ -137,4 +167,6 @@ Wire the dashboard to InsForge DB data.
 | Phase 4 — Core Runtime    | 3        |
 | Phase 5 — Dynamic Backend | 3        |
 | Phase 6 — AI Copilot      | 2        |
-| **Total**                 | **16**   |
+| Phase 7 — Final Tweaks    | 1        |
+| Phase 8 — Enterprise      | 4        |
+| **Total**                 | **21**   |
