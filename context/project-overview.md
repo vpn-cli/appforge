@@ -134,7 +134,7 @@ Once a generated app is open at `/apps/[appId]`, navigation switches to whatever
 - Builder UI: JSON editor + live preview + validation panel, side by side
 - Template gallery of starter configs
 - Dashboard with stats, recent activity, and analytics charts
-- Final Tweaks: Global dark mode toggle and pristine component visual overhaul (Bento aesthetics, glassmorphism)
+- Final Tweaks: Global dark mode toggle, Bento component visual overhaul, **Lenis** smooth scrolling, **GSAP ScrollTrigger** / Framer Motion parallax effects, and orchestrated loading/skeleton animations.
 - Enterprise Readiness: API Rate Limiting (Redis) and Sentry Error Tracking
 - Enterprise Readiness: Serverless Kafka event queue for background jobs (analytics)
 - Enterprise Readiness: AppForge DevOps (Docker containerization) and Jira Action Integration

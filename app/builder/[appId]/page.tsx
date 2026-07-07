@@ -155,20 +155,20 @@ export default function BuilderPage() {
   return (
     <div className="flex flex-col h-screen w-full bg-background overflow-hidden">
       {/* Builder Toolbar */}
-      <div className="h-14 border-b border-border bg-surface shrink-0 flex items-center justify-between px-4">
+      <div className="h-14 border-b border-border bg-card shrink-0 flex items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Link href="/dashboard">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-text-muted hover:text-text-primary hover:bg-surface-secondary">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-text-primary leading-tight">App Builder</span>
-            <span className="text-[10px] text-text-muted font-mono">{appId}</span>
+            <span className="text-sm font-bold text-foreground leading-tight">App Builder</span>
+            <span className="text-[10px] text-muted-foreground font-mono">{appId}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center text-xs text-text-muted mr-4">
+          <div className="hidden md:flex items-center text-xs text-muted-foreground mr-4">
              {errors.length > 0 ? (
                <span className="text-[#FF5F56] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#FF5F56] before:rounded-full before:mr-2">Has Errors</span>
              ) : (
@@ -178,7 +178,7 @@ export default function BuilderPage() {
           <Button 
             variant="outline" 
             size="sm" 
-            className="h-8 bg-surface-secondary border-border hover:bg-surface hover:text-text-primary font-medium text-xs transition-colors"
+            className="h-8 bg-muted border-border hover:bg-card hover:text-foreground font-medium text-xs transition-colors"
             onClick={handleSave}
             disabled={isSaving}
           >
@@ -189,7 +189,7 @@ export default function BuilderPage() {
             onClick={handlePublish}
             disabled={isPublishing}
             size="sm" 
-            className="h-8 bg-brand hover:bg-brand-dark text-text-inverse font-medium text-xs shadow-md shadow-brand/20"
+            className="h-8 bg-brand hover:bg-brand-dark text-background font-medium text-xs shadow-md shadow-brand/20"
           >
             {isPublishing ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Play className="w-3.5 h-3.5 mr-2 fill-current" />}
             Publish
@@ -200,7 +200,7 @@ export default function BuilderPage() {
       {/* Workspace Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Side: Editor & Validation */}
-        <div className="w-1/2 flex flex-col min-w-[300px] border-r border-border bg-surface/50">
+        <div className="w-1/2 flex flex-col min-w-[300px] border-r border-border bg-card/50">
           <div className="flex-1 min-h-0 relative">
              <ConfigEditor 
                value={configStr} 

@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+﻿import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 type ValidationPanelProps = {
   errors: string[];
@@ -7,9 +7,9 @@ type ValidationPanelProps = {
 
 export function ValidationPanel({ errors, warnings }: ValidationPanelProps) {
   return (
-    <div className="w-full h-full bg-surface-secondary flex flex-col border-t border-border overflow-hidden">
-      <div className="h-9 border-b border-border flex items-center px-4 justify-between bg-surface shrink-0">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Validation Log</span>
+    <div className="w-full h-full bg-muted flex flex-col border-t border-border overflow-hidden">
+      <div className="h-9 border-b border-border flex items-center px-4 justify-between bg-card shrink-0">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Validation Log</span>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#FF5F56]">
             <AlertCircle className="w-3.5 h-3.5" />
@@ -42,3 +42,4 @@ export function ValidationPanel({ errors, warnings }: ValidationPanelProps) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createInsforgeClient } from "@/lib/insforge-client";
 import { Button } from "@/components/ui/button";
@@ -137,3 +137,4 @@ export default function LoginPage() {
     </Suspense>
   )
 }
+

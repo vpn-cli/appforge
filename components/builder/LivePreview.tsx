@@ -1,4 +1,4 @@
-import { RenderNode } from "@/registry";
+﻿import { RenderNode } from "@/registry";
 
 export function LivePreview({ configStr }: { configStr: string }) {
   let config;
@@ -22,7 +22,7 @@ export function LivePreview({ configStr }: { configStr: string }) {
           {config?.pages?.[0]?.components?.map((comp: any, i: number) => (
              <RenderNode key={i} config={comp} />
           )) || (
-             <div className="flex flex-col items-center justify-center text-text-muted py-24 border border-dashed border-border rounded-lg bg-surface/10">
+             <div className="flex flex-col items-center justify-center text-muted-foreground py-24 border border-dashed border-border rounded-lg bg-card/10">
                <span className="text-xl mb-2 opacity-50">📭</span>
                <span>No components defined on this page yet</span>
              </div>
@@ -32,3 +32,4 @@ export function LivePreview({ configStr }: { configStr: string }) {
     </div>
   );
 }
+

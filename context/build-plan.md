@@ -131,6 +131,9 @@ Wire the dashboard to InsForge DB data.
 - Implement global dark mode toggle in the AppBuilder toolbar.
 - Ensure the builder registry components correctly inherit and display dark mode styles (`bg-surface`, `text-primary`, etc.).
 - Complete visual overhaul of rendered registry components (Cards, Grids, Buttons) targeting a premium Bento-grid aesthetic with glassmorphism, proper spacing, and elegant micro-interactions.
+- Add **Lenis** for flawless smooth scrolling across the app.
+- Implement enterprise-grade parallax scroll effects and scroll-linked animations to the landing page using **GSAP ScrollTrigger, Anime.js, and Framer Motion**.
+- Implement sophisticated **Shadcn UI Skeleton** loading animations and page transition effects across the entire platform.
 
 ## Phase 8 — Enterprise Readiness & Deployment
 ### 18 Security & Observability 

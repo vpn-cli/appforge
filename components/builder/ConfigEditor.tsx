@@ -1,4 +1,4 @@
-import Editor from '@monaco-editor/react';
+﻿import Editor from '@monaco-editor/react';
 
 type ConfigEditorProps = {
   value: string;
@@ -28,3 +28,4 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
     </div>
   );
 }
+

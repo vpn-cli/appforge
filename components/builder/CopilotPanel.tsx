@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, X, Loader2, Send } from "lucide-react";
 
@@ -68,30 +68,30 @@ export function CopilotPanel({ onApply, onStreamStart, onStream }: { onApply: (c
   }
 
   return (
-    <div className="absolute bottom-6 left-6 z-50 w-[400px] bg-surface border border-border shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200">
+    <div className="absolute bottom-6 left-6 z-50 w-[400px] bg-card border border-border shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200">
       <div className="bg-gradient-to-r from-purple-600/10 to-indigo-600/10 p-4 border-b border-white/5 flex items-center justify-between">
          <div className="flex items-center gap-2">
            <Sparkles className="w-4 h-4 text-purple-400" />
-           <span className="font-semibold text-text-primary text-sm tracking-wide">AppForge Copilot</span>
+           <span className="font-semibold text-foreground text-sm tracking-wide">AppForge Copilot</span>
          </div>
-         <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary transition-colors">
+         <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-4 h-4" />
          </button>
       </div>
 
-      <div className="p-4 bg-background/50 h-32 overflow-y-auto text-xs text-text-muted flex flex-col justify-end">
-          <div className="bg-surface-secondary/50 rounded-lg p-3 border border-white/5 inline-block w-[85%] mb-2 self-start rounded-tl-sm">
+      <div className="p-4 bg-background/50 h-32 overflow-y-auto text-xs text-muted-foreground flex flex-col justify-end">
+          <div className="bg-muted/50 rounded-lg p-3 border border-white/5 inline-block w-[85%] mb-2 self-start rounded-tl-sm">
              I am ready to build! Ask me to generate headers, grids, buttons, or full dashboard layouts for you.
           </div>
       </div>
 
-      <form onSubmit={handleGenerate} className="p-3 border-t border-border bg-surface flex items-center gap-2">
+      <form onSubmit={handleGenerate} className="p-3 border-t border-border bg-card flex items-center gap-2">
         <input 
            type="text" 
            value={prompt}
            onChange={e => setPrompt(e.target.value)}
            placeholder="e.g. Generate a dark-mode CRM interface..."
-           className="flex-1 bg-surface-secondary border border-border rounded-full h-10 px-4 text-sm text-text-primary focus:outline-none focus:border-purple-500/50 transition-colors"
+           className="flex-1 bg-muted border border-border rounded-full h-10 px-4 text-sm text-foreground focus:outline-none focus:border-purple-500/50 transition-colors"
            disabled={isGenerating}
         />
         <Button 
@@ -106,3 +106,4 @@ export function CopilotPanel({ onApply, onStreamStart, onStream }: { onApply: (c
     </div>
   );
 }
+

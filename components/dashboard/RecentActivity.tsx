@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity } from "lucide-react";
 
 export function RecentActivity() {
@@ -10,9 +10,9 @@ export function RecentActivity() {
   ];
 
   return (
-    <Card className="bg-surface border-border h-full shadow-sm">
+    <Card className="bg-card border-border h-full shadow-sm">
       <CardHeader className="pb-4">
-        <CardTitle className="text-sm font-bold flex items-center text-text-primary uppercase tracking-wider">
+        <CardTitle className="text-sm font-bold flex items-center text-foreground uppercase tracking-wider">
           <Activity className="w-4 h-4 mr-2 text-brand" />
           Recent Activity
         </CardTitle>
@@ -28,10 +28,10 @@ export function RecentActivity() {
                 )}
               </div>
               <div className="flex-1 mt-[-2px]">
-                <p className="text-sm text-text-primary font-medium tracking-tight">
-                  {item.action} <span className="font-normal text-text-secondary">{item.subject}</span>
+                <p className="text-sm text-foreground font-medium tracking-tight">
+                  {item.action} <span className="font-normal text-muted-foreground">{item.subject}</span>
                 </p>
-                <p className="text-[11px] text-text-muted mt-0.5 font-medium uppercase tracking-wider">{item.time}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 font-medium uppercase tracking-wider">{item.time}</p>
               </div>
             </div>
           ))}
@@ -40,3 +40,4 @@ export function RecentActivity() {
     </Card>
   );
 }
+

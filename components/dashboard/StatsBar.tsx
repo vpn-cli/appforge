@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppWindow, Layers, AlertCircle, Zap } from "lucide-react";
 
 export function StatsBar() {
@@ -32,20 +32,20 @@ export function StatsBar() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full">
       {stats.map((stat, i) => (
-        <Card key={i} className="bg-surface border-border hover:border-border/80 transition-colors shadow-sm">
+        <Card key={i} className="bg-card border-border hover:border-border/80 transition-colors shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-text-secondary">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               {stat.title}
             </CardTitle>
-            <div className="p-2 bg-surface-secondary rounded-md shadow-inner">
+            <div className="p-2 bg-muted rounded-md shadow-inner">
               {stat.icon}
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-text-primary tracking-tight">
+            <div className="text-2xl font-bold text-foreground tracking-tight">
               {stat.value}
             </div>
-            <p className="text-xs text-text-muted mt-1 font-medium">
+            <p className="text-xs text-muted-foreground mt-1 font-medium">
               {stat.change}
             </p>
           </CardContent>
@@ -54,3 +54,4 @@ export function StatsBar() {
     </div>
   );
 }
+

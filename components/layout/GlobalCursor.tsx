@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { MousePointer2 } from "lucide-react";
@@ -86,3 +86,4 @@ export function GlobalCursor() {
     </motion.div>
   );
 }
+

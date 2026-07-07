@@ -1,4 +1,4 @@
-import { createInsforgeServer } from "@/lib/insforge-server";
+﻿import { createInsforgeServer } from "@/lib/insforge-server";
 import { redirect } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
@@ -32,10 +32,10 @@ async function DashboardContent() {
         {/* Header section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-text-primary">Creator Dashboard</h1>
-            <p className="text-text-secondary mt-1">Welcome back. Here is an overview of your AppForge ecosystem.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Creator Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Welcome back. Here is an overview of your AppForge ecosystem.</p>
           </div>
-          <div className="text-xs font-mono bg-surface-secondary px-3 py-1.5 rounded-md border border-border text-text-muted">
+          <div className="text-xs font-mono bg-muted px-3 py-1.5 rounded-md border border-border text-muted-foreground">
             User ID: {user?.id.split('-')[0]}***
           </div>
         </div>
@@ -47,12 +47,12 @@ async function DashboardContent() {
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 mb-10">
           
           <div className="col-span-1 xl:col-span-3 h-full">
-            <h2 className="text-lg font-bold text-text-primary mb-5 uppercase tracking-wider text-xs">Your Apps</h2>
+            <h2 className="text-lg font-bold text-foreground mb-5 uppercase tracking-wider text-xs">Your Apps</h2>
             <AppGrid initialApps={apps} />
           </div>
 
           <div className="col-span-1 xl:col-span-1 border-t xl:border-t-0 pt-8 xl:pt-0">
-            <h2 className="text-lg font-bold text-text-primary mb-5 uppercase tracking-wider text-xs xl:invisible hidden xl:block">Activity</h2>
+            <h2 className="text-lg font-bold text-foreground mb-5 uppercase tracking-wider text-xs xl:invisible hidden xl:block">Activity</h2>
             <div className="sticky top-6">
               <RecentActivity />
             </div>
@@ -74,4 +74,5 @@ export default function DashboardPage() {
     </Suspense>
   );
 }
+
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Code, LayoutTemplate, Activity, Users, TrendingUp } from "lucide-react";
@@ -40,13 +40,13 @@ export function Hero() {
         >
           <motion.h1 
             variants={itemVariants}
-            className="text-4xl md:text-6xl font-bold mb-6 text-text-primary tracking-tight"
+            className="text-4xl md:text-6xl font-bold mb-6 text-foreground tracking-tight"
           >
             Live Config-driven Apps
           </motion.h1>
           <motion.p 
             variants={itemVariants}
-            className="text-text-secondary text-lg mb-10 leading-relaxed max-w-2xl mx-auto"
+            className="text-muted-foreground text-lg mb-10 leading-relaxed max-w-2xl mx-auto"
           >
             Write a single JSON configuration describing your data and UI. AppForge
             instantly renders a working application, complete with a database,
@@ -58,14 +58,14 @@ export function Hero() {
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link href="/builder/demo" tabIndex={-1}>
-                <Button size="lg" className="bg-brand hover:bg-brand-dark text-text-inverse px-8 shadow-[0_10px_25px_-5px_rgba(156,135,218,0.4)] hover:shadow-[0_20px_35px_-5px_rgba(156,135,218,0.6)] transition-all duration-300">
+                <Button size="lg" className="bg-brand hover:bg-brand-dark text-background px-8 shadow-[0_10px_25px_-5px_rgba(156,135,218,0.4)] hover:shadow-[0_20px_35px_-5px_rgba(156,135,218,0.6)] transition-all duration-300">
                   Start Building
                 </Button>
               </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link href="/templates" tabIndex={-1}>
-                <Button size="lg" variant="outline" className="border-border text-text-primary px-8 bg-surface hover:bg-surface-secondary shadow-md hover:shadow-lg transition-all duration-300">
+                <Button size="lg" variant="outline" className="border-border text-foreground px-8 bg-card hover:bg-muted shadow-md hover:shadow-lg transition-all duration-300">
                   View Templates
                 </Button>
               </Link>
@@ -82,7 +82,7 @@ export function Hero() {
             boxShadow: '0 30px 60px -12px rgba(108,87,164,0.25), 0 18px 36px -18px rgba(0,0,0,0.1)' 
           }}
           data-cursor="hero"
-          className="bg-surface rounded-xl border border-border shadow-[0_15px_35px_-10px_rgba(0,0,0,0.1),0_5px_15px_-5px_rgba(108,87,164,0.1)] flex flex-col md:flex-row overflow-hidden text-left min-h-[440px] transition-all duration-500 relative z-10 w-full"
+          className="bg-card rounded-xl border border-border shadow-[0_15px_35px_-10px_rgba(0,0,0,0.1),0_5px_15px_-5px_rgba(108,87,164,0.1)] flex flex-col md:flex-row overflow-hidden text-left min-h-[440px] transition-all duration-500 relative z-10 w-full"
         >
           {/* Editor Side: Full Mac Window Pane */}
           <div className="w-full md:w-1/2 min-w-0 bg-[#1a1b24]/90 backdrop-blur-xl border-b md:border-b-0 md:border-r border-border relative flex flex-col font-mono overflow-hidden">
@@ -115,14 +115,14 @@ export function Hero() {
           </div>
           
           {/* Rendered Side */}
-          <div className="w-full md:w-1/2 min-w-0 bg-surface-secondary/60 p-6 md:p-8 relative flex flex-col justify-center overflow-hidden">
+          <div className="w-full md:w-1/2 min-w-0 bg-muted/60 p-6 md:p-8 relative flex flex-col justify-center overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-brand/5 via-transparent to-surface-secondary pointer-events-none rounded-r-xl" />
             
             <div className="flex items-center gap-3 mb-6 relative z-10">
               <div className="p-1.5 bg-brand text-white rounded-md shadow-lg shadow-brand/20">
                 <LayoutTemplate size={16} />
               </div>
-              <h3 className="m-0 text-sm font-bold text-text-primary tracking-wider uppercase text-brand">
+              <h3 className="m-0 text-sm font-bold text-foreground tracking-wider uppercase text-brand">
                 Rendered Application
               </h3>
             </div>
@@ -133,7 +133,7 @@ export function Hero() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8 }}
-                className="bg-surface p-6 rounded-xl border border-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_15px_40px_rgba(108,87,164,0.15)] transition-all duration-500 transform hover:-translate-y-1 relative overflow-hidden group"
+                className="bg-card p-6 rounded-xl border border-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_15px_40px_rgba(108,87,164,0.15)] transition-all duration-500 transform hover:-translate-y-1 relative overflow-hidden group"
               >
                 <div className="absolute top-0 right-0 p-6 opacity-30 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">
                   <div className="w-12 h-12 rounded-full border-2 border-brand/20 flex items-center justify-center">
@@ -161,11 +161,11 @@ export function Hero() {
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1 }}
-                className="bg-surface rounded-xl border border-white/5 overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_15px_40px_rgba(108,87,164,0.1)] transition-all duration-500 transform hover:-translate-y-1"
+                className="bg-card rounded-xl border border-white/5 overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_15px_40px_rgba(108,87,164,0.1)] transition-all duration-500 transform hover:-translate-y-1"
               >
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="bg-surface-secondary/50 border-b border-border/50 backdrop-blur-md">
+                    <thead className="bg-muted/50 border-b border-border/50 backdrop-blur-md">
                       <tr>
                         <th className="px-5 py-4 font-semibold text-slate-400 uppercase tracking-wider text-[11px]">Workflow</th>
                         <th className="px-5 py-4 font-semibold text-slate-400 uppercase tracking-wider text-[11px]">Trigger</th>
@@ -173,11 +173,11 @@ export function Hero() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="border-b border-border/50 hover:bg-surface-secondary transition-colors group cursor-pointer">
+                      <tr className="border-b border-border/50 hover:bg-muted transition-colors group cursor-pointer">
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-white text-xs font-bold shadow-md shadow-brand/20">US</div>
-                            <span className="font-semibold text-text-primary group-hover:text-brand transition-colors">User Sync</span>
+                            <span className="font-semibold text-foreground group-hover:text-brand transition-colors">User Sync</span>
                           </div>
                         </td>
                         <td className="px-5 py-4 text-slate-500 text-xs font-mono">cron:hourly</td>
@@ -187,16 +187,16 @@ export function Hero() {
                           </span>
                         </td>
                       </tr>
-                      <tr className="hover:bg-surface-secondary transition-colors group cursor-pointer">
+                      <tr className="hover:bg-muted transition-colors group cursor-pointer">
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-surface-tertiary border border-border flex items-center justify-center text-text-primary text-xs font-bold">IG</div>
-                            <span className="font-semibold text-text-primary group-hover:text-brand transition-colors">Invoice Gen</span>
+                            <div className="w-8 h-8 rounded-full bg-accent border border-border flex items-center justify-center text-foreground text-xs font-bold">IG</div>
+                            <span className="font-semibold text-foreground group-hover:text-brand transition-colors">Invoice Gen</span>
                           </div>
                         </td>
                         <td className="px-5 py-4 text-slate-500 text-xs font-mono">webhook:rx</td>
                         <td className="px-5 py-4">
-                          <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-bold bg-surface-tertiary text-slate-400 border border-white/5">
+                          <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-bold bg-accent text-slate-400 border border-white/5">
                             <div className="w-1 h-1 rounded-full bg-slate-500" /> Idle
                           </span>
                         </td>
@@ -212,3 +212,4 @@ export function Hero() {
     </section>
   );
 }
+

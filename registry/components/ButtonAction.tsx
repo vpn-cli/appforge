@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+﻿import { Button } from "@/components/ui/button";
 import { ArrowRight, Save, Play, Plus, Search } from "lucide-react";
 
 export function ButtonAction({ label, variant = "default", icon, size = "default" }: { label?: string, variant?: "default" | "outline" | "secondary" | "ghost", icon?: string, size?: "default" | "sm" | "lg" | "icon" }) {
@@ -19,3 +19,4 @@ export function ButtonAction({ label, variant = "default", icon, size = "default
     </Button>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useRef } from "react";
 
 export default function FluidBackground() {
@@ -88,3 +88,4 @@ export default function FluidBackground() {
     </div>
   );
 }
+

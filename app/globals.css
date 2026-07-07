@@ -5,31 +5,31 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
+@theme inline {
   /* Fonts */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 
   /* Page and surface backgrounds */
-  --color-background: #FAFAFC;
-  --color-surface: #FFFFFF;
-  --color-surface-secondary: #F4F2F8;
-  --color-surface-tertiary: #E4E1EA;
+  --color-background: var(--background);
+  --color-surface: var(--card);
+  --color-surface-secondary: var(--muted);
+  --color-surface-tertiary: var(--accent);
 
   /* Borders */
-  --color-border: #E4E1EA;
-  --color-border-dark: #CFC9DA;
+  --color-border: var(--border);
+  --color-border-dark: var(--input);
 
   /* Text (Pastel Ink mapped) */
-  --color-text-primary: #2B2A33;    /* var(--color-ink-900) */
-  --color-text-secondary: #494756;  /* var(--color-ink-700) */
-  --color-text-muted: #A6A3AE;      /* var(--color-ink-400) */
-  --color-text-inverse: #FFFFFF;
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-text-muted: var(--muted-foreground);
+  --color-text-inverse: var(--background);
 
-  /* Brand / Primary — Lavender from Patel Theme */
-  --color-brand: #9C87DA;           /* var(--color-primary-500) */
-  --color-brand-dark: #6B549F;      /* var(--color-primary-700) */
-  --color-brand-light: #F1EEFB;     /* var(--color-primary-50) */
+  /* Brand / Primary */
+  --color-brand: var(--theme-brand);
+  --color-brand-dark: var(--theme-brand-dark);
+  --color-brand-light: var(--theme-brand-light);
 
   /* Validation & State Colors mapped from Mint, Blush, Peach */
   --color-error: #DC7088;           /* Blush 500 */
@@ -56,28 +56,15 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-full: 999px;
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(43, 42, 51, 0.06);
   --shadow-md: 0 4px 12px rgba(108, 87, 164, 0.10);
   --shadow-lg: 0 12px 32px rgba(108, 87, 164, 0.14);
-}
 
-@layer base {
-  body {
-    @apply font-sans antialiased bg-background text-foreground;
-  }
-  * {
-    @apply border-border outline-ring/50;
-  }
-  html {
-    @apply font-sans;
-  }
-}
-
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -93,11 +80,9 @@
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
-  --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
@@ -108,17 +93,25 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
 }
 
 :root {
+  --theme-brand: #9C87DA;
+  --theme-brand-dark: #6B549F;
+  --theme-brand-light: #F1EEFB;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -154,6 +147,10 @@
 }
 
 .dark {
+  --theme-brand: #A895E2;
+  --theme-brand-dark: #816BB4;
+  --theme-brand-light: #2A253A;
+
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -206,4 +203,11 @@
 .bg-blob-2 {
   animation: blob-sweep-2 15s infinite ease-in-out;
   will-change: transform;
+}
+
+/* Theme Toggle Radial Ripple Resets */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }

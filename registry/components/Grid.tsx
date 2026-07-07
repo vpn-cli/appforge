@@ -1,4 +1,4 @@
-import { RenderNode } from "../index";
+﻿import { RenderNode } from "../index";
 
 export function Grid({ columns = 2, gap = 6, items = [] }: { columns?: number | string, gap?: number | string, items?: any[] }) {
   // A mapping to safely compile Tailwind grid classes without runtime arbitrary values breaking
@@ -27,3 +27,4 @@ export function Grid({ columns = 2, gap = 6, items = [] }: { columns?: number | 
     </div>
   );
 }
+

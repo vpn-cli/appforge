@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect } from 'react';
 import Lenis from 'lenis';
@@ -38,3 +38,4 @@ export function SmoothScroller({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+

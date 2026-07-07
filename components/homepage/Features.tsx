@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef } from "react";
 import { Zap, Database, ShieldAlert } from "lucide-react";
@@ -72,7 +72,7 @@ export function Features() {
     <section ref={containerRef} className="max-w-7xl mx-auto px-4 py-20 mt-8 border-t border-border overflow-hidden">
       <h2 
         ref={headingRef}
-        className="text-center text-3xl font-bold mb-14 text-text-primary tracking-tight"
+        className="text-center text-3xl font-bold mb-14 text-foreground tracking-tight"
       >
         Configuration over Boilerplate
       </h2>
@@ -81,45 +81,45 @@ export function Features() {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
       >
         <div 
-          className="feature-card bg-surface p-8 rounded-xl border border-border shadow-sm flex flex-col gap-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-brand/40"
+          className="feature-card bg-card/60 backdrop-blur-md p-8 rounded-xl border border-border shadow-sm flex flex-col gap-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-brand/40"
         >
           <div className="feature-icon w-14 h-14 bg-brand-light rounded-full flex items-center justify-center mb-2 shadow-sm">
             <Database size={26} className="text-brand" />
           </div>
-          <h3 className="text-xl font-bold text-text-primary tracking-tight">
+          <h3 className="text-xl font-bold text-foreground tracking-tight">
             Dynamic Backends
           </h3>
-          <p className="text-text-secondary text-base leading-relaxed">
+          <p className="text-muted-foreground text-base leading-relaxed">
             Instantly generated Postgres schemas and REST APIs based purely on
             your JSON entity definitions.
           </p>
         </div>
 
         <div 
-          className="feature-card bg-surface p-8 rounded-xl border border-border shadow-sm flex flex-col gap-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-success/40"
+          className="feature-card bg-card/60 backdrop-blur-md p-8 rounded-xl border border-border shadow-sm flex flex-col gap-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-success/40"
         >
           <div className="feature-icon w-14 h-14 bg-success-light rounded-full flex items-center justify-center mb-2 shadow-sm">
             <ShieldAlert size={26} className="text-success" />
           </div>
-          <h3 className="text-xl font-bold text-text-primary tracking-tight">
+          <h3 className="text-xl font-bold text-foreground tracking-tight">
             Graceful Degradation
           </h3>
-          <p className="text-text-secondary text-base leading-relaxed">
+          <p className="text-muted-foreground text-base leading-relaxed">
             Broken config? Missing fields? AppForge isolates errors to a single
             component so your layout never crashes.
           </p>
         </div>
 
         <div 
-          className="feature-card bg-surface p-8 rounded-xl border border-border shadow-sm flex flex-col gap-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-warning-border"
+          className="feature-card bg-card/60 backdrop-blur-md p-8 rounded-xl border border-border shadow-sm flex flex-col gap-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-warning-border"
         >
           <div className="feature-icon w-14 h-14 bg-warning-light rounded-full flex items-center justify-center mb-2 shadow-sm">
             <Zap size={26} className="text-warning-text" />
           </div>
-          <h3 className="text-xl font-bold text-text-primary tracking-tight">
+          <h3 className="text-xl font-bold text-foreground tracking-tight">
             Instant Preview
           </h3>
-          <p className="text-text-secondary text-base leading-relaxed">
+          <p className="text-muted-foreground text-base leading-relaxed">
             A side-by-side builder interface that renders your JSON runtime in
             real-time as you type, instantly catching errors.
           </p>
@@ -128,3 +128,4 @@ export function Features() {
     </section>
   );
 }
+
