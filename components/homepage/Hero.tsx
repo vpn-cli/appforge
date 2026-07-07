@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Code, LayoutTemplate, Activity, Users, TrendingUp } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import FluidBackground from "./FluidBackground";
 
 export function Hero() {
 
@@ -23,15 +22,16 @@ export function Hero() {
   };
 
   return (
-    <section className="w-full relative overflow-hidden">
-      {/* 1. Global Mathematical Fluid Background Canvas */}
-      <FluidBackground />
+    <section className="w-full relative overflow-hidden min-h-[110vh] pb-32">
+      {/* 1. Deep Atmospheric Glows (The "Mesh" inside the grid) */}
+      <div className="absolute top-[10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand/[0.03] dark:bg-brand/10 blur-[120px] bg-blob-1 pointer-events-none z-0 mix-blend-multiply dark:mix-blend-screen" />
+      <div className="absolute top-[30%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-success/[0.03] dark:bg-success/[0.05] blur-[100px] bg-blob-2 pointer-events-none z-0 mix-blend-multiply dark:mix-blend-screen" />
 
-      {/* 2. Frosted Glass Overlay (Middle Layer) */}
-      <div className="absolute inset-0 pointer-events-none z-10 bg-background/50" />
+      {/* 2. Full-Width Architectural Grid Layer */}
+      <div className="absolute inset-0 pointer-events-none z-0 bg-grid-pattern mask-vignette" />
 
       {/* 3. Hero Content (Top Layer) */}
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center relative group/hero z-20">
+      <div className="max-w-7xl mx-auto px-4 py-24 text-center relative group/hero z-20">
         <motion.div 
           variants={containerVariants}
           initial="hidden"

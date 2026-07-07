@@ -206,6 +206,21 @@
   will-change: transform;
 }
 
+/* Grid Mesh Backgrounds */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+}
+.dark .bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+}
+.mask-vignette {
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 15%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 15%, transparent 100%);
+}
+
 /* Theme Toggle Radial Ripple Resets */
 ::view-transition-old(root),
 ::view-transition-new(root) {
