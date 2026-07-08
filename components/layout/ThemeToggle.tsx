@@ -55,14 +55,12 @@ export function ThemeToggle() {
 
       document.documentElement.animate(
         {
-          clipPath: nextDark ? clipPath : [...clipPath].reverse(),
+          clipPath: clipPath,
         },
         {
           duration: 500,
           easing: "ease-in-out",
-          pseudoElement: nextDark
-            ? "::view-transition-new(root)"
-            : "::view-transition-old(root)",
+          pseudoElement: "::view-transition-new(root)",
         }
       );
     });
