@@ -93,7 +93,7 @@ export function AppGrid({ initialApps }: { initialApps: AppData[] }) {
             </Link>
             {app.status === 'Published' && (
               <Link href={`/apps/${app.id}`} className="w-full flex-1">
-                <Button className="w-full bg-brand hover:bg-brand-dark shadow-md shadow-brand/20 font-medium text-xs h-9 text-background">
+                <Button className="w-full bg-brand hover:bg-brand-dark shadow-md shadow-brand/20 font-medium text-xs h-9 text-white">
                   <ExternalLink className="w-3.5 h-3.5 mr-2" />
                   Run App
                 </Button>

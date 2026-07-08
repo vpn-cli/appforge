@@ -109,8 +109,8 @@
 }
 
 :root {
-  --theme-brand: #9C87DA;
-  --theme-brand-dark: #6B549F;
+  --theme-brand: #4C1D95;      /* Extremely dark violet (Tailwind 900) */
+  --theme-brand-dark: #311166;
   --theme-brand-light: #F1EEFB;
 
   --background: oklch(0.985 0 0); /* Off-white background */
@@ -148,8 +148,8 @@
 }
 
 .dark {
-  --theme-brand: #A895E2;
-  --theme-brand-dark: #816BB4;
+  --theme-brand: #4C1D95;      /* Extremely dark violet (Tailwind 900) */
+  --theme-brand-dark: #311166;
   --theme-brand-light: #2A253A;
 
   --background: oklch(0.145 0 0);
@@ -226,4 +226,16 @@
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+}
+
+/* Animated Text Gradient */
+@keyframes text-gradient-sweep {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-text-gradient {
+  background-size: 200% auto;
+  animation: text-gradient-sweep 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }

@@ -119,7 +119,7 @@ export function Navbar({ userLoggedIn }: { userLoggedIn?: boolean }) {
             </motion.div>
             <motion.div variants={item} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link href="/login" tabIndex={-1}>
-                <Button className="bg-brand hover:bg-brand-dark text-background shadow-md shadow-brand/20">
+                <Button className="bg-brand hover:bg-brand-dark text-white shadow-md shadow-brand/20">
                   Start for free
                 </Button>
               </Link>

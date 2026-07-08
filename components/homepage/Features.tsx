@@ -228,7 +228,7 @@ export function Features() {
                      </div>
                    </div>
                    <div className="h-24 w-full bg-muted/50 rounded-xl" />
-                   <div className="h-8 w-full bg-brand text-[10px] font-bold text-background flex items-center justify-center rounded-lg shadow-sm">
+                   <div className="h-8 w-full bg-brand text-[10px] font-bold text-white flex items-center justify-center rounded-lg shadow-sm">
                      Rendered Component
                    </div>
                  </div>

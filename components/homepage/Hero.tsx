@@ -40,7 +40,7 @@ export function Hero() {
         >
           <motion.h1 
             variants={itemVariants}
-            className="text-4xl md:text-6xl font-bold mb-6 text-foreground tracking-tight"
+            className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight bg-clip-text text-transparent animate-text-gradient bg-[linear-gradient(to_right,#4C1D95,#7E22CE,#BE185D,#4C1D95)] dark:bg-[linear-gradient(to_right,#C084FC,#F472B6,#818CF8,#C084FC)]"
           >
             Live Config-driven Apps
           </motion.h1>
@@ -58,7 +58,7 @@ export function Hero() {
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link href="/builder/demo" tabIndex={-1}>
-                <Button size="lg" className="bg-brand hover:bg-brand-dark text-background px-8 shadow-[0_10px_25px_-5px_rgba(156,135,218,0.4)] hover:shadow-[0_20px_35px_-5px_rgba(156,135,218,0.6)] transition-all duration-300">
+                <Button size="lg" className="bg-brand hover:bg-brand-dark text-white px-8 shadow-[0_10px_25px_-5px_rgba(156,135,218,0.4)] hover:shadow-[0_20px_35px_-5px_rgba(156,135,218,0.6)] transition-all duration-300">
                   Start Building
                 </Button>
               </Link>
