@@ -1,8 +1,17 @@
 "use client";
 
 import AnimatedCursor from "react-animated-cursor";
+import { useState, useEffect } from "react";
 
 export function CustomCursor() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <AnimatedCursor
       innerSize={10}

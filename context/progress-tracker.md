@@ -44,6 +44,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 7 — Final Tweaks
 - [x] 17 Visual Polish & Theming (Global Dark Mode, Shadcn/Anime.js/Framer Parallax, Smooth Loading Animations, Bento Component Overhaul, Logo Animation Pending)
+- [ ] 17b Mobile Responsiveness Polish (Deferred to post-Phase 8 integration)
 
 ### Phase 8 — Enterprise Readiness & Deployment
 - [ ] 18 Security & Observability (Redis Rate Limit + Sentry)

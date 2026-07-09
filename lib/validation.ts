@@ -2,19 +2,18 @@ import { z } from "zod";
 
 const BaseComponentSchema = z.object({
   type: z.string({
-    required_error: "Component 'type' is required",
-    invalid_type_error: "Component 'type' must be a string",
+    message: "Component 'type' is required and must be a string",
   }),
 }).passthrough();
 
-const PageSchema = z.object({
-  components: z.array(BaseComponentSchema).optional().default([]),
+const PageSchema: any = z.object({
+  components: z.array(BaseComponentSchema as any).optional().default([] as any),
 }).passthrough();
 
-const AppConfigSchema = z.object({
+const AppConfigSchema: any = z.object({
   app: z.string().optional(),
-  pages: z.array(PageSchema).optional().default([]),
-  entities: z.record(z.any()).optional()
+  pages: z.array(PageSchema as any).optional().default([] as any),
+  entities: z.record(z.string(), z.any()).optional()
 }).passthrough();
 
 export function validateConfig(configStr: string): { errors: string[], warnings: string[] } {
@@ -24,7 +23,7 @@ export function validateConfig(configStr: string): { errors: string[], warnings:
     
     if (!result.success) {
       return {
-        errors: result.error.errors.map(e => `${e.path.join('.') || 'root'}: ${e.message}`),
+        errors: (result.error.errors || result.error.issues || []).map((e: any) => `${(e.path && e.path.join('.')) || 'root'}: ${e.message}`),
         warnings: []
       };
     }
