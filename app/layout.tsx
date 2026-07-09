@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AppForge | Configure. Generate. Launch.",
+  title: "AppForge",
   description: "Stop writing boilerplate. Build enterprise React applications instantly with AppForge's JSON compiler.",
 };
 

@@ -4,9 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { AppWindow } from "lucide-react";
 import confetti from "canvas-confetti";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { AppForgeLogo } from "@/components/ui/appforge-logo";
 
 export function Navbar({ userLoggedIn }: { userLoggedIn?: boolean }) {
   const [clickCount, setClickCount] = useState(0);
@@ -57,18 +57,23 @@ export function Navbar({ userLoggedIn }: { userLoggedIn?: boolean }) {
         className="flex items-center gap-2.5 relative group outline-none"
         onClick={handleLogoClick}
       >
-        <motion.div 
+         <motion.div 
           animate={{ rotate: clickCount * 360 }}
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 200, damping: 10 }}
           className="w-10 h-10 bg-gradient-to-br from-brand to-brand-dark rounded-xl flex items-center justify-center shadow-lg shadow-brand/30 relative overflow-hidden"
         >
-           <AppWindow size={22} className="text-white drop-shadow-md relative z-10" />
+           <AppForgeLogo size={22} className="text-white drop-shadow-md relative z-10" />
            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </motion.div>
-        <span className="font-bold text-xl text-foreground tracking-tight group-hover:text-brand transition-colors duration-300">
-          AppForge
-        </span>
+        <div className="relative font-bold text-xl tracking-tight">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand to-brand-dark dark:from-indigo-200 dark:to-purple-300 transition-opacity duration-300 group-hover:opacity-0 relative z-10 block">
+            AppForge
+          </span>
+          <span className="absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-clip-text text-transparent animate-text-gradient bg-[linear-gradient(to_right,#4C1D95,#7E22CE,#BE185D,#4C1D95)] dark:bg-[linear-gradient(to_right,#C084FC,#F472B6,#818CF8,#C084FC)] bg-[length:200%_auto] z-20 block whitespace-nowrap">
+            AppForge
+          </span>
+        </div>
       </Link>
 
       <motion.nav 
