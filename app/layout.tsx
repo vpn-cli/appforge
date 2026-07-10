@@ -21,37 +21,41 @@ export const metadata: Metadata = {
   description: "Stop writing boilerplate. Build enterprise React applications instantly with AppForge's JSON compiler.",
 };
 
+import { ClerkProvider } from '@clerk/nextjs'
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
-      <body className="min-h-full flex flex-col font-sans cursor-none">
-        <CustomCursor />
-        {/* Native SSR-safe dark mode injection to bypass React 19 use-client script warnings */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            try {
-              const localTheme = window.localStorage.getItem('theme');
-              if (localTheme === 'dark' || (!localTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-              } else {
-                document.documentElement.classList.remove('dark');
-              }
-            } catch (_) {}
-          `
-        }} />
-        <SmoothScroller>
-          {children}
-        </SmoothScroller>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html
+        lang="en"
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        suppressHydrationWarning
+      >
+        <body className="min-h-full flex flex-col font-sans cursor-none">
+          <CustomCursor />
+          {/* Native SSR-safe dark mode injection to bypass React 19 use-client script warnings */}
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const localTheme = window.localStorage.getItem('theme');
+                if (localTheme === 'dark' || (!localTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `
+          }} />
+          <SmoothScroller>
+            {children}
+          </SmoothScroller>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
 

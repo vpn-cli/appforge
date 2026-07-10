@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
+import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs";
 
-export function Navbar({ userLoggedIn }: { userLoggedIn?: boolean }) {
+export function Navbar() {
   const [clickCount, setClickCount] = useState(0);
 
   const container: Variants = {
@@ -101,36 +102,31 @@ export function Navbar({ userLoggedIn }: { userLoggedIn?: boolean }) {
         animate="show"
         className="flex items-center gap-4"
       >
-        {userLoggedIn ? (
+        <SignedIn>
           <motion.div variants={item} className="flex gap-4 items-center">
             <ThemeToggle />
-            <form action="/auth/signout" method="post">
-              <Button type="submit" variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-red-400 hover:bg-muted">
-                Sign Out
-              </Button>
-            </form>
+            <UserButton appearance={{ elements: { avatarBox: "w-9 h-9 border-2 border-brand/20 shadow-md" } }} />
           </motion.div>
-        ) : (
-          <>
-            <motion.div variants={item} className="flex items-center gap-2">
-              <ThemeToggle />
-            </motion.div>
-            <motion.div variants={item}>
-              <Link href="/login" tabIndex={-1}>
-                <Button variant="ghost" className="text-sm font-medium hover:bg-muted">
-                  Log in
-                </Button>
-              </Link>
-            </motion.div>
-            <motion.div variants={item} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/login" tabIndex={-1}>
-                <Button className="bg-brand hover:bg-brand-dark text-white shadow-md shadow-brand/20">
-                  Start for free
-                </Button>
-              </Link>
-            </motion.div>
-          </>
-        )}
+        </SignedIn>
+        <SignedOut>
+          <motion.div variants={item} className="flex items-center gap-2">
+            <ThemeToggle />
+          </motion.div>
+          <motion.div variants={item}>
+            <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+              <Button variant="ghost" className="text-sm font-medium hover:bg-muted">
+                Log in
+              </Button>
+            </SignInButton>
+          </motion.div>
+          <motion.div variants={item} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+              <Button className="bg-brand hover:bg-brand-dark text-white shadow-md shadow-brand/20">
+                Start for free
+              </Button>
+            </SignInButton>
+          </motion.div>
+        </SignedOut>
       </motion.div>
     </motion.header>
   );

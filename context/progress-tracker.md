@@ -47,10 +47,10 @@ Update this file after every completed feature. Any AI agent reading this should
 - [ ] 17b Mobile Responsiveness Polish (Deferred to post-Phase 8 integration)
 
 ### Phase 8 — Enterprise Readiness & Deployment
-- [ ] 18 Security & Observability (Redis Rate Limit + Sentry)
-- [ ] 19 Workflow Event Queue (Kafka)
-- [ ] 20 Enterprise Integrations & DevOps (Docker + Jira)
-- [ ] 21 Enterprise Auth Migration (Clerk)
+- [x] 18 Enterprise Auth Migration (Clerk)
+- [ ] 19 Workflow Event Queue & Rate Limiting (Upstash Kafka + Redis)
+- [ ] 20 Observability (Sentry)
+- [ ] 21 Enterprise Integrations & DevOps (Docker + Jira)
 
 ---
 

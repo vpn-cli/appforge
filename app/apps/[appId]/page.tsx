@@ -41,7 +41,7 @@ export default async function LiveAppPage({ params }: { params: Promise<{ appId:
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar userLoggedIn={!!user} />
+      <Navbar />
       
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-10 flex flex-col gap-8">
          <div className="bg-[#27C93F]/10 border border-[#27C93F]/30 text-[#27C93F] text-xs font-mono py-1.5 px-3 rounded-full self-start flex items-center mb-4 shadow-sm shadow-[#27C93F]/5">

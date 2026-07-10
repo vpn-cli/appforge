@@ -2,20 +2,22 @@
 
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 
 export async function getUserApps() {
   const supabase = await createInsforgeServer();
-  let { data: { user } } = await supabase.auth.getUser();
+  // Replaced Supabase auth with Clerk auth
+  const { userId } = await auth();
 
   // DEV BYPASS FALLBACK
-  if (process.env.NODE_ENV === "development" && !user) {
+  if (process.env.NODE_ENV === "development" && !userId) {
     return [
       { id: "mock-1", name: "Internal CRM (Mock)", updated_at: new Date().toISOString(), status: "Published" },
       { id: "mock-2", name: "Inventory Tracker (Mock)", updated_at: new Date(Date.now() - 3600000).toISOString(), status: "Draft" },
     ];
   }
 
-  if (!user) throw new Error("Unauthorized");
+  if (!userId) throw new Error("Unauthorized");
 
   const { data, error } = await supabase
     .from("apps")
@@ -35,14 +37,14 @@ export async function getUserApps() {
 
 export async function createApp() {
   const supabase = await createInsforgeServer();
-  let { data: { user } } = await supabase.auth.getUser();
+  const { userId } = await auth();
 
   // DEV BYPASS FALLBACK
-  if (process.env.NODE_ENV === "development" && !user) {
+  if (process.env.NODE_ENV === "development" && !userId) {
     redirect("/builder/mock-new-id");
   }
 
-  if (!user) throw new Error("Unauthorized");
+  if (!userId) throw new Error("Unauthorized");
 
   const { data, error } = await supabase
     .from("apps")
@@ -63,13 +65,13 @@ export async function createApp() {
 
 export async function createAppFromTemplate(templateId: string) {
   const supabase = await createInsforgeServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { userId } = await auth();
 
-  if (process.env.NODE_ENV === "development" && !user) {
+  if (process.env.NODE_ENV === "development" && !userId) {
     redirect(`/builder/template-${templateId}`);
   }
 
-  if (!user) throw new Error("Unauthorized");
+  if (!userId) throw new Error("Unauthorized");
 
   // In production, we would merge actual template JSON here 
   // before inserting into `apps.config`.
@@ -95,9 +97,9 @@ import { syncAppSchema } from "@/actions/schema";
 
 export async function saveAppConfig(appId: string, configStr: string) {
   const supabase = await createInsforgeServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { userId } = await auth();
 
-  if (process.env.NODE_ENV === "development" && !user) {
+  if (process.env.NODE_ENV === "development" && !userId) {
     console.log("[DEV BYPASS] Mocking Save App Config for:", appId);
     // Trigger mock schema sync for testing
     let rawConfig = {};
@@ -108,7 +110,7 @@ export async function saveAppConfig(appId: string, configStr: string) {
     return { success: true };
   }
 
-  if (!user) throw new Error("Unauthorized");
+  if (!userId) throw new Error("Unauthorized");
 
   let rawConfig = {};
   try {
@@ -122,7 +124,7 @@ export async function saveAppConfig(appId: string, configStr: string) {
     .from("apps")
     .update({ config: rawConfig, updated_at: new Date().toISOString() })
     .eq("id", appId)
-    .eq("user_id", user.id);
+    .eq("user_id", userId);
 
   if (saveError) {
     throw new Error(`Failed to save config: ${saveError.message}`);
@@ -142,14 +144,14 @@ export async function saveAppConfig(appId: string, configStr: string) {
 
 export async function publishAppConfig(appId: string, configStr: string) {
   const supabase = await createInsforgeServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { userId } = await auth();
 
-  if (process.env.NODE_ENV === "development" && !user) {
+  if (process.env.NODE_ENV === "development" && !userId) {
     console.log("[DEV BYPASS] Mocking Publish App Config for:", appId);
     return { success: true };
   }
 
-  if (!user) throw new Error("Unauthorized");
+  if (!userId) throw new Error("Unauthorized");
 
   let rawConfig = {};
   try {
@@ -162,7 +164,7 @@ export async function publishAppConfig(appId: string, configStr: string) {
     .from("apps")
     .update({ published_config: rawConfig, status: 'Published' })
     .eq("id", appId)
-    .eq("user_id", user.id);
+    .eq("user_id", userId);
 
   if (error) {
     throw new Error("Failed to publish app.");

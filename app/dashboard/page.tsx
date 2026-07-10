@@ -1,5 +1,5 @@
-﻿import { createInsforgeServer } from "@/lib/insforge-server";
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
 import { Navbar } from "@/components/layout/Navbar";
@@ -10,14 +10,13 @@ import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { getUserApps } from "@/actions/apps";
 
 async function DashboardContent() {
-  const supabase = await createInsforgeServer();
-  let { data: { user } } = await supabase.auth.getUser();
+  let { userId } = await auth();
 
-  if (!user && process.env.NODE_ENV === "development") {
+  if (!userId && process.env.NODE_ENV === "development") {
     // DEV BYPASS: Supabase default SMTP rate limits magic links to 3/hour.
     // We inject a dummy user so you can still view the Dashboard UI locally!
-    user = { id: "dev-test-user-123" } as any;
-  } else if (!user) {
+    userId = "dev-test-user-123";
+  } else if (!userId) {
     redirect("/login");
   }
 
@@ -25,7 +24,7 @@ async function DashboardContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar userLoggedIn={true} />
+      <Navbar />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-10 flex flex-col gap-10">
         
@@ -36,7 +35,7 @@ async function DashboardContent() {
             <p className="text-muted-foreground mt-1">Welcome back. Here is an overview of your AppForge ecosystem.</p>
           </div>
           <div className="text-xs font-mono bg-muted px-3 py-1.5 rounded-md border border-border text-muted-foreground">
-            User ID: {user?.id.split('-')[0]}***
+            User ID: {userId?.split('_')[1]?.substring(0, 5) || "MOCK"}***
           </div>
         </div>
 
