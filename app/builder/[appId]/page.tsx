@@ -189,7 +189,7 @@ export default function BuilderPage() {
             onClick={handlePublish}
             disabled={isPublishing}
             size="sm" 
-            className="h-8 bg-brand hover:bg-brand-dark text-background font-medium text-xs shadow-md shadow-brand/20"
+            className="h-8 bg-brand hover:bg-brand-dark text-white font-medium text-xs shadow-md shadow-brand/20"
           >
             {isPublishing ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Play className="w-3.5 h-3.5 mr-2 fill-current" />}
             Publish
