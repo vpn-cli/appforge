@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 
-export function AppForgeLogo({ className = "", size = 24 }: { className?: string; size?: number }) {
+export function AppForgeLogo({ className = "", size = 24, isHovered }: { className?: string; size?: number; isHovered?: boolean }) {
   return (
     <motion.svg
       width={size}
@@ -13,7 +13,7 @@ export function AppForgeLogo({ className = "", size = 24 }: { className?: string
       className={className}
       initial="rest"
       whileHover="hover"
-      animate="rest"
+      animate={isHovered ? "hover" : "rest"}
     >
       {/* Top Diamond */}
       <motion.path
@@ -21,7 +21,7 @@ export function AppForgeLogo({ className = "", size = 24 }: { className?: string
         fill="currentColor"
         variants={{
           rest: { y: 0, opacity: 1 },
-          hover: { y: -8, scale: 1.1, opacity: 0.9 }
+          hover: { y: -8, opacity: 0.9 }
         }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />

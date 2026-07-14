@@ -4,13 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import confetti from "canvas-confetti";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs";
 
 export function Navbar() {
-  const [clickCount, setClickCount] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   const container: Variants = {
     hidden: { opacity: 0 },
@@ -25,27 +24,6 @@ export function Navbar() {
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };
 
-  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    setClickCount(prev => prev + 1);
-    
-    // Determine precise click coordinates for the confetti origin
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (rect.left + rect.width / 2) / window.innerWidth;
-    const y = (rect.top + rect.height / 2) / window.innerHeight;
-
-    confetti({
-      particleCount: 80,
-      spread: 360,
-      startVelocity: 25,
-      origin: { x, y },
-      colors: ['#6C57A4', '#9C87DA', '#ffffff'],
-      disableForReducedMotion: true,
-      zIndex: 9999,
-      scalar: 0.7,
-      ticks: 150
-    });
-  };
-
   return (
     <motion.header 
       initial={{ opacity: 0, y: -20 }}
@@ -56,15 +34,15 @@ export function Navbar() {
       <Link 
         href="/" 
         className="flex items-center gap-2.5 relative group outline-none"
-        onClick={handleLogoClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
          <motion.div 
-          animate={{ rotate: clickCount * 360 }}
-          whileHover={{ scale: 1.05 }}
+          animate={isHovered ? { scale: 1.1 } : { scale: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 10 }}
           className="w-10 h-10 bg-gradient-to-br from-brand to-brand-dark rounded-xl flex items-center justify-center shadow-lg shadow-brand/30 relative overflow-hidden"
         >
-           <AppForgeLogo size={22} className="text-white drop-shadow-md relative z-10" />
+           <AppForgeLogo size={22} isHovered={isHovered} className="text-white drop-shadow-md relative z-10" />
            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </motion.div>
         <div className="relative font-bold text-xl tracking-tight">
