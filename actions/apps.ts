@@ -3,6 +3,7 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import { EventPublisher } from "@/lib/event-queue";
 
 export async function getUserApps() {
   const supabase = await createInsforgeServer();
@@ -169,6 +170,15 @@ export async function publishAppConfig(appId: string, configStr: string) {
   if (error) {
     throw new Error("Failed to publish app.");
   }
+
+  // Asynchronously fire a Kafka event to our decoupled queue tracking 'app_published' events.
+  // This operation handles its own errors silently to prevent failing the UI interaction if analytics goes down.
+  EventPublisher.publish("appforge-events", "app_published", {
+    app_id: appId,
+    user_id: userId,
+    config_size: configStr.length,
+    timestamp: new Date().toISOString()
+  });
 
   return { success: true };
 }
