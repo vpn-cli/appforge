@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  // Config options here
+  output: "standalone",
 };
 
 export default withSentryConfig(nextConfig, {
