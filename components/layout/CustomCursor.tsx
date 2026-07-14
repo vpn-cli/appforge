@@ -20,6 +20,12 @@ export function CustomCursor() {
       outerAlpha={0.2}
       innerScale={0.7}
       outerScale={1.5}
+      innerStyle={{
+        zIndex: 999999
+      }}
+      outerStyle={{
+        zIndex: 999999
+      }}
       clickables={[
         'a',
         'input[type="text"]',

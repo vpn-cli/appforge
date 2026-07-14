@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 };
 
 import { ClerkProvider } from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
 
 export default function RootLayout({
   children,
@@ -29,7 +30,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark,
+        variables: {
+          colorPrimary: "#BE185D", // AppForge brand purple/pink
+          colorBackground: "#09090b", // Deep dark background
+          colorInputBackground: "#18181b", // Slightly elevated input bg
+          colorInputText: "#fafafa",
+          colorText: "#fafafa",
+          borderRadius: "0.5rem"
+        },
+        elements: {
+          card: "border border-border/50 shadow-2xl shadow-brand/10",
+          headerTitle: "font-semibold text-lg",
+          headerSubtitle: "text-muted-foreground",
+          socialButtonsBlockButton: "border-border/50 hover:bg-muted/50 transition-colors",
+          formButtonPrimary: "font-medium shadow-md transition-transform hover:scale-[1.02] active:scale-95",
+        }
+      }}
+    >
       <html
         lang="en"
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}

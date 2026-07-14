@@ -49,7 +49,7 @@ Update this file after every completed feature. Any AI agent reading this should
 ### Phase 8 — Enterprise Readiness & Deployment
 - [x] 18 Enterprise Auth Migration (Clerk)
 - [x] 19 Workflow Event Queue & Admin Analytics Backend (Upstash Kafka)
-- [ ] 20 Observability (Sentry)
+- [x] 20 Observability (Sentry)
 - [ ] 21 Enterprise Integrations & DevOps (Docker + Jira)
 
 ---
