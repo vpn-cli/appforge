@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, X, Loader2, Send } from "lucide-react";
 
-export function CopilotPanel({ onApply, onStreamStart, onStream }: { onApply: (components: any[]) => void, onStreamStart?: () => void, onStream?: (text: string) => void }) {
+export function CopilotPanel({ onApply, onStreamStart, onStream }: { onApply: (components: unknown[]) => void, onStreamStart?: () => void, onStream?: (text: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -48,7 +48,8 @@ export function CopilotPanel({ onApply, onStreamStart, onStream }: { onApply: (c
         onApply(JSON.parse(finalText));
         setPrompt("");
       }
-    } catch (e: any) {
+    } catch (err) {
+      const e = err as Error;
       alert("Copilot Error: " + e.message);
     } finally {
       setIsGenerating(false);

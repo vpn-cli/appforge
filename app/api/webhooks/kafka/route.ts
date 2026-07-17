@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
     // Example: if (rawPayload.type === 'app_published') { incrementPublishCount() }
 
     return NextResponse.json({ success: true, processed: true }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Kafka Consumer] Failed to process webhook event:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }

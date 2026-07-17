@@ -1,8 +1,6 @@
 ﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Inter, JetBrains_Mono } from "next/font/google";
-import localFont from 'next/font/local';
 import { SmoothScroller } from "@/components/layout/SmoothScroller";
 import { CustomCursor } from "@/components/layout/CustomCursor";
 

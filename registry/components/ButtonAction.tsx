@@ -1,8 +1,8 @@
 ﻿import { Button } from "@/components/ui/button";
 import { ArrowRight, Save, Play, Plus, Search } from "lucide-react";
 
-export function ButtonAction({ label, variant = "default", icon, size = "default" }: { label?: string, variant?: "default" | "outline" | "secondary" | "ghost", icon?: string, size?: "default" | "sm" | "lg" | "icon" }) {
-  const iconMap: Record<string, React.FC<any>> = {
+export function ButtonAction({ label, variant = "default", icon }: { label?: string, variant?: "default" | "outline" | "secondary" | "ghost", icon?: string }) {
+  const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     search: Search,
     play: Play,
     plus: Plus,

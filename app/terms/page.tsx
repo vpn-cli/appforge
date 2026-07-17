@@ -4,11 +4,11 @@ import { createInsforgeServer } from "@/lib/insforge-server";
 
 export default async function TermsPage() {
   const supabase = await createInsforgeServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  await supabase.auth.getUser();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar userLoggedIn={!!user || process.env.NODE_ENV === "development"} />
+      <Navbar />
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-20 flex flex-col gap-8">
         <h1 className="text-4xl font-bold tracking-tight text-foreground">Terms of Service</h1>
         <div className="prose prose-invert max-w-none text-muted-foreground">

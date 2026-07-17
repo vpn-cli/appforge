@@ -10,7 +10,7 @@ export default async function LiveAppPage({ params }: { params: Promise<{ appId:
   const { data: { user } } = await supabase.auth.getUser();
 
   // Fetch the latest published configuration directly
-  let rawConfig: any = null;
+  let rawConfig: unknown = null;
 
   if (process.env.NODE_ENV === "development" && !user) {
     // DEV BYPASS: Fake published state
@@ -51,7 +51,7 @@ export default async function LiveAppPage({ params }: { params: Promise<{ appId:
          
          {/* Live Execution Loop via Registry Engine */}
          <div className="flex flex-col gap-8 w-full pb-32">
-           {rawConfig?.pages?.[0]?.components?.map((comp: any, i: number) => (
+           {(rawConfig as { pages?: { components: unknown[] }[] })?.pages?.[0]?.components?.map((comp: unknown, i: number) => (
              <RenderNode key={i} config={comp} />
            ))}
          </div>

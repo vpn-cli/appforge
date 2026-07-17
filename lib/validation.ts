@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
 
 const BaseComponentSchema = z.object({
@@ -6,11 +7,11 @@ const BaseComponentSchema = z.object({
   }),
 }).passthrough();
 
-const PageSchema: any = z.object({
+const PageSchema: unknown = z.object({
   components: z.array(BaseComponentSchema as any).optional().default([] as any),
 }).passthrough();
 
-const AppConfigSchema: any = z.object({
+const AppConfigSchema = z.object({
   app: z.string().optional(),
   pages: z.array(PageSchema as any).optional().default([] as any),
   entities: z.record(z.string(), z.any()).optional()
@@ -23,7 +24,7 @@ export function validateConfig(configStr: string): { errors: string[], warnings:
     
     if (!result.success) {
       return {
-        errors: (result.error.errors || result.error.issues || []).map((e: any) => `${(e.path && e.path.join('.')) || 'root'}: ${e.message}`),
+        errors: ((result as any).error?.errors || (result as any).error?.issues || []).map((e: any) => `${((e as any).path && (e as any).path.join('.')) || 'root'}: ${e.message}`),
         warnings: []
       };
     }

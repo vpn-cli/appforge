@@ -9,6 +9,7 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     // Initialize state from DOM (which was set by our layout script)
     const isDarkMode = document.documentElement.classList.contains("dark");

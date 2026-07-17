@@ -1,0 +1,21 @@
+D:\Projects\appforge\app\builder\[appId]\page.tsx:123:14 'e' is defined but never used.
+D:\Projects\appforge\app\builder\[appId]\page.tsx:136:13 'e' is defined but never used.
+D:\Projects\appforge\app\layout.tsx:4:10 'Inter' is defined but never used.
+D:\Projects\appforge\app\layout.tsx:4:17 'JetBrains_Mono' is defined but never used.
+D:\Projects\appforge\app\layout.tsx:5:8 'localFont' is defined but never used.
+D:\Projects\appforge\app\templates\page.tsx:6:8 'Link' is defined but never used.
+D:\Projects\appforge\app\templates\page.tsx:10:19 'user' is assigned a value but never used.
+D:\Projects\appforge\app\terms\page.tsx:7:19 'user' is assigned a value but never used.
+D:\Projects\appforge\components\builder\CopilotPanel.tsx:5:92 Unexpected any. Specify a different type.
+D:\Projects\appforge\components\builder\CopilotPanel.tsx:51:17 Unexpected any. Specify a different type.
+D:\Projects\appforge\components\builder\LivePreview.tsx:38:12 'e' is defined but never used.
+D:\Projects\appforge\components\builder\LivePreview.tsx:66:57 Unexpected any. Specify a different type.
+D:\Projects\appforge\components\homepage\Features.tsx:30:28 'i' is defined but never used.
+D:\Projects\appforge\components\homepage\Hero.tsx:4:10 'Code' is defined but never used.
+D:\Projects\appforge\components\homepage\Hero.tsx:4:32 'Activity' is defined but never used.
+D:\Projects\appforge\components\homepage\Hero.tsx:4:42 'Users' is defined but never used.
+D:\Projects\appforge\components\homepage\Hero.tsx:4:49 'TrendingUp' is defined but never used.
+D:\Projects\appforge\components\layout\ThemeToggle.tsx:16:5 Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect').
+D:\Projects\appforge\lib\event-queue.ts:18:27 Unexpected any. Specify a different type.
+D:\Projects\appforge\lib\event-queue.ts:30:80 Unexpected any. Specify a different type.
+D:\Projects\appforge\lib\insforge-server.ts:20:20 'error' is defined but never used.

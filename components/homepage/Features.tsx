@@ -27,7 +27,7 @@ export function Features() {
 
     // Fade up sections stagger on scroll
     const sections = gsap.utils.toArray<HTMLElement>('.feature-section');
-    sections.forEach((sec, i) => {
+    sections.forEach((sec) => {
       gsap.fromTo(sec, 
         { y: 80, opacity: 0 }, 
         {

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
 import { CopilotPanel } from "@/components/builder/CopilotPanel";
 import { LivePreview } from "@/components/builder/LivePreview";
@@ -83,16 +83,8 @@ export default function BuilderPage() {
      }
      return defaultMockConfig;
   });
-  const [errors, setErrors] = useState<string[]>([]);
-  const [warnings, setWarnings] = useState<string[]>([]);
+  const { errors, warnings } = useMemo(() => validateConfig(configStr), [configStr]);
   const [isSaving, setIsSaving] = useState(false);
-
-  // Continuously validate JSON on every change
-  useEffect(() => {
-    const results = validateConfig(configStr);
-    setErrors(results.errors);
-    setWarnings(results.warnings);
-  }, [configStr]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -100,8 +92,8 @@ export default function BuilderPage() {
       await import("@/actions/apps").then(m => m.saveAppConfig(appId, configStr));
       // Show generic browser alert until we put Sonner into `layout.tsx`
       alert("App Config saved and Backend Schema Synced!");
-    } catch (e: any) {
-      alert("Failed to save: " + e.message);
+    } catch (e: unknown) {
+      alert("Failed to save: " + (e as Error).message);
     } finally {
       setIsSaving(false);
     }
@@ -115,20 +107,20 @@ export default function BuilderPage() {
     try {
       await import("@/actions/apps").then(m => m.publishAppConfig(appId, configStr));
       window.location.href = `/apps/${appId}`;
-    } catch (e: any) {
-      alert("Publish Error: " + e.message);
+    } catch (e: unknown) {
+      alert("Publish Error: " + (e as Error).message);
     } finally {
       setIsPublishing(false);
     }
   };
 
-  const handleApplyCopilotComponents = (newComponents: any[]) => {
+  const handleApplyCopilotComponents = (newComponents: unknown[]) => {
     try {
       const currentConfig = JSON.parse(configStr);
       if (!currentConfig.pages) currentConfig.pages = [{}];
       currentConfig.pages[0].components = newComponents;
       setConfigStr(JSON.stringify(currentConfig, null, 2));
-    } catch (e) {
+    } catch {
       alert("Failed to weave AI structure into layout.");
     }
   };
@@ -141,7 +133,7 @@ export default function BuilderPage() {
       if (!currentConfig.pages) currentConfig.pages = [{}];
       currentConfig.pages[0].components = "<<<REPLACE>>>";
       streamTemplateRef.current = JSON.stringify(currentConfig, null, 2);
-    } catch(e) {
+    } catch {
       streamTemplateRef.current = JSON.stringify({ app: "AI Generated Template", pages: [{ components: "<<<REPLACE>>>" }] }, null, 2);
     }
   };

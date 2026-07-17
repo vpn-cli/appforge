@@ -3,15 +3,14 @@ import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createInsforgeServer } from "@/lib/insforge-server";
-import Link from "next/link";
 
 export default async function TemplatesPage() {
   const supabase = await createInsforgeServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  await supabase.auth.getUser();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar userLoggedIn={!!user || process.env.NODE_ENV === "development"} />
+      <Navbar />
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-24 flex flex-col gap-12">
         <div className="text-center mb-6">
            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">Starter Templates</h1>

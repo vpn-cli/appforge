@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { StatsBar } from "@/components/dashboard/StatsBar";
 import { AppGrid } from "@/components/dashboard/AppGrid";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { AppData } from "@/components/dashboard/AppGrid";
 import { getUserApps } from "@/actions/apps";
 
 async function DashboardContent() {
@@ -20,7 +21,7 @@ async function DashboardContent() {
     redirect("/login");
   }
 
-  const apps = await getUserApps();
+  const apps = (await getUserApps()) as AppData[];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

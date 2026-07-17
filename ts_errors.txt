@@ -1,0 +1,33 @@
+app/api/copilot/route.ts(105,59): error TS18046: 'error' is of type 'unknown'.
+app/api/copilot/route.ts(121,39): error TS18046: 'error' is of type 'unknown'.
+app/api/webhooks/kafka/route.ts(21,55): error TS18046: 'error' is of type 'unknown'.
+app/apps/[appId]/page.tsx(54,24): error TS2339: Property 'pages' does not exist on type '{}'.
+app/builder/[appId]/page.tsx(96,34): error TS18046: 'e' is of type 'unknown'.
+app/builder/[appId]/page.tsx(111,33): error TS18046: 'e' is of type 'unknown'.
+app/dashboard/page.tsx(50,22): error TS2322: Type '{ status: string; }[] | { id: string; name: string; updated_at: string; status: string; }[]' is not assignable to type 'AppData[]'.
+  Type '{ status: string; }[]' is not assignable to type 'AppData[]'.
+    Type '{ status: string; }' is missing the following properties from type 'AppData': id, name, updated_at
+lib/event-queue.ts(56,89): error TS18046: 'error' is of type 'unknown'.
+lib/event-queue.ts(59,39): error TS18046: 'error' is of type 'unknown'.
+lib/validation.ts(22,20): error TS18046: 'AppConfigSchema' is of type 'unknown'.
+lib/validation.ts(26,92): error TS18046: 'e' is of type 'unknown'.
+lib/validation.ts(26,102): error TS18046: 'e' is of type 'unknown'.
+lib/validation.ts(26,134): error TS18046: 'e' is of type 'unknown'.
+lib/validation.ts(39,40): error TS18046: 'e' is of type 'unknown'.
+registry/index.tsx(7,3): error TS2322: Type '({ title, subtitle, size }: { title?: string | undefined; subtitle?: string | undefined; size?: "sm" | "lg" | "md" | undefined; }) => Element' is not assignable to type 'ComponentType<unknown>'.
+  Type '({ title, subtitle, size }: { title?: string | undefined; subtitle?: string | undefined; size?: "sm" | "lg" | "md" | undefined; }) => Element' is not assignable to type 'FunctionComponent<unknown>'.
+    Types of parameters '__0' and 'props' are incompatible.
+      Type 'unknown' is not assignable to type '{ title?: string | undefined; subtitle?: string | undefined; size?: "sm" | "lg" | "md" | undefined; }'.
+registry/index.tsx(8,3): error TS2322: Type '({ label, variant, icon }: { label?: string | undefined; variant?: "default" | "outline" | "secondary" | "ghost" | undefined; icon?: string | undefined; }) => Element' is not assignable to type 'ComponentType<unknown>'.
+  Type '({ label, variant, icon }: { label?: string | undefined; variant?: "default" | "outline" | "secondary" | "ghost" | undefined; icon?: string | undefined; }) => Element' is not assignable to type 'FunctionComponent<unknown>'.
+    Types of parameters '__0' and 'props' are incompatible.
+      Type 'unknown' is not assignable to type '{ label?: string | undefined; variant?: "default" | "outline" | "secondary" | "ghost" | undefined; icon?: string | undefined; }'.
+registry/index.tsx(9,3): error TS2322: Type '({ title, subtitle, content, footer }: { title?: string | undefined; subtitle?: string | undefined; content?: unknown[] | undefined; footer?: unknown[] | undefined; }) => Element' is not assignable to type 'ComponentType<unknown>'.
+  Type '({ title, subtitle, content, footer }: { title?: string | undefined; subtitle?: string | undefined; content?: unknown[] | undefined; footer?: unknown[] | undefined; }) => Element' is not assignable to type 'FunctionComponent<unknown>'.
+    Types of parameters '__0' and 'props' are incompatible.
+      Type 'unknown' is not assignable to type '{ title?: string | undefined; subtitle?: string | undefined; content?: unknown[] | undefined; footer?: unknown[] | undefined; }'.
+registry/index.tsx(10,3): error TS2322: Type '({ columns, gap, items }: { columns?: string | number | undefined; gap?: string | number | undefined; items?: unknown[] | undefined; }) => Element' is not assignable to type 'ComponentType<unknown>'.
+  Type '({ columns, gap, items }: { columns?: string | number | undefined; gap?: string | number | undefined; items?: unknown[] | undefined; }) => Element' is not assignable to type 'FunctionComponent<unknown>'.
+    Types of parameters '__0' and 'props' are incompatible.
+      Type 'unknown' is not assignable to type '{ columns?: string | number | undefined; gap?: string | number | undefined; items?: unknown[] | undefined; }'.
+registry/index.tsx(16,11): error TS2339: Property 'type' does not exist on type '{}'.

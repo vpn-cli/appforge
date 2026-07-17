@@ -2,7 +2,7 @@
 //acts as a parser for the app config and generates the ddl commands for the app
 import { createInsforgeServer } from "@/lib/insforge-server";
 
-export async function syncAppSchema(appId: string, entities: any) {
+export async function syncAppSchema(appId: string, entities: unknown) {
   const supabase = await createInsforgeServer();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -18,7 +18,7 @@ export async function syncAppSchema(appId: string, entities: any) {
   }
 
   const cleanAppId = appId.replace(/-/g, '_');
-  let ddlCommands = [];
+  const ddlCommands = [];
 
   for (const [entityName, fields] of Object.entries(entities)) {
     // Sanitize entity name

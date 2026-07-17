@@ -100,9 +100,9 @@ export async function POST(req: Request) {
             }
           }
           controller.close();
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error("[Copilot Streaming Error]", error);
-          controller.enqueue(encoder.encode(`\n[ERROR]: ${error.message}`));
+          controller.enqueue(encoder.encode(`\n[ERROR]: ${(error as Error).message}`));
           controller.close();
         }
       }
@@ -116,8 +116,8 @@ export async function POST(req: Request) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Copilot API Error]", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

@@ -35,7 +35,7 @@ export function LivePreview({ configStr }: { configStr: string }) {
     if (!isStreaming) {
       config = JSON.parse(configStr);
     }
-  } catch (e) {
+  } catch {
     parseError = true;
   }
 
@@ -63,7 +63,7 @@ export function LivePreview({ configStr }: { configStr: string }) {
             transition={{ duration: 0.4 }}
             className="max-w-4xl mx-auto flex flex-col gap-8 pb-32"
           >
-            {config?.pages?.[0]?.components?.map((comp: any, i: number) => (
+            {config?.pages?.[0]?.components?.map((comp: Record<string, unknown>, i: number) => (
                <RenderNode key={i} config={comp} />
             )) || (
                <div className="flex flex-col items-center justify-center text-muted-foreground py-24 border border-dashed border-border rounded-xl bg-card/10">

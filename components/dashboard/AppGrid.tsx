@@ -7,7 +7,7 @@ import Link from "next/link";
 import { createApp } from "@/actions/apps";
 import { useTransition } from "react";
 
-type AppData = {
+export type AppData = {
   id: string;
   name: string;
   updated_at: string;

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { Code, LayoutTemplate, Activity, Users, TrendingUp } from "lucide-react";
+import { LayoutTemplate } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 

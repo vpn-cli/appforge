@@ -15,7 +15,7 @@ export interface SystemEvent {
   id: string;
   type: EventType;
   timestamp: string;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 }
 
 /**
@@ -27,7 +27,7 @@ export class EventPublisher {
   /**
    * Pushes an asynchronous fire-and-forget payload into the specified Kafka Topic.
    */
-  static async publish(topic: string, type: EventType, payload: Record<string, any>) {
+  static async publish(topic: string, type: EventType, payload: Record<string, unknown>) {
     try {
       // Validate credentials quickly to prevent hanging the Vercel branch unnecessarily
       if (!process.env.UPSTASH_KAFKA_REST_URL) {
@@ -52,11 +52,11 @@ export class EventPublisher {
       });
 
       return { success: true };
-    } catch (error: any) {
-      console.error(`[EventPublisher] CRITICAL FAILURE pushing into Kafka [${topic}]:`, error.message);
+    } catch (error: unknown) {
+      console.error(`[EventPublisher] CRITICAL FAILURE pushing into Kafka [${topic}]:`, (error as Error).message);
       // We purposefully DO NOT throw an error down further so as not to 
       // brick the User's UI flow (e.g., stopping a save just because analytics failed).
-      return { success: false, error: error.message };
+      return { success: false, error: (error as Error).message };
     }
   }
 }

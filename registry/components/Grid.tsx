@@ -1,6 +1,6 @@
 ﻿import { RenderNode } from "../index";
 
-export function Grid({ columns = 2, gap = 6, items = [] }: { columns?: number | string, gap?: number | string, items?: any[] }) {
+export function Grid({ columns = 2, gap = 6, items = [] }: { columns?: number | string, gap?: number | string, items?: unknown[] }) {
   // A mapping to safely compile Tailwind grid classes without runtime arbitrary values breaking
   const colMap: Record<string, string> = {
     "1": "md:grid-cols-1",

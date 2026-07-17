@@ -30,7 +30,7 @@ export async function getUserApps() {
     return [];
   }
 
-  return data.map((app: any) => ({
+  return data.map((app: Record<string, unknown>) => ({
     ...app,
     status: app.published_config ? "Published" : "Draft"
   }));
@@ -104,9 +104,9 @@ export async function saveAppConfig(appId: string, configStr: string) {
     console.log("[DEV BYPASS] Mocking Save App Config for:", appId);
     // Trigger mock schema sync for testing
     let rawConfig = {};
-    try { rawConfig = JSON.parse(configStr); } catch (e) {}
-    if ((rawConfig as any).entities) {
-      await syncAppSchema(appId, (rawConfig as any).entities);
+    try { rawConfig = JSON.parse(configStr); } catch { /* ignore */ }
+    if ((rawConfig as Record<string, unknown>).entities) {
+      await syncAppSchema(appId, (rawConfig as Record<string, unknown>).entities);
     }
     return { success: true };
   }
@@ -116,7 +116,7 @@ export async function saveAppConfig(appId: string, configStr: string) {
   let rawConfig = {};
   try {
     rawConfig = JSON.parse(configStr);
-  } catch (e) {
+  } catch {
     throw new Error("Invalid JSON configuration. Cannot save.");
   }
 
@@ -132,8 +132,8 @@ export async function saveAppConfig(appId: string, configStr: string) {
   }
 
   // Trigger schema synchronization if entities exist
-  if ((rawConfig as any).entities) {
-    const syncRes = await syncAppSchema(appId, (rawConfig as any).entities);
+  if ((rawConfig as Record<string, unknown>).entities) {
+    const syncRes = await syncAppSchema(appId, (rawConfig as Record<string, unknown>).entities);
     if (!syncRes.success) {
       console.warn("Schema Sync Warning:", syncRes.message);
       // We purposefully do not throw an error here to prevent blocking the UI save success entirely
@@ -157,7 +157,7 @@ export async function publishAppConfig(appId: string, configStr: string) {
   let rawConfig = {};
   try {
     rawConfig = JSON.parse(configStr);
-  } catch (e) {
+  } catch {
     throw new Error("Invalid json format.");
   }
 

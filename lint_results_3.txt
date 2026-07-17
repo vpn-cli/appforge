@@ -1,0 +1,3 @@
+D:\Projects\appforge\app\apps\[appId]\page.tsx:54:27 Unexpected any. Specify a different type.
+D:\Projects\appforge\app\builder\[appId]\page.tsx:136:13 'e' is defined but never used.
+D:\Projects\appforge\app\dashboard\page.tsx:23:41 Unexpected any. Specify a different type.
