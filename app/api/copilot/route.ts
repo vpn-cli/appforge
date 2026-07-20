@@ -15,11 +15,15 @@ The AppForge deterministic engine parses JSON dynamically. You can ONLY use the 
    Props: title (string), subtitle (string), content (array of components), footer (array of components)
 4. "Grid"
    Props: columns (number 1-4), gap (number 2, 4, 6, 8), items (array of components)
+5. "Statistic"
+   Props: label (string), value (string), trend ("up" | "down" | "neutral"), trendValue (string)
+6. "DataTable"
+   Props: columns (array of strings), data (array of objects mapping column explicitly to string/number values)
 
 RULES:
 - Return ONLY valid JSON array representing the "components" block.
 - Do NOT output markdown code blocks (e.g., no \`\`\`json). Just the raw array.
-- Compose components recursively (e.g. Grids contain Cards, Cards contain Headers/Buttons).
+- Compose components recursively (e.g. Grids contain Cards, Cards contain Headers/DataTables).
 
 Example Output:
 [
@@ -36,7 +40,22 @@ Example Output:
         "type": "Card",
         "title": "Analytics",
         "content": [
-          { "type": "ButtonAction", "label": "View Report", "icon": "search" }
+          {
+            "type": "Grid",
+            "columns": 2,
+            "items": [
+              { "type": "Statistic", "label": "Revenue", "value": "$45,000", "trend": "up", "trendValue": "12%" },
+              { "type": "Statistic", "label": "Churn", "value": "2.4%", "trend": "down", "trendValue": "0.4%" }
+            ]
+          },
+          {
+            "type": "DataTable",
+            "columns": ["Name", "Status"],
+            "data": [
+              { "Name": "Alice", "Status": "Active" },
+              { "Name": "Bob", "Status": "Pending" }
+            ]
+          }
         ]
       }
     ]

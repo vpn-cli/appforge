@@ -69,7 +69,7 @@ export function CopilotPanel({ onApply, onStreamStart, onStream }: { onApply: (c
   }
 
   return (
-    <div className="absolute bottom-6 left-6 z-50 w-[400px] bg-card border border-border shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200">
+    <div className="absolute bottom-6 left-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] max-w-[400px] bg-card border border-border shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200">
       <div className="bg-gradient-to-r from-purple-600/10 to-indigo-600/10 p-4 border-b border-white/5 flex items-center justify-between">
          <div className="flex items-center gap-2">
            <Sparkles className="w-4 h-4 text-purple-400" />

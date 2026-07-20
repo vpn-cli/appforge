@@ -27,7 +27,7 @@ async function DashboardContent() {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-10 flex flex-col gap-10">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 pt-10 pb-24 sm:pb-10 flex flex-col gap-10">
         
         {/* Header section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">

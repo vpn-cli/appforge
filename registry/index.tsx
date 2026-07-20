@@ -3,12 +3,17 @@
 import { ButtonAction } from "./components/ButtonAction";
 import { Card } from "./components/Card";
 import { Grid } from "./components/Grid";
+import { Statistic } from "./components/Statistic";
+import { DataTable } from "./components/DataTable";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 export const ComponentRegistry: Record<string, React.ComponentType<any>> = {
   Header,
   ButtonAction,
   Card,
   Grid,
+  Statistic,
+  DataTable,
 };
 
 export function RenderNode({ config }: { config: unknown }) {
@@ -36,6 +41,10 @@ export function RenderNode({ config }: { config: unknown }) {
     );
   }
 
-  return <Component {...props} />;
+  return (
+    <ErrorBoundary componentName={type}>
+      <Component {...props} />
+    </ErrorBoundary>
+  );
 }
 

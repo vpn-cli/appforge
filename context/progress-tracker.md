@@ -44,7 +44,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 7 — Final Tweaks
 - [x] 17 Visual Polish & Theming (Global Dark Mode, Shadcn/Anime.js/Framer Parallax, Smooth Loading Animations, Bento Component Overhaul, Custom SVG Logo)
-- [ ] 17b Mobile Responsiveness Polish (Deferred to post-Phase 8 integration)
+- [x] 17b Mobile Responsiveness Polish (Builder split panes and mobile dashboards)
 
 ### Phase 8 — Enterprise Readiness & Deployment
 - [x] 18 Enterprise Auth Migration (Clerk)

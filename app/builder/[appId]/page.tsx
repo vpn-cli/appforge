@@ -91,7 +91,7 @@ export default function BuilderPage() {
     try {
       await import("@/actions/apps").then(m => m.saveAppConfig(appId, configStr));
       // Show generic browser alert until we put Sonner into `layout.tsx`
-      alert("App Config saved and Backend Schema Synced!");
+      alert("Saved.");
     } catch (e: unknown) {
       alert("Failed to save: " + (e as Error).message);
     } finally {
@@ -106,6 +106,7 @@ export default function BuilderPage() {
     setIsPublishing(true);
     try {
       await import("@/actions/apps").then(m => m.publishAppConfig(appId, configStr));
+      alert("Published.");
       window.location.href = `/apps/${appId}`;
     } catch (e: unknown) {
       alert("Publish Error: " + (e as Error).message);
@@ -190,9 +191,9 @@ export default function BuilderPage() {
       </div>
 
       {/* Workspace Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden overflow-y-auto md:overflow-hidden">
         {/* Left Side: Editor & Validation */}
-        <div className="w-1/2 flex flex-col min-w-[300px] border-r border-border bg-card/50">
+        <div className="w-full md:w-1/2 flex flex-col min-h-[50vh] md:min-h-0 border-b md:border-b-0 md:border-r border-border bg-card/50">
           <div className="flex-1 min-h-0 relative">
              <ConfigEditor 
                value={configStr} 
@@ -210,7 +211,7 @@ export default function BuilderPage() {
         </div>
 
         {/* Right Side: Live Preview */}
-        <div className="w-1/2 min-w-[300px] bg-background">
+        <div className="w-full md:w-1/2 min-h-[50vh] bg-background">
           <LivePreview configStr={configStr} />
         </div>
       </div>

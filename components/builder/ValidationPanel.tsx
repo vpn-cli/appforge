@@ -21,7 +21,7 @@ export function ValidationPanel({ errors, warnings }: ValidationPanelProps) {
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-2.5" data-lenis-prevent>
+      <div className="flex-1 overflow-y-auto p-4 space-y-2.5" data-lenis-prevent aria-live="polite">
         {errors.length === 0 && warnings.length === 0 && (
           <div className="flex items-center text-[#27C93F] text-xs font-medium tracking-wide gap-2.5">
             <CheckCircle2 className="w-4 h-4" />
