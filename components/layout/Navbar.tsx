@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs";
+import { Menu, X } from "lucide-react";
 
 export function Navbar() {
   const [isHovered, setIsHovered] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const container: Variants = {
     hidden: { opacity: 0 },
@@ -29,7 +31,7 @@ export function Navbar() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="max-w-7xl mx-auto px-4 w-full flex items-center justify-between py-4 border-b border-border relative z-50"
+      className="max-w-7xl mx-auto px-4 w-full flex items-center justify-between py-4 border-b border-border relative z-50 bg-background"
     >
       <Link 
         href="/" 
@@ -55,6 +57,7 @@ export function Navbar() {
         </div>
       </Link>
 
+      {/* Desktop Links */}
       <motion.nav 
         variants={container}
         initial="hidden"
@@ -74,30 +77,32 @@ export function Navbar() {
         ))}
       </motion.nav>
 
+      {/* Desktop Actions & Mobile Trigger */}
       <motion.div 
         variants={container}
         initial="hidden"
         animate="show"
-        className="flex items-center gap-4"
+        className="flex items-center gap-2 sm:gap-4"
       >
         <SignedIn>
-          <motion.div variants={item} className="flex gap-4 items-center">
+          <motion.div variants={item} className="flex gap-2 sm:gap-4 items-center">
             <ThemeToggle />
             <UserButton appearance={{ elements: { avatarBox: "w-9 h-9 border-2 border-brand/20 shadow-md" } }} />
           </motion.div>
         </SignedIn>
+        
         <SignedOut>
           <motion.div variants={item} className="flex items-center gap-2">
             <ThemeToggle />
           </motion.div>
-          <motion.div variants={item}>
+          <motion.div variants={item} className="hidden sm:block">
             <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
               <Button variant="ghost" className="text-sm font-medium hover:bg-muted">
                 Log in
               </Button>
             </SignInButton>
           </motion.div>
-          <motion.div variants={item} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <motion.div variants={item} className="hidden sm:block" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
               <Button className="bg-brand hover:bg-brand-dark text-white shadow-md shadow-brand/20">
                 Start for free
@@ -105,7 +110,57 @@ export function Navbar() {
             </SignInButton>
           </motion.div>
         </SignedOut>
+
+        {/* Mobile Hamburger Toggle */}
+        <motion.button
+          variants={item}
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden p-2 ml-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+          aria-label="Toggle Menu"
+        >
+          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </motion.button>
       </motion.div>
+
+      {/* Mobile Dropdown Panel */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
+            animate={{ opacity: 1, height: "auto", borderBottomWidth: 1 }}
+            exit={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="absolute top-full left-0 w-full bg-background border-border shadow-2xl flex flex-col md:hidden overflow-hidden origin-top z-40"
+          >
+            <div className="p-4 flex flex-col gap-3">
+              {["Dashboard", "Builder", "Templates"].map((text) => (
+                <Link 
+                  key={text}
+                  href={text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-foreground text-sm font-semibold p-3 hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border/50"
+                >
+                  {text}
+                </Link>
+              ))}
+              
+              <SignedOut>
+                <div className="h-[1px] w-full bg-border/50 my-2" />
+                <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+                  <Button variant="outline" className="w-full justify-center h-10 border-border">
+                    Log in
+                  </Button>
+                </SignInButton>
+                <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+                  <Button className="w-full justify-center h-10 bg-brand hover:bg-brand-dark text-white shadow-brand/20">
+                    Start for free
+                  </Button>
+                </SignInButton>
+              </SignedOut>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 }

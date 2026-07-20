@@ -55,6 +55,12 @@ export default function RootLayout({
       >
         <body className="min-h-full flex flex-col font-sans cursor-none">
           <CustomCursor />
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-4 focus:left-4 focus:bg-brand focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            Skip to Main Content
+          </a>
           {/* Native SSR-safe dark mode injection to bypass React 19 use-client script warnings */}
           <script dangerouslySetInnerHTML={{
             __html: `

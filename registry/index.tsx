@@ -17,6 +17,17 @@ export const ComponentRegistry: Record<string, React.ComponentType<any>> = {
 };
 
 export function RenderNode({ config }: { config: unknown }) {
+  if (config === "<<<REPLACE>>>") {
+    return (
+      <div className="w-full h-32 bg-muted/20 animate-pulse rounded-2xl border border-dashed border-border/50 flex items-center justify-center shadow-inner overflow-hidden relative">
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.02)_50%,transparent_75%)] bg-[length:250%_250%] animate-[skeleton-shine_2s_infinite_linear]" />
+        <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase relative z-10 opacity-70">
+          Synthesizing Component Structure...
+        </span>
+      </div>
+    );
+  }
+  
   if (!config || typeof config !== 'object') return null;
   
   const { type, ...props } = config as { type: string, [key: string]: unknown };

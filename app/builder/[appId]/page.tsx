@@ -85,6 +85,7 @@ export default function BuilderPage() {
   });
   const { errors, warnings } = useMemo(() => validateConfig(configStr), [configStr]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -126,24 +127,19 @@ export default function BuilderPage() {
     }
   };
 
-  const streamTemplateRef = useRef<string | null>(null);
-
   const handleStreamStart = () => {
+    setIsGenerating(true);
     try {
       const currentConfig = JSON.parse(configStr);
       if (!currentConfig.pages) currentConfig.pages = [{}];
       currentConfig.pages[0].components = "<<<REPLACE>>>";
-      streamTemplateRef.current = JSON.stringify(currentConfig, null, 2);
+      setConfigStr(JSON.stringify(currentConfig, null, 2));
     } catch {
-      streamTemplateRef.current = JSON.stringify({ app: "AI Generated Template", pages: [{ components: "<<<REPLACE>>>" }] }, null, 2);
+      setConfigStr(JSON.stringify({ app: "AI Generated Template", pages: [{ components: "<<<REPLACE>>>" }] }, null, 2));
     }
   };
 
-  const handleStream = (rawText: string) => {
-    if (streamTemplateRef.current) {
-      setConfigStr(streamTemplateRef.current.replace('"<<<REPLACE>>>"', rawText));
-    }
-  };
+  const handleStreamEnd = () => setIsGenerating(false);
 
   return (
     <div className="flex flex-col h-screen w-full bg-background overflow-hidden">
@@ -162,7 +158,9 @@ export default function BuilderPage() {
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center text-xs text-muted-foreground mr-4">
-             {errors.length > 0 ? (
+             {isGenerating ? (
+               <span className="text-[#A78BFA] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#A78BFA] before:rounded-full before:mr-2 before:animate-pulse">Generating</span>
+             ) : errors.length > 0 ? (
                <span className="text-[#FF5F56] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#FF5F56] before:rounded-full before:mr-2">Has Errors</span>
              ) : (
                <span className="text-[#27C93F] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#27C93F] before:rounded-full before:mr-2">Ready</span>
@@ -202,11 +200,11 @@ export default function BuilderPage() {
              <CopilotPanel 
                onApply={handleApplyCopilotComponents} 
                onStreamStart={handleStreamStart}
-               onStream={handleStream}
+               onStreamEnd={handleStreamEnd}
              />
           </div>
           <div className="h-48 shrink-0">
-             <ValidationPanel errors={errors} warnings={warnings} />
+             <ValidationPanel errors={errors} warnings={warnings} isGenerating={isGenerating} />
           </div>
         </div>
 
