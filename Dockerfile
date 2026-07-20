@@ -18,6 +18,15 @@ COPY . .
 
 # Temporarily disable telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Supply simulated build-time environment variables so Next.js static prerendering (Clerk) doesn't crash the container execution
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Y2xlcmsuYXBwZm9yZ2UuY29tJA==
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_INSFORGE_URL=https://dummy.supabase.co
+ENV NEXT_PUBLIC_INSFORGE_URL=$NEXT_PUBLIC_INSFORGE_URL
+ARG NEXT_PUBLIC_INSFORGE_ANON_KEY=dummy
+ENV NEXT_PUBLIC_INSFORGE_ANON_KEY=$NEXT_PUBLIC_INSFORGE_ANON_KEY
+
 RUN npm run build
 
 # Stage 4: Production server (Standalone)
