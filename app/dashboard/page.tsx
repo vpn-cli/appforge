@@ -32,10 +32,15 @@ async function DashboardContent() {
   };
 
   apps.forEach(app => {
+    interface PageSchema { components?: unknown[] }
+    interface ConfigSchema { pages?: PageSchema[] }
+    
     // Dynamically calculate component usage structurally looking inside JSON configs
-    const config = (app as any).published_config || (app as any).config;
+    const appData = app as unknown as { published_config?: ConfigSchema, config?: ConfigSchema };
+    const config = appData.published_config || appData.config;
+    
     if (config?.pages) {
-      config.pages.forEach((p: any) => {
+      config.pages.forEach(p => {
         counts.components += p.components?.length || 0;
       });
     }

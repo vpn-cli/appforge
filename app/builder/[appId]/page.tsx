@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
 import { CopilotPanel } from "@/components/builder/CopilotPanel";
 import { LivePreview } from "@/components/builder/LivePreview";

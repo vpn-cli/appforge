@@ -46,14 +46,14 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
         const chunk = decoder.decode(value, { stream: true });
         streamedText += chunk;
         
-        // Strip markdown if present to ensure clean JSON injection
-        const cleanText = streamedText.replace(/```json/g, "").replace(/```/g, "").trim();
+        // Pass the raw chunk stream directly to the UI without heavy parsing
         if (onStream) {
-           onStream(cleanText);
+           onStream(streamedText);
         }
       }
 
-      const finalText = streamedText.replace(/```json/g, "").replace(/```/g, "").trim();
+      // ONLY run the heavy RegEx sequence exactly once when the entire stream finishes!
+      const finalText = streamedText.replace(/```json/gi, "").replace(/```/g, "").trim();
       if (finalText) {
         onApply(JSON.parse(finalText));
         setMessages(prev => [...prev, { role: "ai", content: "I've updated the canvas with your requested changes!" }]);
