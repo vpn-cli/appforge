@@ -6,10 +6,17 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [messages, setMessages] = useState<{ role: "ai" | "user"; content: string }[]>([
+    { role: "ai", content: "I am ready to build! Ask me to generate headers, grids, buttons, or full dashboard layouts for you." }
+  ]);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim() || isGenerating) return;
+
+    const currentPrompt = prompt;
+    setMessages(prev => [...prev, { role: "user", content: currentPrompt }]);
+    setPrompt("");
 
     setIsGenerating(true);
     let streamedText = "";
@@ -22,7 +29,10 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
         body: JSON.stringify({ prompt })
       });
 
-      if (!res.ok) throw new Error("Failed to generate.");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to generate.");
+      }
 
       const reader = res.body?.getReader();
       if (!reader) throw new Error("No readable stream.");
@@ -46,11 +56,15 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
       const finalText = streamedText.replace(/```json/g, "").replace(/```/g, "").trim();
       if (finalText) {
         onApply(JSON.parse(finalText));
-        setPrompt("");
+        setMessages(prev => [...prev, { role: "ai", content: "I've updated the canvas with your requested changes!" }]);
       }
     } catch (err) {
       const e = err as Error;
-      alert("Copilot Error: " + e.message);
+      if (e.message && (e.message.includes("exhausted") || e.message.includes("429"))) {
+        setMessages(prev => [...prev, { role: "ai", content: "All configured Gemini API Keys have exhausted their daily quotas. Please add GEMINI_API_KEY_2 to your .env.local file to continue." }]);
+      } else {
+        setMessages(prev => [...prev, { role: "ai", content: `Sorry, I encountered an error: ${e.message}` }]);
+      }
     } finally {
       setIsGenerating(false);
       if (onStreamEnd) onStreamEnd();
@@ -81,10 +95,39 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
          </button>
       </div>
 
-      <div className="p-4 bg-background/50 h-32 overflow-y-auto text-xs text-muted-foreground flex flex-col justify-end">
-          <div className="bg-muted/50 rounded-lg p-3 border border-white/5 inline-block w-[85%] mb-2 self-start rounded-tl-sm">
-             I am ready to build! Ask me to generate headers, grids, buttons, or full dashboard layouts for you.
-          </div>
+      <div className="w-full bg-background/50 h-[300px] max-h-[300px] overflow-y-auto p-4 text-xs font-medium flex flex-col justify-start space-y-4 scroll-smooth">
+         {messages.map((m, i) => (
+           <div key={i} className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+             <div 
+               className={`p-3 max-w-[85%] shadow-sm ${
+                 m.role === 'user' 
+                   ? 'bg-purple-600 text-white text-left rounded-2xl' 
+                   : 'bg-muted border border-white/5 text-foreground rounded-2xl'
+               }`}
+               style={{
+                 borderTopRightRadius: m.role === 'user' ? '4px' : undefined,
+                 borderTopLeftRadius: m.role === 'ai' ? '4px' : undefined,
+                 border: m.role === 'user' ? '1px solid rgba(192, 132, 252, 0.5)' : undefined
+               }}
+             >
+                {m.role === 'ai' && i === 0 && (
+                  <div className="flex items-center gap-1.5 mb-1 text-purple-400">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">AppForge</span>
+                  </div>
+                )}
+                <span className="leading-relaxed whitespace-pre-wrap">{m.content}</span>
+             </div>
+           </div>
+         ))}
+         {isGenerating && (
+           <div className="flex w-full justify-start">
+             <div className="bg-muted border border-border text-foreground rounded-2xl rounded-tl-sm p-3 inline-flex items-center gap-2.5 shadow-sm max-w-[85%]">
+               <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-500" />
+               <span className="leading-relaxed">Synthesizing UI...</span>
+             </div>
+           </div>
+         )}
       </div>
 
       <form onSubmit={handleGenerate} className="p-3 border-t border-border bg-card flex items-center gap-2">
@@ -92,7 +135,7 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
            type="text" 
            value={prompt}
            onChange={e => setPrompt(e.target.value)}
-           placeholder="e.g. Generate a dark-mode CRM interface..."
+           placeholder="e.g. Generate a dark-mode CRM interface... (Testing Hot Reload)"
            className="flex-1 bg-muted border border-border rounded-full h-10 px-4 text-sm text-foreground focus:outline-none focus:border-purple-500/50 transition-colors"
            disabled={isGenerating}
         />
@@ -102,7 +145,7 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
            size="icon"
            className="w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-700 text-white flex-shrink-0 shadow-md shadow-purple-600/20"
         >
-          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 ml-0.5" />}
         </Button>
       </form>
     </div>

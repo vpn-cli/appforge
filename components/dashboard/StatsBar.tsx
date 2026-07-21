@@ -1,30 +1,30 @@
 ﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppWindow, Layers, AlertCircle, Zap } from "lucide-react";
 
-export function StatsBar() {
+export function StatsBar({ counts = { apps: 12, components: 14392, drafts: 3, published: 1244 } }: { counts?: { apps: number, components: number, drafts: number, published: number } }) {
   const stats = [
     {
       title: "Apps Created",
-      value: "12",
-      change: "+2 from last month",
+      value: counts.apps.toString(),
+      change: "Total registered",
       icon: <AppWindow className="h-4 w-4 text-brand" />,
     },
     {
       title: "Components Rendered",
-      value: "14,392",
-      change: "+8% from last week",
+      value: counts.components.toLocaleString(),
+      change: "Across all apps",
       icon: <Layers className="h-4 w-4 text-[#FFBD2E]" />,
     },
     {
-      title: "Validation Issues",
-      value: "3",
-      change: "Requires attention",
+      title: "Drafts (Action Req)",
+      value: counts.drafts.toString(),
+      change: "Unpublished edits",
       icon: <AlertCircle className="h-4 w-4 text-[#FF5F56]" />,
     },
     {
       title: "Active Workflows",
-      value: "1,244",
-      change: "+12% overall",
+      value: counts.published.toString(),
+      change: "Live deployments",
       icon: <Zap className="h-4 w-4 text-[#27C93F]" />,
     },
   ];

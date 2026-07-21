@@ -24,6 +24,23 @@ async function DashboardContent() {
 
   const apps = (await getUserApps()) as AppData[];
 
+  const counts = {
+    apps: apps.length,
+    components: 0,
+    drafts: apps.filter(a => a.status !== "Published").length,
+    published: apps.filter(a => a.status === "Published").length,
+  };
+
+  apps.forEach(app => {
+    // Dynamically calculate component usage structurally looking inside JSON configs
+    const config = (app as any).published_config || (app as any).config;
+    if (config?.pages) {
+      config.pages.forEach((p: any) => {
+        counts.components += p.components?.length || 0;
+      });
+    }
+  });
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
@@ -42,7 +59,7 @@ async function DashboardContent() {
         </div>
 
         {/* Stats Strip */}
-        <StatsBar />
+        <StatsBar counts={counts} />
 
         {/* Main Layout Area */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 mb-10">
@@ -55,7 +72,7 @@ async function DashboardContent() {
           <div className="col-span-1 xl:col-span-1 border-t xl:border-t-0 pt-8 xl:pt-0">
             <h2 className="text-lg font-bold text-foreground mb-5 uppercase tracking-wider text-xs xl:invisible hidden xl:block">Activity</h2>
             <div className="sticky top-6">
-              <RecentActivity />
+              <RecentActivity apps={apps} />
             </div>
           </div>
           

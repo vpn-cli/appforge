@@ -2,66 +2,15 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { rateLimit } from "@/lib/rate-limit";
 
-const SYSTEM_PROMPT = `
-You are the AppForge AI Copilot. Your role is to translate user natural language requests directly into a valid AppForge JSON configuration array.
-
-The AppForge deterministic engine parses JSON dynamically. You can ONLY use the following components and schemas:
-
-1. "Header"
-   Props: title (string), subtitle (string), size ("sm" | "md" | "lg")
-2. "ButtonAction"
-   Props: label (string), variant ("default" | "outline" | "secondary" | "ghost"), icon (string: "arrow-right", "save", "play", "plus", "search")
-3. "Card"
-   Props: title (string), subtitle (string), content (array of components), footer (array of components)
-4. "Grid"
-   Props: columns (number 1-4), gap (number 2, 4, 6, 8), items (array of components)
-5. "Statistic"
-   Props: label (string), value (string), trend ("up" | "down" | "neutral"), trendValue (string)
-6. "DataTable"
-   Props: columns (array of strings), data (array of objects mapping column explicitly to string/number values)
-
-RULES:
-- Return ONLY valid JSON array representing the "components" block.
-- Do NOT output markdown code blocks (e.g., no \`\`\`json). Just the raw array.
-- Compose components recursively (e.g. Grids contain Cards, Cards contain Headers/DataTables).
-
-Example Output:
-[
-  {
-    "type": "Header",
-    "title": "Welcome User",
-    "size": "lg"
-  },
-  {
-    "type": "Grid",
-    "columns": 2,
-    "items": [
-      {
-        "type": "Card",
-        "title": "Analytics",
-        "content": [
-          {
-            "type": "Grid",
-            "columns": 2,
-            "items": [
-              { "type": "Statistic", "label": "Revenue", "value": "$45,000", "trend": "up", "trendValue": "12%" },
-              { "type": "Statistic", "label": "Churn", "value": "2.4%", "trend": "down", "trendValue": "0.4%" }
-            ]
-          },
-          {
-            "type": "DataTable",
-            "columns": ["Name", "Status"],
-            "data": [
-              { "Name": "Alice", "Status": "Active" },
-              { "Name": "Bob", "Status": "Pending" }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-]
-`;
+const SYSTEM_PROMPT = `Return ONLY a valid JSON array matching this schema structure. No markdown wrappers.
+Types:
+- Header: {type:"Header",title:string,subtitle?:string,size?:"sm"|"md"|"lg"}
+- ButtonAction: {type:"ButtonAction",label:string,variant?:"default"|"outline"|"secondary"|"ghost",icon?:"arrow-right"|"save"|"play"|"plus"|"search"}
+- Card: {type:"Card",title:string,subtitle?:string,content:any[],footer?:any[]}
+- Grid: {type:"Grid",columns?:1|2|3|4,gap?:number,items:any[]}
+- Statistic: {type:"Statistic",label:string,value:string,trend?:"up"|"down"|"neutral",trendValue?:string}
+- DataTable: {type:"DataTable",columns:string[],data:Record<string,string|number>[]}
+Rules: Compose recursively. Omit markdown backticks.`;
 
 export async function POST(req: Request) {
   try {
@@ -92,22 +41,52 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: "GEMINI_API_KEY is not defined in environment variables." }, { status: 500 });
+    // 4. Initialize Multi-Key Waterfall Failover array
+    const apiKeys = [
+      process.env.GEMINI_API_KEY,
+      process.env.GEMINI_API_KEY_2,
+      process.env.GEMINI_API_KEY_3,
+    ].filter(Boolean) as string[];
+
+    if (apiKeys.length === 0) {
+      return NextResponse.json({ error: "No GEMINI_API_KEY is defined in environment variables." }, { status: 500 });
     }
 
-    // Initialize the new Google GenAI SDK
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    let responseStream;
+    let fallbackError = null;
 
-    // Use generateContentStream instead for real-time output
-    const responseStream = await ai.models.generateContentStream({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-        temperature: 0.1, // Keep it highly deterministic
-      },
-    });
+    // 5. Sequentially iterate keys to bypass 429 Quota Exhaustions
+    for (let i = 0; i < apiKeys.length; i++) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: apiKeys[i] });
+        responseStream = await ai.models.generateContentStream({
+          model: "gemini-2.5-flash",
+          contents: prompt,
+          config: {
+            systemInstruction: SYSTEM_PROMPT,
+            temperature: 0.1, // Keep it highly deterministic
+          },
+        });
+        
+        // Success! Clear error state and break out to streaming
+        fallbackError = null;
+        break;
+      } catch (err) {
+        fallbackError = err;
+        const e = err as Error;
+        if (e.message && (e.message.includes("429") || e.message.includes("Resource has been exhausted"))) {
+          console.warn(`[Copilot Failover] AI Key ${i + 1} exhausted daily quota. Attempting rotation...`);
+          continue;
+        }
+        // If it's a 500 parse failure or bad request, do not swallow it
+        throw e;
+      }
+    }
+
+    // 6. If the entire waterfall array failed, throw the final captured exception
+    if (fallbackError || !responseStream) {
+      throw fallbackError || new Error("Failed to generate content across all provided GenAI keys.");
+    }
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({

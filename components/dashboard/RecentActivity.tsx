@@ -1,13 +1,28 @@
 ﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity } from "lucide-react";
+import type { AppData } from "./AppGrid";
 
-export function RecentActivity() {
-  const activities = [
-    { action: "Published", subject: "Internal CRM", time: "2 hours ago" },
-    { action: "Saved", subject: "Inventory Tracker config.json", time: "5 hours ago" },
-    { action: "Created", subject: "Employee Directory", time: "1 day ago" },
-    { action: "Caught Error", subject: "Unknown Component 'Chart'", time: "2 days ago" },
-  ];
+function getTimeAgo(dateStr: string) {
+  if (!dateStr) return "Just now";
+  const ms = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.max(1, Math.floor(ms / 60000));
+  if (mins < 60) return `${mins} mins ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hrs ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} days ago`;
+}
+
+export function RecentActivity({ apps = [] }: { apps?: AppData[] }) {
+  const activities = apps.slice(0, 4).map(app => ({
+    action: app.status === "Published" ? "Published" : "Saved",
+    subject: app.name || "Untitled App",
+    time: getTimeAgo(app.updated_at)
+  }));
+
+  if (activities.length === 0) {
+    activities.push({ action: "System", subject: "Environment initialized", time: "Just now" });
+  }
 
   return (
     <Card className="bg-card border-border h-full shadow-sm">
