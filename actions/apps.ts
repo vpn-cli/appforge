@@ -75,6 +75,7 @@ export async function createAppFromTemplate(templateId: string) {
   if (!userId) throw new Error("Unauthorized");
 
   // Determine template initial configuration
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let initialConfig: any = { "app": `New ${templateId} App`, "pages": [] };
   
   if (templateId === "directory") {

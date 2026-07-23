@@ -13,7 +13,9 @@ export function CustomCursor() {
       navigator.maxTouchPoints > 0 ||
       window.matchMedia("(max-width: 768px)").matches;
       
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsTouchDevice(isTouch);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
