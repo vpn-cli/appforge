@@ -68,11 +68,9 @@ export async function createAppFromTemplate(templateId: string) {
   const supabase = await createInsforgeServer();
   const { userId } = await auth();
 
-  if (process.env.NODE_ENV === "development" && !userId) {
+  if (!userId) {
     redirect(`/builder/template-${templateId}`);
   }
-
-  if (!userId) throw new Error("Unauthorized");
 
   // Determine template initial configuration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
