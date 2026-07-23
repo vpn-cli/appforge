@@ -74,13 +74,52 @@ export async function createAppFromTemplate(templateId: string) {
 
   if (!userId) throw new Error("Unauthorized");
 
-  // In production, we would merge actual template JSON here 
-  // before inserting into `apps.config`.
+  // Determine template initial configuration
+  let initialConfig: any = { "app": `New ${templateId} App`, "pages": [] };
+  
+  if (templateId === "directory") {
+    initialConfig = {
+      "app": "Employee Directory",
+      "entities": { "employees": { "name": "string", "role": "string", "department": "string", "email": "string" } },
+      "pages": [{
+        "components": [
+          { "type": "Header", "title": "Employee Directory", "subtitle": "Search and manage personnel globally.", "size": "lg" },
+          { "type": "Grid", "columns": 3, "gap": 4, "items": [
+              { "type": "Statistic", "label": "Total Employees", "value": "142", "trend": "up", "trendValue": "+12%" },
+              { "type": "Statistic", "label": "Departments", "value": "8" },
+              { "type": "Statistic", "label": "Open Roles", "value": "24", "trend": "up", "trendValue": "+4" }
+          ]},
+          { "type": "Card", "title": "Directory Database", "content": [
+              { "type": "DataTable", "entity": "employees", "columns": ["name", "role", "department", "email"] }
+          ]}
+        ]
+      }]
+    };
+  } else if (templateId === "crm") {
+    initialConfig = {
+      "app": "Analytics CRM",
+      "entities": { "leads": { "company": "string", "contact": "string", "value": "number", "status": "string" } },
+      "pages": [{
+        "components": [
+          { "type": "Header", "title": "Sales Analytics CRM", "subtitle": "Q3 Performance Metrics and Pipeline", "size": "lg" },
+          { "type": "Grid", "columns": 4, "gap": 4, "items": [
+              { "type": "Statistic", "label": "Total Pipeline", "value": "$1.2M", "trend": "up", "trendValue": "+18%" },
+              { "type": "Statistic", "label": "Active Leads", "value": "84", "trend": "down", "trendValue": "-5%" },
+              { "type": "Statistic", "label": "Conversion Rate", "value": "12.5%", "trend": "up", "trendValue": "+2.1%" },
+              { "type": "Statistic", "label": "Closed Won", "value": "42 Deals" }
+          ]},
+          { "type": "Header", "title": "Recent Opportunities", "size": "md" },
+          { "type": "DataTable", "entity": "leads", "columns": ["company", "contact", "value", "status"] }
+        ]
+      }]
+    };
+  }
+
   const { data, error } = await supabase
     .from("apps")
     .insert({
-      name: `New ${templateId} App`,
-      config: { "app": `New ${templateId} App`, "pages": [] }
+      name: initialConfig.app || `New ${templateId} App`,
+      config: initialConfig
     })
     .select("id")
     .single();

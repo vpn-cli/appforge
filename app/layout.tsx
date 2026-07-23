@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScroller } from "@/components/layout/SmoothScroller";
 import { CustomCursor } from "@/components/layout/CustomCursor";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,22 +62,11 @@ export default function RootLayout({
           >
             Skip to Main Content
           </a>
-          {/* Native SSR-safe dark mode injection to bypass React 19 use-client script warnings */}
-          <script dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                const localTheme = window.localStorage.getItem('theme');
-                if (localTheme === 'dark' || (!localTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.documentElement.classList.add('dark');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                }
-              } catch (_) {}
-            `
-          }} />
-          <SmoothScroller>
-            {children}
-          </SmoothScroller>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+            <SmoothScroller>
+              {children}
+            </SmoothScroller>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

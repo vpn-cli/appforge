@@ -5,13 +5,19 @@ import { useState, useEffect } from "react";
 
 export function CustomCursor() {
   const [mounted, setMounted] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    const isTouch = 
+      'ontouchstart' in window || 
+      navigator.maxTouchPoints > 0 ||
+      window.matchMedia("(max-width: 768px)").matches;
+      
+    setIsTouchDevice(isTouch);
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted || isTouchDevice) return null;
 
   return (
     <AnimatedCursor

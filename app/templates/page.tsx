@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createInsforgeServer } from "@/lib/insforge-server";
-
+import { createAppFromTemplate } from "@/actions/apps";
 export default async function TemplatesPage() {
   const supabase = await createInsforgeServer();
   await supabase.auth.getUser();
@@ -23,14 +23,11 @@ export default async function TemplatesPage() {
                <CardTitle className="text-xl text-foreground">Employee Directory</CardTitle>
                <CardDescription>Standard Grid-based personnel layout.</CardDescription>
              </CardHeader>
-             <CardContent>
-               <form action={async () => {
-                 "use server";
-                 await import("@/actions/apps").then(m => m.createAppFromTemplate("directory"));
-               }}>
-                 <Button type="submit" className="w-full bg-muted text-foreground hover:bg-accent">Use Template</Button>
-               </form>
-             </CardContent>
+              <CardContent>
+                <form action={createAppFromTemplate.bind(null, "directory")}>
+                  <Button type="submit" className="w-full bg-muted text-foreground hover:bg-accent">Use Template</Button>
+                </form>
+              </CardContent>
           </Card>
           <Card className="bg-card border-border hover:shadow-xl hover:shadow-brand/5 hover:-translate-y-1 transition-all duration-300">
              <CardHeader>
@@ -38,12 +35,9 @@ export default async function TemplatesPage() {
                <CardDescription>Heavy metrics layout for phase 2 charts.</CardDescription>
              </CardHeader>
              <CardContent>
-               <form action={async () => {
-                 "use server";
-                 await import("@/actions/apps").then(m => m.createAppFromTemplate("crm"));
-               }}>
-                 <Button type="submit" className="w-full bg-muted text-foreground hover:bg-accent">Use Template</Button>
-               </form>
+                <form action={createAppFromTemplate.bind(null, "crm")}>
+                  <Button type="submit" className="w-full bg-muted text-foreground hover:bg-accent">Use Template</Button>
+                </form>
              </CardContent>
           </Card>
           <Card className="bg-card border-border hover:shadow-xl hover:shadow-brand/5 hover:-translate-y-1 transition-all duration-300 border-brand/30 bg-gradient-to-br from-surface to-brand/5">
@@ -52,12 +46,9 @@ export default async function TemplatesPage() {
                <CardDescription>Start from complete scratch in the editor.</CardDescription>
              </CardHeader>
              <CardContent>
-               <form action={async () => {
-                 "use server";
-                 await import("@/actions/apps").then(m => m.createAppFromTemplate("blank"));
-               }}>
-                 <Button type="submit" className="w-full bg-brand text-background hover:bg-brand-dark shadow-md shadow-brand/20">Start Custom Build</Button>
-               </form>
+                <form action={createAppFromTemplate.bind(null, "blank")}>
+                  <Button type="submit" className="w-full bg-brand text-background hover:bg-brand-dark shadow-md shadow-brand/20">Start Custom Build</Button>
+                </form>
              </CardContent>
           </Card>
         </div>
