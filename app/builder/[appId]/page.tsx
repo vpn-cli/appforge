@@ -91,10 +91,6 @@ export default function BuilderPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const router = useRouter();
-
-  const isGuestRoute = appId.startsWith("template-") || appId === "mock-new-id";
-
   const handleSave = async () => {
     if (!isSignedIn || isGuestRoute) {
       router.push("/sign-in");
