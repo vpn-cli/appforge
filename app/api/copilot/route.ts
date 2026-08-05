@@ -3,6 +3,11 @@ import { rateLimit } from "@/lib/rate-limit";
 import { streamText } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { Redis } from "@upstash/redis";
+
+const redisClient = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
+    ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
+    : null;
 
 const SYSTEM_PROMPT = `Return ONLY a valid JSON array matching this schema structure. No markdown wrappers.
 Types:
@@ -43,6 +48,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
     }
 
+    // --- Enterprise Upstash Cache Lookup ---
+    if (redisClient) {
+      const cacheKey = `copilot_cache:${prompt.trim().toLowerCase()}`;
+      try {
+        const cachedResponse = await redisClient.get(cacheKey);
+        if (cachedResponse) {
+          console.log(`[Copilot Cache] HIT for prompt: "${prompt}"`);
+          const stream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(new TextEncoder().encode(cachedResponse as string));
+              controller.close();
+            }
+          });
+          return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
+        }
+      } catch (err) {
+        console.error("[Copilot Cache Error] Failed to read from Redis:", err);
+      }
+    }
+
     // 4. Initialize Multi-Provider Fallback (Groq Primary -> Gemini Backups)
     const geminiKeys = [
       process.env.GEMINI_API_KEY,
@@ -77,6 +102,12 @@ export async function POST(req: Request) {
           system: SYSTEM_PROMPT,
           prompt: prompt,
           temperature: 0.1,
+          onFinish: async ({ text }) => {
+            if (redisClient) {
+              const cacheKey = `copilot_cache:${prompt.trim().toLowerCase()}`;
+              await redisClient.set(cacheKey, text, { ex: 604800 }).catch(console.error); // 7-day TTL
+            }
+          }
         });
         
         return responseResult.toTextStreamResponse(); 
