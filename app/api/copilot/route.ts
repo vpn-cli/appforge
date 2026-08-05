@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
 import { rateLimit } from "@/lib/rate-limit";
+import { streamText } from "ai";
+import { groq } from "@ai-sdk/groq";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
 const SYSTEM_PROMPT = `Return ONLY a valid JSON array matching this schema structure. No markdown wrappers.
 Types:
@@ -41,78 +43,51 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
     }
 
-    // 4. Initialize Multi-Key Waterfall Failover array
-    const apiKeys = [
+    // 4. Initialize Multi-Provider Fallback (Groq Primary -> Gemini Backups)
+    const geminiKeys = [
       process.env.GEMINI_API_KEY,
       process.env.GEMINI_API_KEY_2,
       process.env.GEMINI_API_KEY_3,
     ].filter(Boolean) as string[];
 
-    if (apiKeys.length === 0) {
-      return NextResponse.json({ error: "No GEMINI_API_KEY is defined in environment variables." }, { status: 500 });
+    const models = [];
+    
+    // Attempt Groq first if key exists (Lightning Fast Free Tier)
+    if (process.env.GROQ_API_KEY) {
+      models.push(groq("llama3-70b-8192"));
     }
 
-    let responseStream;
-    let fallbackError = null;
+    // Append Gemini backups by explicitly building the provider with specific keys
+    for (const key of geminiKeys) {
+      const googleProvider = createGoogleGenerativeAI({ apiKey: key });
+      models.push(googleProvider("gemini-2.5-flash"));
+    }
 
-    // 5. Sequentially iterate keys to bypass 429 Quota Exhaustions
-    for (let i = 0; i < apiKeys.length; i++) {
+    if (models.length === 0) {
+      return NextResponse.json({ error: "No AI API Keys are configured." }, { status: 500 });
+    }
+
+    // 5. Stream Text using standard Vercel AI Pipeline with automatic manual fallback
+    let fallbackError;
+    
+    for (const activeModel of models) {
       try {
-        const ai = new GoogleGenAI({ apiKey: apiKeys[i] });
-        responseStream = await ai.models.generateContentStream({
-          model: "gemini-2.5-flash",
-          contents: prompt,
-          config: {
-            systemInstruction: SYSTEM_PROMPT,
-            temperature: 0.1, // Keep it highly deterministic
-          },
+        const responseResult = streamText({
+          model: activeModel,
+          system: SYSTEM_PROMPT,
+          prompt: prompt,
+          temperature: 0.1,
         });
         
-        // Success! Clear error state and break out to streaming
-        fallbackError = null;
-        break;
+        return responseResult.toTextStreamResponse(); 
       } catch (err) {
+        console.warn(`[Copilot Failover] Model threw an error. Falling back to next...`, (err as Error).message);
         fallbackError = err;
-        const e = err as Error;
-        if (e.message && (e.message.includes("429") || e.message.includes("Resource has been exhausted"))) {
-          console.warn(`[Copilot Failover] AI Key ${i + 1} exhausted daily quota. Attempting rotation...`);
-          continue;
-        }
-        // If it's a 500 parse failure or bad request, do not swallow it
-        throw e;
+        continue;
       }
     }
 
-    // 6. If the entire waterfall array failed, throw the final captured exception
-    if (fallbackError || !responseStream) {
-      throw fallbackError || new Error("Failed to generate content across all provided GenAI keys.");
-    }
-
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of responseStream) {
-            if (chunk.text) {
-              controller.enqueue(encoder.encode(chunk.text));
-            }
-          }
-          controller.close();
-        } catch (error: unknown) {
-          console.error("[Copilot Streaming Error]", error);
-          controller.enqueue(encoder.encode(`\n[ERROR]: ${(error as Error).message}`));
-          controller.close();
-        }
-      }
-    });
-
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-      },
-    });
+    throw fallbackError || new Error("All configured AI models threw an error on generation.");
 
   } catch (error: unknown) {
     console.error("[Copilot API Error]", error);

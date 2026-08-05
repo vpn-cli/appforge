@@ -93,7 +93,7 @@ export default function BuilderPage() {
 
   const handleSave = async () => {
     if (!isSignedIn || isGuestRoute) {
-      router.push("/sign-in");
+      router.push("/?requireAuth=1");
       return;
     }
     setIsSaving(true);
@@ -116,7 +116,7 @@ export default function BuilderPage() {
 
   const handlePublish = async () => {
     if (!isSignedIn || isGuestRoute) {
-      router.push("/sign-in");
+      router.push("/?requireAuth=1");
       return;
     }
     setIsPublishing(true);
