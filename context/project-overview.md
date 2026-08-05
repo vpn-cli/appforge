@@ -135,17 +135,17 @@ Once a generated app is open at `/apps/[appId]`, navigation switches to whatever
 - Template gallery of starter configs
 - Dashboard with stats, recent activity, and analytics charts
 - Final Tweaks: Global dark mode toggle, Bento component visual overhaul, **Lenis** smooth scrolling, **GSAP ScrollTrigger** / Framer Motion parallax effects, and orchestrated loading/skeleton animations.
-- Enterprise Readiness: API Rate Limiting (Redis) and Sentry Error Tracking
-- Enterprise Readiness: Serverless Kafka event queue for background jobs (analytics)
-- Enterprise Readiness: AppForge DevOps (Docker containerization) and Jira Action Integration
-- Enterprise Readiness: Clerk B2B Authentication and Supabase JWT syncing
+- Enterprise Copilot Integration: Natural-language generative "Prompt-to-Software" UI generation powered by a robust Vercel AI SDK dual-provider pipeline (Groq + Gemini).
+- Enterprise Readiness: API Rate Limiting and Semantic Prompt Caching (Upstash Redis).
+- Enterprise Readiness: Serverless Kafka event queue for background jobs (analytics).
+- Enterprise Readiness: AppForge DevOps (Docker containerization) and Jira Action Integration.
+- Enterprise Readiness: Clerk B2B Authentication and Supabase JWT syncing.
 
 ---
 
 ## Features Out of Scope
 
 - Visual drag-and-drop builder (config is authored as JSON, not via canvas)
-- Natural-language / prompt-to-config generation
 - Multi-user real-time collaborative editing
 - Config version rollback / diff UI
 - Custom scripting or arbitrary code execution inside workflows
