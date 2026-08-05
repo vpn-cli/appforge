@@ -9,7 +9,8 @@ import { validateConfig } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, Play, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 
 
 const defaultMockConfig = JSON.stringify({
@@ -62,6 +63,9 @@ const defaultMockConfig = JSON.stringify({
 export default function BuilderPage() {
   const params = useParams();
   const appId = params.appId as string;
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+  const isGuestRoute = appId.startsWith("template-") || appId === "mock-new-id";
   
   const [configStr, setConfigStr] = useState(() => {
      if (appId.includes("template-blank")) {
@@ -87,30 +91,50 @@ export default function BuilderPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const router = useRouter();
+
+  const isGuestRoute = appId.startsWith("template-") || appId === "mock-new-id";
+
   const handleSave = async () => {
+    if (!isSignedIn || isGuestRoute) {
+      router.push("/sign-in");
+      return;
+    }
     setIsSaving(true);
     try {
       await import("@/actions/apps").then(m => m.saveAppConfig(appId, configStr));
-      // Show generic browser alert until we put Sonner into `layout.tsx`
       alert("Saved.");
     } catch (e: unknown) {
-      alert("Failed to save: " + (e as Error).message);
+      const msg = (e as Error).message || "";
+      if (msg.toLowerCase().includes("unauthorized")) {
+        router.push("/sign-in");
+      } else {
+        alert("Failed to save: " + msg);
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
   const [isPublishing, setIsPublishing] = useState(false);
-  // Using regular Link for push
-  
+
   const handlePublish = async () => {
+    if (!isSignedIn || isGuestRoute) {
+      router.push("/sign-in");
+      return;
+    }
     setIsPublishing(true);
     try {
       await import("@/actions/apps").then(m => m.publishAppConfig(appId, configStr));
       alert("Published.");
       window.location.href = `/apps/${appId}`;
     } catch (e: unknown) {
-      alert("Publish Error: " + (e as Error).message);
+      const msg = (e as Error).message || "";
+      if (msg.toLowerCase().includes("unauthorized")) {
+        router.push("/sign-in");
+      } else {
+        alert("Publish Error: " + msg);
+      }
     } finally {
       setIsPublishing(false);
     }
