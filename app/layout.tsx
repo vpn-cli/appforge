@@ -41,11 +41,12 @@ export default function RootLayout({
           borderRadius: "0.5rem"
         },
         elements: {
-          card: "border border-border/50 shadow-2xl shadow-brand/10",
-          headerTitle: "font-semibold text-lg",
+          card: "border border-border/50 shadow-2xl shadow-brand/20 bg-background/95 backdrop-blur-xl relative overflow-hidden before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-br before:from-brand/10 before:to-transparent before:opacity-50",
+          headerTitle: "font-bold text-2xl tracking-tight",
           headerSubtitle: "text-muted-foreground",
-          socialButtonsBlockButton: "border-border/50 hover:bg-muted/50 transition-colors",
-          formButtonPrimary: "font-medium shadow-md transition-transform hover:scale-[1.02] active:scale-95",
+          socialButtonsBlockButton: "border-border/50 hover:bg-muted/80 transition-colors",
+          formButtonPrimary: "font-medium shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] active:scale-95 bg-brand hover:bg-brand-dark text-white rounded-md",
+          modalBackdrop: "live-clerk-gradient backdrop-blur-[2px]",
         }
       }}
     >

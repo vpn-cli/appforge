@@ -102,9 +102,27 @@
   * {
     @apply border-border outline-ring/50;
     cursor: none !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--theme-brand-light) transparent;
   }
   html {
     @apply font-sans;
+  }
+
+  /* Sleek modern scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border); /* Automatically handles dark/light contrast */
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
   }
 }
 
@@ -238,4 +256,17 @@
 .animate-text-gradient {
   background-size: 200% auto;
   animation: text-gradient-sweep 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Clerk Live Modal Gradient */
+@keyframes clerk-gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.live-clerk-gradient {
+  background: linear-gradient(-45deg, rgba(9, 9, 11, 0.9), rgba(76, 29, 149, 0.6), rgba(9, 9, 11, 0.95), rgba(49, 17, 102, 0.8));
+  background-size: 400% 400%;
+  animation: clerk-gradient-flow 10s ease infinite;
 }

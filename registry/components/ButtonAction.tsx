@@ -17,7 +17,7 @@ export function ButtonAction({ label, variant = "default", icon }: { label?: str
       variant={variant || "default"} 
       size="sm" 
       className={`rounded-full px-5 py-4 font-semibold transition-all duration-300 active:scale-95 flex items-center ${
-        (!variant || variant === "default") && "shadow-[0_10px_25px_-5px_rgba(156,135,218,0.3)] hover:shadow-[0_20px_35px_-5px_rgba(156,135,218,0.5)] hover:-translate-y-0.5 bg-brand hover:bg-brand-dark text-background text-brand-foreground"
+        (!variant || variant === "default") && "shadow-[0_10px_25px_-5px_rgba(156,135,218,0.3)] hover:shadow-[0_20px_35px_-5px_rgba(156,135,218,0.5)] hover:-translate-y-0.5 bg-brand hover:bg-brand-dark text-white"
       } ${
         variant === "outline" && "shadow-sm hover:shadow-md hover:-translate-y-0.5 bg-brand/5 border-2 border-brand/60 text-brand hover:bg-brand/10 hover:border-brand"
       } ${

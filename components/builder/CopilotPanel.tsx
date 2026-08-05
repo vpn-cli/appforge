@@ -95,7 +95,7 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
          </button>
       </div>
 
-      <div className="w-full bg-background/50 h-[300px] max-h-[300px] overflow-y-auto p-4 text-xs font-medium flex flex-col justify-start space-y-4 scroll-smooth">
+      <div data-lenis-prevent className="w-full bg-background/50 h-[300px] max-h-[300px] overflow-y-auto p-4 text-xs font-medium flex flex-col justify-start space-y-4 scroll-smooth">
          {messages.map((m, i) => (
            <div key={i} className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
              <div 
@@ -130,22 +130,32 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
          )}
       </div>
 
-      <form onSubmit={handleGenerate} className="p-3 border-t border-border bg-card flex items-center gap-2">
-        <input 
-           type="text" 
+      <form 
+        onSubmit={(e) => { e.preventDefault(); void handleGenerate(e); }} 
+        className="p-3 border-t border-border bg-card flex items-end gap-2"
+      >
+        <textarea 
+           data-lenis-prevent
            value={prompt}
            onChange={e => setPrompt(e.target.value)}
-           placeholder="e.g. Generate a dark-mode CRM interface... (Testing Hot Reload)"
-           className="flex-1 bg-muted border border-border rounded-full h-10 px-4 text-sm text-foreground focus:outline-none focus:border-purple-500/50 transition-colors"
+           onKeyDown={e => {
+             if (e.key === 'Enter' && !e.shiftKey) {
+               e.preventDefault();
+               void handleGenerate(e);
+             }
+           }}
+           placeholder="e.g. Generate a dark-mode CRM..."
+           className="flex-1 bg-muted border border-border/50 rounded-2xl min-h-[44px] max-h-[120px] py-3 px-4 text-sm text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-brand/50 transition-all overflow-y-auto leading-relaxed"
            disabled={isGenerating}
+           rows={prompt.length > 50 ? 2 : 1}
         />
         <Button 
            type="submit" 
            disabled={isGenerating || !prompt.trim()}
            size="icon"
-           className="w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-700 text-white flex-shrink-0 shadow-md shadow-purple-600/20"
+           className="w-[44px] h-[44px] rounded-2xl bg-gradient-to-br from-brand to-brand-dark hover:from-brand-light hover:to-brand text-white flex-shrink-0 shadow-[0_4px_14px_rgba(76,29,149,0.3)] transition-all duration-300 hover:scale-[1.05] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 border border-brand/20"
         >
-          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 ml-0.5" />}
+          {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4 ml-0.5" />}
         </Button>
       </form>
     </div>

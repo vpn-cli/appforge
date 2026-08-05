@@ -3,18 +3,35 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import { EventPublisher } from "@/lib/event-queue";
+
+/**
+ * Checks Clerk for a real user session. 
+ * If none exists, checks for a secure ADMIN bypass cookie.
+ */
+async function getAuthOrBypass() {
+  const { userId } = await auth();
+  if (userId) return { userId, isBypass: false };
+
+  const cookieStore = await cookies();
+  const adminCookie = cookieStore.get("APPFORGE_ADMIN_BYPASS")?.value;
+  
+  if (adminCookie && process.env.ADMIN_BYPASS_KEY && adminCookie === process.env.ADMIN_BYPASS_KEY) {
+    return { userId: "admin-bypass-user", isBypass: true };
+  }
+  
+  return { userId: null, isBypass: false };
+}
 
 export async function getUserApps() {
   const supabase = await createInsforgeServer();
-  // Replaced Supabase auth with Clerk auth
-  const { userId } = await auth();
+  const { userId, isBypass } = await getAuthOrBypass();
 
-  // DEV BYPASS FALLBACK
-  if (process.env.NODE_ENV === "development" && !userId) {
+  if (isBypass) {
     return [
-      { id: "mock-1", name: "Internal CRM (Mock)", updated_at: new Date().toISOString(), status: "Published" },
-      { id: "mock-2", name: "Inventory Tracker (Mock)", updated_at: new Date(Date.now() - 3600000).toISOString(), status: "Draft" },
+      { id: "mock-1", name: "Internal CRM (Admin Mock)", updated_at: new Date().toISOString(), status: "Published" },
+      { id: "mock-2", name: "Inventory Tracker (Admin Mock)", updated_at: new Date(Date.now() - 3600000).toISOString(), status: "Draft" },
     ];
   }
 
@@ -38,10 +55,9 @@ export async function getUserApps() {
 
 export async function createApp() {
   const supabase = await createInsforgeServer();
-  const { userId } = await auth();
+  const { userId, isBypass } = await getAuthOrBypass();
 
-  // DEV BYPASS FALLBACK
-  if (process.env.NODE_ENV === "development" && !userId) {
+  if (isBypass) {
     redirect("/builder/mock-new-id");
   }
 
@@ -66,9 +82,9 @@ export async function createApp() {
 
 export async function createAppFromTemplate(templateId: string) {
   const supabase = await createInsforgeServer();
-  const { userId } = await auth();
+  const { userId, isBypass } = await getAuthOrBypass();
 
-  if (!userId) {
+  if (!userId || isBypass) {
     redirect(`/builder/template-${templateId}`);
   }
 
@@ -136,15 +152,14 @@ import { syncAppSchema } from "@/actions/schema";
 
 export async function saveAppConfig(appId: string, configStr: string) {
   const supabase = await createInsforgeServer();
-  const { userId } = await auth();
+  const { userId, isBypass } = await getAuthOrBypass();
 
-  if (process.env.NODE_ENV === "development" && !userId) {
-    console.log("[DEV BYPASS] Mocking Save App Config for:", appId);
-    // Trigger mock schema sync for testing
+  if (isBypass) {
+    console.log("[ADMIN BYPASS] Mocking Save App Config for:", appId);
     let rawConfig = {};
     try { rawConfig = JSON.parse(configStr); } catch { /* ignore */ }
     if ((rawConfig as Record<string, unknown>).entities) {
-      await syncAppSchema(appId, (rawConfig as Record<string, unknown>).entities);
+      await import("@/actions/schema").then(m => m.syncAppSchema(appId, (rawConfig as Record<string, unknown>).entities));
     }
     return { success: true };
   }
@@ -183,10 +198,10 @@ export async function saveAppConfig(appId: string, configStr: string) {
 
 export async function publishAppConfig(appId: string, configStr: string) {
   const supabase = await createInsforgeServer();
-  const { userId } = await auth();
+  const { userId, isBypass } = await getAuthOrBypass();
 
-  if (process.env.NODE_ENV === "development" && !userId) {
-    console.log("[DEV BYPASS] Mocking Publish App Config for:", appId);
+  if (isBypass) {
+    console.log("[ADMIN BYPASS] Mocking Publish App Config for:", appId);
     return { success: true };
   }
 
