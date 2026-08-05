@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/vpn-cli/appforge/master/public/icon.svg" width="80" alt="AppForge Logo" />
   <h1 align="center">AppForge</h1>
   <p align="center">
     <strong>A Metadata-Driven Generative Application Runtime</strong>
@@ -22,6 +21,16 @@ AppForge is not a standard React dashboard—it is a runtime compiler. Instead o
 
 ---
 
+## 🧠 How It Works (The Engine)
+
+Unlike traditional applications where the UI is hardcoded, AppForge dynamically evaluates JSON configurations at runtime to render isolated Web Components:
+
+1. **The LLM Copilot** interprets natural language prompts and streams back a strict JSON configuration representing the user's requested dashboard.
+2. **The AST Pipeline** intercepts the LLM output, aggressively scrubbing markdown contamination and validating the object tree against Zod generic signatures.
+3. **The Component Registry** natively translates the AST nodes into isolated React components wrapped in autonomous Error Boundaries, ensuring that a single malformed node can never crash the entire page.
+
+---
+
 ## 📸 Platform Interface
 
 *Note: Live environments are protected by Upstash global edge caching and strict rate-limiting barriers.*
@@ -29,6 +38,25 @@ AppForge is not a standard React dashboard—it is a runtime compiler. Instead o
 | Application Dashboard | AI Copilot Workspace |
 | :---: | :---: |
 | <img src="./reference/dashboard.png" width="400" /> | <img src="./reference/appbuilder.png" width="400" /> |
+
+---
+
+## ⚡ Quick Start
+
+To run AppForge locally, you will need Node.js 18+ and a suite of API keys (Clerk, Upstash, Groq, and Gemini) populated within `.env.local`.
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/vpn-cli/appforge.git
+cd appforge
+
+# 2. Install dependencies
+npm install
+
+# 3. Spin up the Next.js development server
+npm run dev
+```
+Navigate to `http://localhost:3000` to interact with the Copilot generation engine.
 
 ---
 
