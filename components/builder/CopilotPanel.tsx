@@ -52,11 +52,26 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
         }
       }
 
-      // ONLY run the heavy RegEx sequence exactly once when the entire stream finishes!
+      // 1. Strip markdown
       const finalText = streamedText.replace(/```json/gi, "").replace(/```/g, "").trim();
       if (finalText) {
-        onApply(JSON.parse(finalText));
-        setMessages(prev => [...prev, { role: "ai", content: "I've updated the canvas with your requested changes!" }]);
+        let parsed = JSON.parse(finalText);
+        
+        // 2. Unpack double-stringified LLM JSON artifacts
+        if (typeof parsed === "string") {
+            try { parsed = JSON.parse(parsed); } catch {}
+        }
+
+        // 3. Drill down if it hallucinated the overarching registry structure
+        if (parsed?.pages?.[0]?.components) {
+            parsed = parsed.pages[0].components;
+        }
+
+        // 4. Force strict schema structure for the UI array
+        const finalArray = Array.isArray(parsed) ? parsed : [parsed];
+
+        onApply(finalArray);
+        setMessages(prev => [...prev, { role: "ai", content: "I've correctly compiled the new canvas UI from the generated AST!" }]);
       }
     } catch (err) {
       const e = err as Error;

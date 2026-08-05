@@ -57,7 +57,8 @@ export async function POST(req: Request) {
           console.log(`[Copilot Cache] HIT for prompt: "${prompt}"`);
           const stream = new ReadableStream({
             start(controller) {
-              controller.enqueue(new TextEncoder().encode(cachedResponse as string));
+              const textOutput = typeof cachedResponse === "string" ? cachedResponse : JSON.stringify(cachedResponse);
+              controller.enqueue(new TextEncoder().encode(textOutput));
               controller.close();
             }
           });
@@ -79,7 +80,7 @@ export async function POST(req: Request) {
     
     // Attempt Groq first if key exists (Lightning Fast Free Tier)
     if (process.env.GROQ_API_KEY) {
-      models.push(groq("llama3-70b-8192"));
+      models.push(groq("llama-3.3-70b-versatile"));
     }
 
     // Append Gemini backups by explicitly building the provider with specific keys
