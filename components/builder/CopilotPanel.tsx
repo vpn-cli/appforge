@@ -65,6 +65,8 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
         // 3. Drill down if it hallucinated the overarching registry structure
         if (parsed?.pages?.[0]?.components) {
             parsed = parsed.pages[0].components;
+        } else if (parsed?.components && Array.isArray(parsed.components)) {
+            parsed = parsed.components;
         }
 
         // 4. Force strict schema structure for the UI array
