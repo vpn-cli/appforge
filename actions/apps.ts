@@ -66,6 +66,7 @@ export async function createApp() {
   const { data, error } = await supabase
     .from("apps")
     .insert({
+      user_id: userId,
       name: "Untitled App",
       config: { app: "Untitled App", pages: [] }
     })
@@ -133,6 +134,7 @@ export async function createAppFromTemplate(templateId: string) {
   const { data, error } = await supabase
     .from("apps")
     .insert({
+      user_id: userId,
       name: initialConfig.app || `New ${templateId} App`,
       config: initialConfig
     })
