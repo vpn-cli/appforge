@@ -79,4 +79,4 @@ Navigate to `http://localhost:3000` to interact with the Copilot generation engi
 * **AI Processing Model:** Llama-3.3-70B-Versatile (via Groq), Gemini 2.5 Flash Fallbacks
 * **Edge Systems:** Upstash Serverless Redis & Kafka Message Queues
 * **Animation & Rendering:** Lenis Smooth Scroll, Shadcn UI, Framer Motion, GSAP ScrollTrigger
-* **Deployment Ops:** Vercel Pro, Docker Containerization, Sentry Observability
+* **Deployment Ops:** Vercel, Docker Containerization, Sentry Observability
