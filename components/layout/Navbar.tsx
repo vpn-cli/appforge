@@ -6,7 +6,7 @@ import { motion, Variants, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
-import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Menu, X } from "lucide-react";
 
 export function Navbar() {
@@ -103,11 +103,11 @@ export function Navbar() {
             </SignInButton>
           </motion.div>
           <motion.div variants={item} className="hidden sm:block" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+            <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
               <Button className="bg-brand hover:bg-brand-dark text-white shadow-md shadow-brand/20">
                 Start for free
               </Button>
-            </SignInButton>
+            </SignUpButton>
           </motion.div>
         </SignedOut>
 
@@ -151,11 +151,11 @@ export function Navbar() {
                     Log in
                   </Button>
                 </SignInButton>
-                <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+                <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
                   <Button className="w-full justify-center h-10 bg-brand hover:bg-brand-dark text-white shadow-brand/20">
                     Start for free
                   </Button>
-                </SignInButton>
+                </SignUpButton>
               </SignedOut>
             </div>
           </motion.div>
