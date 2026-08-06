@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
 import { CopilotPanel } from "@/components/builder/CopilotPanel";
 import { LivePreview } from "@/components/builder/LivePreview";
@@ -90,6 +90,16 @@ export default function BuilderPage() {
   const { errors, warnings } = useMemo(() => validateConfig(configStr), [configStr]);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    if (!isGuestRoute && isSignedIn) {
+      import("@/actions/apps").then(m => m.getAppConfig(appId)).then(config => {
+        if (config) {
+          setConfigStr(JSON.stringify(config, null, 2));
+        }
+      }).catch(err => console.error("Failed to hydrate config:", err));
+    }
+  }, [appId, isGuestRoute, isSignedIn]);
 
   const handleSave = async () => {
     if (!isSignedIn || isGuestRoute) {

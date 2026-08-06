@@ -237,3 +237,61 @@ export async function publishAppConfig(appId: string, configStr: string) {
 
   return { success: true };
 }
+
+export async function deleteApp(appId: string) {
+  const supabase = await createInsforgeServer();
+  const { userId, isBypass } = await getAuthOrBypass();
+
+  if (isBypass) return { success: true };
+  if (!userId) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("apps")
+    .delete()
+    .eq("id", appId)
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error("Failed to delete app.");
+  }
+  return { success: true };
+}
+
+export async function renameApp(appId: string, newName: string) {
+  const supabase = await createInsforgeServer();
+  const { userId, isBypass } = await getAuthOrBypass();
+
+  if (isBypass) return { success: true };
+  if (!userId) throw new Error("Unauthorized");
+
+  const { error } = await supabase
+    .from("apps")
+    .update({ name: newName })
+    .eq("id", appId)
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error("Failed to rename app.");
+  }
+  return { success: true };
+}
+
+export async function getAppConfig(appId: string) {
+  if (appId.startsWith("template-") || appId.startsWith("mock-")) return null;
+  
+  const supabase = await createInsforgeServer();
+  const { userId, isBypass } = await getAuthOrBypass();
+
+  if (isBypass) return null;
+  if (!userId) return null;
+
+  const { data, error } = await supabase
+    .from("apps")
+    .select("config")
+    .eq("id", appId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !data) return null;
+  return data.config;
+}

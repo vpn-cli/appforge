@@ -2,10 +2,11 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Settings2, ExternalLink, Clock, Loader2 } from "lucide-react";
+import { Plus, Settings2, ExternalLink, Clock, Loader2, Trash2, Edit3 } from "lucide-react";
 import Link from "next/link";
-import { createApp } from "@/actions/apps";
+import { createApp, deleteApp, renameApp } from "@/actions/apps";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 export type AppData = {
   id: string;
@@ -29,6 +30,35 @@ export function AppGrid({ initialApps }: { initialApps: AppData[] }) {
     if (isPending) return;
     startTransition(() => {
       createApp();
+    });
+  };
+
+  const router = useRouter();
+
+  const handleRename = (appId: string, currentName: string) => {
+    const newName = window.prompt("Enter new application name:", currentName);
+    if (!newName || newName === currentName) return;
+    
+    startTransition(async () => {
+      try {
+        await renameApp(appId, newName);
+        router.refresh();
+      } catch (err) {
+        alert(String(err));
+      }
+    });
+  };
+
+  const handleDelete = (appId: string) => {
+    if (!window.confirm("Are you sure you want to permanently delete this application? This cannot be undone.")) return;
+    
+    startTransition(async () => {
+      try {
+        await deleteApp(appId);
+        router.refresh();
+      } catch (err) {
+        alert(String(err));
+      }
     });
   };
 
@@ -59,20 +89,35 @@ export function AppGrid({ initialApps }: { initialApps: AppData[] }) {
         <Card key={app.id} className="bg-card border-border hover:shadow-xl hover:shadow-brand/5 hover:border-brand/30 transition-all duration-300 flex flex-col group overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border/50 pb-4">
             <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-base font-bold text-foreground mb-1.5">{app.name}</CardTitle>
+              <div className="flex-1 pr-4">
+                <div className="flex items-center gap-2 mb-1.5 group/title relative w-max">
+                  <CardTitle className="text-base font-bold text-foreground">{app.name}</CardTitle>
+                  <button onClick={() => handleRename(app.id, app.name)} className="opacity-0 group-hover/title:opacity-100 p-1 hover:bg-muted rounded text-muted-foreground transition-all">
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
                 <div className="flex items-center text-xs text-muted-foreground font-medium">
                   <Clock className="w-3 h-3 mr-1.5 opacity-70" />
                   Edited {getRelativeTime(app.updated_at)}
                 </div>
               </div>
-              <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm ${
-                app.status === 'Published' 
-                  ? 'bg-brand/10 text-brand border border-brand/20 shadow-brand/10' 
-                  : 'bg-accent text-muted-foreground border border-border'
-              }`}>
-                {app.status}
-              </span>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm ${
+                  app.status === 'Published' 
+                    ? 'bg-brand/10 text-brand border border-brand/20 shadow-brand/10' 
+                    : 'bg-accent text-muted-foreground border border-border'
+                }`}>
+                  {app.status}
+                </span>
+                <button 
+                  onClick={() => handleDelete(app.id)} 
+                  disabled={isPending}
+                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-500/10 hover:text-red-500 text-muted-foreground rounded-md transition-all disabled:opacity-50"
+                  title="Delete Application"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="flex-1 p-5">
