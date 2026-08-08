@@ -15,7 +15,7 @@ export function CustomCursor() {
       
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsTouchDevice(isTouch);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
     setMounted(true);
   }, []);
 

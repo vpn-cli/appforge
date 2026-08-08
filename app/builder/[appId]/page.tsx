@@ -149,14 +149,17 @@ export default function BuilderPage() {
 
   const handleApplyCopilotComponents = (newComponents: unknown[]) => {
     try {
-      let currentConfig: any = { app: "My App", pages: [{ components: [] }] };
+      interface PageSchema { components: unknown[] }
+      interface ConfigSchema { app: string; pages: PageSchema[] }
+
+      let currentConfig: ConfigSchema = { app: "My App", pages: [{ components: [] }] };
       try {
         currentConfig = JSON.parse(configStr || "{}");
-      } catch (parseError) {
+      } catch {
         console.warn("Editor JSON invalid. Falling back to base template to weave AI flow.");
       }
       
-      if (!currentConfig.pages || currentConfig.pages.length === 0) currentConfig.pages = [{}];
+      if (!currentConfig.pages || currentConfig.pages.length === 0) currentConfig.pages = [{ components: [] }];
       currentConfig.pages[0].components = newComponents;
       setConfigStr(JSON.stringify(currentConfig, null, 2));
     } catch {
