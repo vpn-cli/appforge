@@ -218,7 +218,7 @@ export async function publishAppConfig(appId: string, configStr: string) {
 
   const { error } = await supabase
     .from("apps")
-    .update({ published_config: rawConfig })
+    .update({ published_config: rawConfig, config: rawConfig })
     .eq("id", appId)
     .eq("user_id", userId);
 
