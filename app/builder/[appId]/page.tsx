@@ -11,6 +11,7 @@ import { ArrowLeft, Save, Play, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import { getAppConfig, saveAppConfig, publishAppConfig } from "@/actions/apps";
 
 
 const defaultMockConfig = JSON.stringify({
@@ -93,7 +94,7 @@ export default function BuilderPage() {
 
   useEffect(() => {
     if (!isGuestRoute && isSignedIn) {
-      import("@/actions/apps").then(m => m.getAppConfig(appId)).then(config => {
+      getAppConfig(appId).then(config => {
         if (config) {
           setConfigStr(JSON.stringify(config, null, 2));
         }
@@ -108,7 +109,7 @@ export default function BuilderPage() {
     }
     setIsSaving(true);
     try {
-      await import("@/actions/apps").then(m => m.saveAppConfig(appId, configStr));
+      await saveAppConfig(appId, configStr);
       alert("Saved.");
     } catch (e: unknown) {
       const msg = (e as Error).message || "";
@@ -131,7 +132,7 @@ export default function BuilderPage() {
     }
     setIsPublishing(true);
     try {
-      await import("@/actions/apps").then(m => m.publishAppConfig(appId, configStr));
+      await publishAppConfig(appId, configStr);
       alert("Published.");
       window.location.href = `/apps/${appId}`;
     } catch (e: unknown) {
