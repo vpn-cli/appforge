@@ -40,6 +40,7 @@ export async function getUserApps() {
   const { data, error } = await supabase
     .from("apps")
     .select("id, name, updated_at, published_config")
+    .eq("user_id", userId)
     .order("updated_at", { ascending: false });
 
   if (error) {
