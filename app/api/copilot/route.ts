@@ -93,33 +93,79 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No AI API Keys are configured." }, { status: 500 });
     }
 
-    // 5. Stream Text using standard Vercel AI Pipeline with automatic manual fallback
-    let fallbackError;
-    
-    for (const activeModel of models) {
-      try {
-        const responseResult = streamText({
-          model: activeModel,
-          system: SYSTEM_PROMPT,
-          prompt: prompt,
-          temperature: 0.1,
-          onFinish: async ({ text }) => {
-            if (redisClient) {
-              const cacheKey = `copilot_cache:${prompt.trim().toLowerCase()}`;
-              await redisClient.set(cacheKey, text, { ex: 604800 }).catch(console.error); // 7-day TTL
-            }
-          }
-        });
-        
-        return responseResult.toTextStreamResponse(); 
-      } catch (err) {
-        console.warn(`[Copilot Failover] Model threw an error. Falling back to next...`, (err as Error).message);
-        fallbackError = err;
-        continue;
-      }
-    }
+    // 5. Custom stream multiplexer for Native Failover
+    const streamFallback = new ReadableStream({
+      async start(controller) {
+        let lastError = null;
 
-    throw fallbackError || new Error("All configured AI models threw an error on generation.");
+        for (const activeModel of models) {
+          try {
+            const responseResult = streamText({
+              model: activeModel,
+              system: SYSTEM_PROMPT,
+              prompt: prompt,
+              temperature: 0.1,
+            });
+
+            // Extract the raw byte stream returned by the AI SDK
+            const reader = responseResult.toTextStreamResponse().body?.getReader();
+            if (!reader) {
+              lastError = new Error("Failed to extract reader from stream.");
+              continue;
+            }
+
+            // Await the first stream chunk! 
+            // Vercel AI SDK throws underlying API HTTP errors here (like 429 Quota Exceeded)
+            const firstChunk = await reader.read();
+            if (firstChunk.done) {
+               lastError = new Error("Stream closed instantly with no data.");
+               continue; 
+            }
+
+            // Connection is alive and generating data. Forward the first chunk!
+            controller.enqueue(firstChunk.value);
+            
+            let streamTextAccumulator = "";
+            const decoder = new TextDecoder("utf-8");
+            streamTextAccumulator += decoder.decode(firstChunk.value, { stream: true });
+            
+            // Forward the rest of the stream transparently
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              
+              controller.enqueue(value);
+              streamTextAccumulator += decoder.decode(value, { stream: true });
+            }
+
+            // Optionally push the finalized AST to the Redis cache
+            if (redisClient && streamTextAccumulator.trim()) {
+              const cacheKey = `copilot_cache:${prompt.trim().toLowerCase()}`;
+              await redisClient.set(cacheKey, streamTextAccumulator, { ex: 604800 }).catch(console.error);
+            }
+
+            controller.close();
+            return; // Successfully streamed! Break out of the fallback loop forever
+
+          } catch (err) {
+            console.warn(`[Copilot Failover] Model failed, actively shifting to backup...`, (err as Error).message);
+            lastError = err;
+            continue; // Move to next model
+          }
+        }
+
+        // If all configured activeModels failed
+        controller.error(lastError || new Error("All backup AI models failed on this payload."));
+      }
+    });
+
+    return new Response(streamFallback, {
+      status: 200,
+      headers: { 
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache"
+      },
+    });
 
   } catch (error: unknown) {
     console.error("[Copilot API Error]", error);
