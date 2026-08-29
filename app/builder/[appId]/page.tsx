@@ -92,23 +92,33 @@ export default function BuilderPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [authRequireMessage, setAuthRequireMessage] = useState<string | null>(null);
+  const [notificationModal, setNotificationModal] = useState<{
+    type: "error" | "success";
+    title: string;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!isGuestRoute && isSignedIn) {
-      getAppConfig(appId).then(config => {
-        if (config) {
-          setConfigStr(JSON.stringify(config, null, 2));
-        }
-      }).catch(err => console.error("Failed to hydrate config:", err));
+      getAppConfig(appId)
+        .then((config) => {
+          if (config) {
+            setConfigStr(JSON.stringify(config, null, 2));
+          }
+        })
+        .catch((err) => console.error("Failed to hydrate config:", err));
     }
   }, [appId, isGuestRoute, isSignedIn]);
 
   const checkGuestUsageLimit = () => {
     if (isSignedIn) return true;
-    const usageStr = window.localStorage.getItem("guest_builder_actions") || "0";
+    const usageStr =
+      window.localStorage.getItem("guest_builder_actions") || "0";
     let usage = parseInt(usageStr, 10);
     if (usage >= 2) {
-      setAuthRequireMessage("You've reached your free usage limit. Please sign in to continue building your application.");
+      setAuthRequireMessage(
+        "You've reached your free usage limit. Please sign in to continue building your application.",
+      );
       return false;
     }
     usage++;
@@ -118,19 +128,29 @@ export default function BuilderPage() {
 
   const handleSave = async () => {
     if (!checkGuestUsageLimit()) return;
-    
+
     // In production without bypass, this will eventually throw `Unauthorized` and redirect them.
     // In development with bypass, it will mock the save successfully.
     setIsSaving(true);
     try {
       await saveAppConfig(appId, configStr);
-      alert("Saved.");
+      setNotificationModal({
+        type: "success",
+        title: "Saved Successfully",
+        message: "Your draft has been saved securely.",
+      });
     } catch (e: unknown) {
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
-        setAuthRequireMessage("Your session expired. Please sign in to save your draft.");
+        setAuthRequireMessage(
+          "Your session expired. Please sign in to save your draft.",
+        );
       } else {
-        alert("Failed to save: " + msg);
+        setNotificationModal({
+          type: "error",
+          title: "Failed to Save",
+          message: msg,
+        });
       }
     } finally {
       setIsSaving(false);
@@ -141,20 +161,34 @@ export default function BuilderPage() {
 
   const handlePublish = async () => {
     if (!isSignedIn) {
-      setAuthRequireMessage("You must be signed in to publish your application.");
+      setAuthRequireMessage(
+        "You must be signed in to publish your application.",
+      );
       return;
     }
     setIsPublishing(true);
     try {
       await publishAppConfig(appId, configStr);
-      alert("Published.");
-      window.location.href = `/apps/${appId}`;
+      setNotificationModal({
+        type: "success",
+        title: "Published Successfully",
+        message: "Redirecting you to the live application...",
+      });
+      setTimeout(() => {
+        window.location.href = `/apps/${appId}`;
+      }, 1500);
     } catch (e: unknown) {
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
-        setAuthRequireMessage("Your session expired. Please sign in to publish your application.");
+        setAuthRequireMessage(
+          "Your session expired. Please sign in to publish your application.",
+        );
       } else {
-        alert("Publish Error: " + msg);
+        setNotificationModal({
+          type: "error",
+          title: "Publish Error",
+          message: msg,
+        });
       }
     } finally {
       setIsPublishing(false);
@@ -163,21 +197,36 @@ export default function BuilderPage() {
 
   const handleApplyCopilotComponents = (newComponents: unknown[]) => {
     try {
-      interface PageSchema { components: unknown[] }
-      interface ConfigSchema { app: string; pages: PageSchema[] }
+      interface PageSchema {
+        components: unknown[];
+      }
+      interface ConfigSchema {
+        app: string;
+        pages: PageSchema[];
+      }
 
-      let currentConfig: ConfigSchema = { app: "My App", pages: [{ components: [] }] };
+      let currentConfig: ConfigSchema = {
+        app: "My App",
+        pages: [{ components: [] }],
+      };
       try {
         currentConfig = JSON.parse(configStr || "{}");
       } catch {
-        console.warn("Editor JSON invalid. Falling back to base template to weave AI flow.");
+        console.warn(
+          "Editor JSON invalid. Falling back to base template to weave AI flow.",
+        );
       }
-      
-      if (!currentConfig.pages || currentConfig.pages.length === 0) currentConfig.pages = [{ components: [] }];
+
+      if (!currentConfig.pages || currentConfig.pages.length === 0)
+        currentConfig.pages = [{ components: [] }];
       currentConfig.pages[0].components = newComponents;
       setConfigStr(JSON.stringify(currentConfig, null, 2));
     } catch {
-      alert("Failed to weave AI structure into layout.");
+      setNotificationModal({
+        type: "error",
+        title: "Generation Error",
+        message: "Failed to weave AI structure into layout.",
+      });
     }
   };
 
@@ -190,7 +239,16 @@ export default function BuilderPage() {
       currentConfig.pages[0].components = "<<<REPLACE>>>";
       setConfigStr(JSON.stringify(currentConfig, null, 2));
     } catch {
-      setConfigStr(JSON.stringify({ app: "AI Generated Template", pages: [{ components: "<<<REPLACE>>>" }] }, null, 2));
+      setConfigStr(
+        JSON.stringify(
+          {
+            app: "AI Generated Template",
+            pages: [{ components: "<<<REPLACE>>>" }],
+          },
+          null,
+          2,
+        ),
+      );
     }
   };
 
@@ -202,42 +260,64 @@ export default function BuilderPage() {
       <div className="h-14 border-b border-border bg-card shrink-0 flex items-center justify-between px-4">
         <div className="flex items-center gap-4">
           <Link href="/dashboard">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+            >
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-foreground leading-tight">App Builder</span>
-            <span className="text-[10px] text-muted-foreground font-mono">{appId}</span>
+            <span className="text-sm font-bold text-foreground leading-tight">
+              App Builder
+            </span>
+            <span className="text-[10px] text-muted-foreground font-mono">
+              {appId}
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center text-xs text-muted-foreground mr-4">
-             {isGenerating ? (
-               <span className="text-[#A78BFA] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#A78BFA] before:rounded-full before:mr-2 before:animate-pulse">Generating</span>
-             ) : errors.length > 0 ? (
-               <span className="text-[#FF5F56] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#FF5F56] before:rounded-full before:mr-2">Has Errors</span>
-             ) : (
-               <span className="text-[#27C93F] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#27C93F] before:rounded-full before:mr-2">Ready</span>
-             )}
+            {isGenerating ? (
+              <span className="text-[#A78BFA] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#A78BFA] before:rounded-full before:mr-2 before:animate-pulse">
+                Generating
+              </span>
+            ) : errors.length > 0 ? (
+              <span className="text-[#FF5F56] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#FF5F56] before:rounded-full before:mr-2">
+                Has Errors
+              </span>
+            ) : (
+              <span className="text-[#27C93F] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#27C93F] before:rounded-full before:mr-2">
+                Ready
+              </span>
+            )}
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="h-8 bg-muted border-border hover:bg-card hover:text-foreground font-medium text-xs transition-colors"
             onClick={handleSave}
             disabled={isSaving}
           >
-            {isSaving ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-2" />}
+            {isSaving ? (
+              <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-3.5 h-3.5 mr-2" />
+            )}
             Save Draft
           </Button>
-          <Button 
+          <Button
             onClick={handlePublish}
             disabled={isPublishing}
-            size="sm" 
+            size="sm"
             className="h-8 bg-brand hover:bg-brand-dark text-white font-medium text-xs shadow-md shadow-brand/20"
           >
-            {isPublishing ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Play className="w-3.5 h-3.5 mr-2 fill-current" />}
+            {isPublishing ? (
+              <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+            ) : (
+              <Play className="w-3.5 h-3.5 mr-2 fill-current" />
+            )}
             Publish
           </Button>
         </div>
@@ -248,18 +328,22 @@ export default function BuilderPage() {
         {/* Left Side: Editor & Validation */}
         <div className="w-full md:w-1/2 flex flex-col min-h-[50vh] md:min-h-0 border-b md:border-b-0 md:border-r border-border bg-card/50">
           <div className="flex-1 min-h-0 relative">
-             <ConfigEditor 
-               value={configStr} 
-               onChange={(val) => setConfigStr(val || "")} 
-             />
-             <CopilotPanel 
-               onApply={handleApplyCopilotComponents} 
-               onStreamStart={handleStreamStart}
-               onStreamEnd={handleStreamEnd}
-             />
+            <ConfigEditor
+              value={configStr}
+              onChange={(val) => setConfigStr(val || "")}
+            />
+            <CopilotPanel
+              onApply={handleApplyCopilotComponents}
+              onStreamStart={handleStreamStart}
+              onStreamEnd={handleStreamEnd}
+            />
           </div>
           <div className="h-48 shrink-0">
-             <ValidationPanel errors={errors} warnings={warnings} isGenerating={isGenerating} />
+            <ValidationPanel
+              errors={errors}
+              warnings={warnings}
+              isGenerating={isGenerating}
+            />
           </div>
         </div>
 
@@ -272,10 +356,17 @@ export default function BuilderPage() {
       {authRequireMessage && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 text-center animate-in fade-in zoom-in duration-200">
-            <h2 className="text-xl font-bold text-foreground mb-2">Sign In Required</h2>
-            <p className="text-muted-foreground text-sm mb-6">{authRequireMessage}</p>
+            <h2 className="text-xl font-bold text-foreground mb-2">
+              Sign In Required
+            </h2>
+            <p className="text-muted-foreground text-sm mb-6">
+              {authRequireMessage}
+            </p>
             <div className="flex items-center justify-center gap-3">
-              <Button variant="outline" onClick={() => setAuthRequireMessage(null)}>
+              <Button
+                variant="outline"
+                onClick={() => setAuthRequireMessage(null)}
+              >
                 Cancel
               </Button>
               <SignInButton mode="modal">
@@ -283,6 +374,33 @@ export default function BuilderPage() {
                   Sign In
                 </Button>
               </SignInButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {notificationModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in duration-200">
+            <h2
+              className={`text-xl font-bold mb-2 ${notificationModal.type === "error" ? "text-red-500" : "text-brand"}`}
+            >
+              {notificationModal.title}
+            </h2>
+            <p className="text-muted-foreground text-sm mb-6">
+              {notificationModal.message}
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <Button
+                onClick={() => setNotificationModal(null)}
+                className={
+                  notificationModal.type === "error"
+                    ? "bg-red-600 hover:bg-red-700 text-white min-w-[100px]"
+                    : "bg-brand hover:bg-brand-dark text-white min-w-[100px]"
+                }
+              >
+                Okay
+              </Button>
             </div>
           </div>
         </div>
