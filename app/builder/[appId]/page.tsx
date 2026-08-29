@@ -132,13 +132,26 @@ export default function BuilderPage() {
     // In production without bypass, this will eventually throw `Unauthorized` and redirect them.
     // In development with bypass, it will mock the save successfully.
     setIsSaving(true);
+    // If not signed in, mock the save locally so guests can exhaust their interaction quota cleanly
+    if (!isSignedIn) {
+      setTimeout(() => {
+        setNotificationModal({
+          type: "success",
+          title: "Draft Saved Locally",
+          message: "Guest changes are saved securely to your browser temporarily. Please sign in to deploy!",
+        });
+        setIsSaving(false);
+      }, 500);
+      return;
+    }
+
     try {
       const res = await saveAppConfig(appId, configStr);
       if (res && res.success === false) throw new Error(res.error);
       setNotificationModal({
         type: "success",
         title: "Saved Successfully",
-        message: "Your draft has been saved securely.",
+        message: "Your draft has been saved securely to the database.",
       });
     } catch (e: unknown) {
       const msg = (e as Error).message || "";

@@ -65,14 +65,17 @@ export async function createApp() {
     redirect("/builder/mock-new-id");
   }
 
-  if (!userId) throw new Error("Unauthorized");
+  // Gracefully bounce unauthenticated 'Create New App' clicks to the sandbox
+  if (!userId) {
+    redirect("/builder/template-blank");
+  }
 
   const { data, error } = await supabase
     .from("apps")
     .insert({
       user_id: userId,
       name: "Untitled App",
-      config: { app: "Untitled App", pages: [] }
+      config: { app: "Untitled App", pages: [] },
     })
     .select("id")
     .single();
