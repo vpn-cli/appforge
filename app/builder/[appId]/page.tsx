@@ -133,7 +133,8 @@ export default function BuilderPage() {
     // In development with bypass, it will mock the save successfully.
     setIsSaving(true);
     try {
-      await saveAppConfig(appId, configStr);
+      const res = await saveAppConfig(appId, configStr);
+      if (res && res.success === false) throw new Error(res.error);
       setNotificationModal({
         type: "success",
         title: "Saved Successfully",
@@ -168,7 +169,8 @@ export default function BuilderPage() {
     }
     setIsPublishing(true);
     try {
-      await publishAppConfig(appId, configStr);
+      const res = await publishAppConfig(appId, configStr);
+      if (res && res.success === false) throw new Error(res.error);
       setNotificationModal({
         type: "success",
         title: "Published Successfully",

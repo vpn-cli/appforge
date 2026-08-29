@@ -163,9 +163,15 @@ export async function saveAppConfig(appId: string, configStr: string) {
   if (isBypass) {
     console.log("[ADMIN BYPASS] Mocking Save App Config for:", appId);
     let rawConfig = {};
-    try { rawConfig = JSON.parse(configStr); } catch { /* ignore */ }
+    try {
+      rawConfig = JSON.parse(configStr);
+    } catch {
+      /* ignore */
+    }
     if ((rawConfig as Record<string, unknown>).entities) {
-      await import("@/actions/schema").then(m => m.syncAppSchema(appId, (rawConfig as Record<string, unknown>).entities));
+      await import("@/actions/schema").then((m) =>
+        m.syncAppSchema(appId, (rawConfig as Record<string, unknown>).entities),
+      );
     }
     return { success: true };
   }
@@ -176,7 +182,10 @@ export async function saveAppConfig(appId: string, configStr: string) {
   try {
     rawConfig = JSON.parse(configStr);
   } catch {
-    throw new Error("Invalid JSON configuration. Cannot save.");
+    return {
+      success: false,
+      error: "Invalid JSON configuration. Cannot save.",
+    };
   }
 
   // Save the configuration to the apps table
@@ -187,12 +196,18 @@ export async function saveAppConfig(appId: string, configStr: string) {
     .eq("user_id", userId);
 
   if (saveError) {
-    throw new Error(`Failed to save config: ${saveError.message}`);
+    return {
+      success: false,
+      error: `Failed to save config: ${saveError.message}`,
+    };
   }
 
   // Trigger schema synchronization if entities exist
   if ((rawConfig as Record<string, unknown>).entities) {
-    const syncRes = await syncAppSchema(appId, (rawConfig as Record<string, unknown>).entities);
+    const syncRes = await syncAppSchema(
+      appId,
+      (rawConfig as Record<string, unknown>).entities,
+    );
     if (!syncRes.success) {
       console.warn("Schema Sync Warning:", syncRes.message);
       // We purposefully do not throw an error here to prevent blocking the UI save success entirely
@@ -220,7 +235,7 @@ export async function publishAppConfig(appId: string, configStr: string) {
   try {
     rawConfig = JSON.parse(configStr);
   } catch {
-    throw new Error("Invalid json format.");
+    return { success: false, error: "Invalid json format." };
   }
 
   const { error } = await supabase
@@ -230,7 +245,7 @@ export async function publishAppConfig(appId: string, configStr: string) {
     .eq("user_id", userId);
 
   if (error) {
-    throw new Error("Failed to publish app.");
+    return { success: false, error: `Failed to publish app: ${error.message}` };
   }
 
   // Asynchronously fire a Kafka event to our decoupled queue tracking 'app_published' events.
@@ -239,7 +254,7 @@ export async function publishAppConfig(appId: string, configStr: string) {
     app_id: appId,
     user_id: userId,
     config_size: configStr.length,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   return { success: true };
