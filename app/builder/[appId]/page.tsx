@@ -110,6 +110,13 @@ export default function BuilderPage() {
     }
   }, [appId, isGuestRoute, isSignedIn]);
 
+  useEffect(() => {
+    // Reset guest actions upon fresh entry to the sandbox demo so the user isn't permanently locked out from testing today
+    if (appId === "demo" && !isSignedIn) {
+      window.localStorage.removeItem("guest_builder_actions");
+    }
+  }, [appId, isSignedIn]);
+
   const checkGuestUsageLimit = () => {
     if (isSignedIn) return true;
     const usageStr =
