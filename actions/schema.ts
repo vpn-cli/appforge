@@ -2,17 +2,18 @@
 //acts as a parser for the app config and generates the ddl commands for the app
 import { createInsforgeServer } from "@/lib/insforge-server";
 
-export async function syncAppSchema(appId: string, entities: unknown) {
+export async function syncAppSchema(appId: string, entities: unknown, userId: string | null) {
   const supabase = await createInsforgeServer();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  // DEV BYPASS FALLBACK ( for dev mode only)
-  if (process.env.NODE_ENV === "development" && !user) {
-    console.log("[DEV BYPASS] Mocking Schema Extraction for:", appId);
-    return { success: true, message: "Mock schema generated successfully." };
+  // If there's no Clerk userId (e.g. guest mode)
+  if (!userId) {
+    // DEV BYPASS FALLBACK ( for dev mode only)
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEV BYPASS] Mocking Schema Extraction for:", appId);
+      return { success: true, message: "Mock schema generated successfully." };
+    }
+    return { success: false, message: "Unauthorized" };
   }
-
-  if (!user) throw new Error("Unauthorized");
   if (!entities || typeof entities !== "object") {
     return { success: false, message: "No entities defined in config." };
   }

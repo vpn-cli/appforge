@@ -170,7 +170,7 @@ export async function saveAppConfig(appId: string, configStr: string) {
     }
     if ((rawConfig as Record<string, unknown>).entities) {
       await import("@/actions/schema").then((m) =>
-        m.syncAppSchema(appId, (rawConfig as Record<string, unknown>).entities),
+        m.syncAppSchema(appId, (rawConfig as Record<string, unknown>).entities, userId),
       );
     }
     return { success: true };
@@ -207,6 +207,7 @@ export async function saveAppConfig(appId: string, configStr: string) {
     const syncRes = await syncAppSchema(
       appId,
       (rawConfig as Record<string, unknown>).entities,
+      userId
     );
     if (!syncRes.success) {
       console.warn("Schema Sync Warning:", syncRes.message);
