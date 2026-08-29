@@ -42,3 +42,9 @@ next-env.d.ts
 
 # Private Context Docs
 resume.md
+
+# Agent Config 
+agent-skills
+agent_skills
+claude.md
+agents.md
