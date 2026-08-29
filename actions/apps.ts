@@ -207,6 +207,9 @@ export async function publishAppConfig(appId: string, configStr: string) {
   const { userId, isBypass } = await getAuthOrBypass();
 
   if (isBypass) {
+    if (userId === "dev-bypass-user" || !userId) {
+      throw new Error("Unauthorized - You must sign in to publish an app.");
+    }
     console.log("[ADMIN BYPASS] Mocking Publish App Config for:", appId);
     return { success: true };
   }

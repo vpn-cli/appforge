@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, Play, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, SignInButton } from "@clerk/nextjs";
 import { getAppConfig, saveAppConfig, publishAppConfig } from "@/actions/apps";
 
 
@@ -91,6 +91,7 @@ export default function BuilderPage() {
   const { errors, warnings } = useMemo(() => validateConfig(configStr), [configStr]);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [authRequireMessage, setAuthRequireMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isGuestRoute && isSignedIn) {
@@ -102,11 +103,24 @@ export default function BuilderPage() {
     }
   }, [appId, isGuestRoute, isSignedIn]);
 
-  const handleSave = async () => {
-    if (!isSignedIn || isGuestRoute) {
-      router.push("/?requireAuth=1");
-      return;
+  const checkGuestUsageLimit = () => {
+    if (isSignedIn) return true;
+    const usageStr = window.localStorage.getItem("guest_builder_actions") || "0";
+    let usage = parseInt(usageStr, 10);
+    if (usage >= 2) {
+      setAuthRequireMessage("You've reached your free usage limit. Please sign in to continue building your application.");
+      return false;
     }
+    usage++;
+    window.localStorage.setItem("guest_builder_actions", usage.toString());
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!checkGuestUsageLimit()) return;
+    
+    // In production without bypass, this will eventually throw `Unauthorized` and redirect them.
+    // In development with bypass, it will mock the save successfully.
     setIsSaving(true);
     try {
       await saveAppConfig(appId, configStr);
@@ -114,7 +128,7 @@ export default function BuilderPage() {
     } catch (e: unknown) {
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
-        router.push("/sign-in");
+        setAuthRequireMessage("Your session expired. Please sign in to save your draft.");
       } else {
         alert("Failed to save: " + msg);
       }
@@ -126,8 +140,8 @@ export default function BuilderPage() {
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePublish = async () => {
-    if (!isSignedIn || isGuestRoute) {
-      router.push("/?requireAuth=1");
+    if (!isSignedIn) {
+      setAuthRequireMessage("You must be signed in to publish your application.");
       return;
     }
     setIsPublishing(true);
@@ -138,7 +152,7 @@ export default function BuilderPage() {
     } catch (e: unknown) {
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
-        router.push("/sign-in");
+        setAuthRequireMessage("Your session expired. Please sign in to publish your application.");
       } else {
         alert("Publish Error: " + msg);
       }
@@ -168,6 +182,7 @@ export default function BuilderPage() {
   };
 
   const handleStreamStart = () => {
+    if (!checkGuestUsageLimit()) return;
     setIsGenerating(true);
     try {
       const currentConfig = JSON.parse(configStr);
@@ -253,6 +268,25 @@ export default function BuilderPage() {
           <LivePreview configStr={configStr} />
         </div>
       </div>
+
+      {authRequireMessage && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 text-center animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold text-foreground mb-2">Sign In Required</h2>
+            <p className="text-muted-foreground text-sm mb-6">{authRequireMessage}</p>
+            <div className="flex items-center justify-center gap-3">
+              <Button variant="outline" onClick={() => setAuthRequireMessage(null)}>
+                Cancel
+              </Button>
+              <SignInButton mode="modal">
+                <Button className="bg-brand hover:bg-brand-dark text-white">
+                  Sign In
+                </Button>
+              </SignInButton>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
