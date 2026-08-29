@@ -110,26 +110,36 @@ export default function BuilderPage() {
     }
   }, [appId, isGuestRoute, isSignedIn]);
 
-  useEffect(() => {
-    // Reset guest actions upon fresh entry to the sandbox demo so the user isn't permanently locked out from testing today
-    if (appId === "demo" && !isSignedIn) {
-      window.localStorage.removeItem("guest_builder_actions");
-    }
-  }, [appId, isSignedIn]);
-
   const checkGuestUsageLimit = () => {
     if (isSignedIn) return true;
-    const usageStr =
-      window.localStorage.getItem("guest_builder_actions") || "0";
-    let usage = parseInt(usageStr, 10);
-    if (usage >= 2) {
+
+    const today = new Date().toDateString();
+    let limitData = { count: 0, date: today };
+
+    try {
+      const stored = window.localStorage.getItem("guest_builder_actions");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.date === today) {
+          limitData = parsed;
+        }
+      }
+    } catch (e) {
+      // Ignore parse errors, resort to fresh payload
+    }
+
+    if (limitData.count >= 2) {
       setAuthRequireMessage(
-        "You've reached your free usage limit. Please sign in to continue building your application.",
+        "You've reached your free daily usage limit. Please sign in to continue building your application.",
       );
       return false;
     }
-    usage++;
-    window.localStorage.setItem("guest_builder_actions", usage.toString());
+
+    limitData.count++;
+    window.localStorage.setItem(
+      "guest_builder_actions",
+      JSON.stringify(limitData),
+    );
     return true;
   };
 
