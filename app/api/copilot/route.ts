@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       process.env.GEMINI_API_KEY_3,
     ].filter(Boolean) as string[];
 
-    const models = [];
+    const models: import("ai").LanguageModel[] = [];
     
     // Attempt Groq first if key exists (Lightning Fast Free Tier)
     if (process.env.GROQ_API_KEY) {

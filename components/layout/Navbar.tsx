@@ -6,7 +6,7 @@ import { motion, Variants, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
-import { SignedIn, SignedOut, UserButton, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton, SignInButton, SignUpButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { Menu, X } from "lucide-react";
 
 export function Navbar() {
@@ -87,6 +87,7 @@ export function Navbar() {
         <SignedIn>
           <motion.div variants={item} className="flex gap-2 sm:gap-4 items-center">
             <ThemeToggle />
+            <OrganizationSwitcher appearance={{ elements: { organizationSwitcherTrigger: "border border-border/50 bg-muted/50 rounded-md py-1 px-3" } }} />
             <UserButton appearance={{ elements: { avatarBox: "w-9 h-9 border-2 border-brand/20 shadow-md" } }} />
           </motion.div>
         </SignedIn>

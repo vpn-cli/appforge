@@ -16,9 +16,12 @@ async function getAuthOrBypass() {
 
   const cookieStore = await cookies();
   const adminCookie = cookieStore.get("APPFORGE_ADMIN_BYPASS")?.value;
-  
   if (adminCookie && process.env.ADMIN_BYPASS_KEY && adminCookie === process.env.ADMIN_BYPASS_KEY) {
     return { userId: "admin-bypass-user", isBypass: true };
+  }
+  
+  if (process.env.NODE_ENV === "development") {
+    return { userId: "dev-bypass-user", isBypass: true };
   }
   
   return { userId: null, isBypass: false };
