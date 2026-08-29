@@ -26,7 +26,7 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
       const res = await fetch("/api/copilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt }),
       });
 
       if (!res.ok) {
@@ -36,44 +36,70 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
 
       const reader = res.body?.getReader();
       if (!reader) throw new Error("No readable stream.");
-      
+
       const decoder = new TextDecoder("utf-8");
-      
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value, { stream: true });
         streamedText += chunk;
-        
+
         // Pass the raw chunk stream directly to the UI without heavy parsing
         if (onStream) {
-           onStream(streamedText);
+          onStream(streamedText);
         }
       }
 
-      // 1. Strip markdown
-      const finalText = streamedText.replace(/```json/gi, "").replace(/```/g, "").trim();
+      // 1. Strip conversational filler and markdown blocks by precisely isolating the JSON array/object
+      let finalText = streamedText
+        .replace(/```json/gi, "")
+        .replace(/```/g, "")
+        .trim();
+      const firstBrace = finalText.indexOf("{");
+      const firstBracket = finalText.indexOf("[");
+      const isArrayFirst =
+        firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace);
+
+      const first = isArrayFirst ? firstBracket : firstBrace;
+      const last = isArrayFirst
+        ? finalText.lastIndexOf("]")
+        : finalText.lastIndexOf("}");
+
+      if (first !== -1 && last !== -1 && last > first) {
+        finalText = finalText.substring(first, last + 1);
+      }
+
       if (finalText) {
         let parsed = JSON.parse(finalText);
-        
+
         // 2. Unpack double-stringified LLM JSON artifacts
         if (typeof parsed === "string") {
-            try { parsed = JSON.parse(parsed); } catch {}
+          try {
+            parsed = JSON.parse(parsed);
+          } catch {}
         }
 
         // 3. Drill down if it hallucinated the overarching registry structure
         if (parsed?.pages?.[0]?.components) {
-            parsed = parsed.pages[0].components;
+          parsed = parsed.pages[0].components;
         } else if (parsed?.components && Array.isArray(parsed.components)) {
-            parsed = parsed.components;
+          parsed = parsed.components;
         }
 
         // 4. Force strict schema structure for the UI array
         const finalArray = Array.isArray(parsed) ? parsed : [parsed];
 
         onApply(finalArray);
-        setMessages(prev => [...prev, { role: "ai", content: "I've correctly compiled the new canvas UI from the generated AST!" }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            content:
+              "I've correctly compiled the new canvas UI from the generated AST!",
+          },
+        ]);
       }
     } catch (err) {
       const e = err as Error;
