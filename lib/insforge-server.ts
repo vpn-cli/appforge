@@ -6,7 +6,7 @@ export async function createInsforgeServer() {
 
   return createServerClient(
     process.env.NEXT_PUBLIC_INSFORGE_URL!,
-    process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
     {
       cookies: {
         getAll() {
