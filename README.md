@@ -8,6 +8,11 @@ AppForge interprets natural language prompts via large language models, compiles
 ![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
 ![License](https://img.shields.io/badge/License-Proprietary-red)
+![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E)
+![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF)
+![Upstash Redis](https://img.shields.io/badge/Upstash_Redis-Cache-FF3E00)
+![Upstash Kafka](https://img.shields.io/badge/Upstash_Kafka-Queue-231F20)
+![Groq](https://img.shields.io/badge/Groq-LPU_Inference-F36E0B)
 
 ---
 
@@ -49,6 +54,14 @@ Traditional web applications require developers to hardcode layouts, map databas
 - **Background Event Brokerage:** Every publish action instantly fires asynchronous fire-and-forget payloads into Upstash Kafka for decoupled business intelligence analytics.
 - **Production-grade Global Edge Routing:** Clerk auth middleware secures the entire platform across 300+ Edge nodes, dynamically locking out unauthenticated bots from modifying global states.
 - **Smart Quota Sandboxing:** Guests natively experience the system instantly up to a localized maximum ceiling before being seamlessly captured into the Authentication funnel.
+
+---
+
+## 📸 Interface Overview
+
+| Application Dashboard | AI Copilot Workspace |
+| :---: | :---: |
+| <img src="./reference/dashboard.png" width="400" /> | <img src="./reference/appbuilder.png" width="400" /> |
 
 ---
 
