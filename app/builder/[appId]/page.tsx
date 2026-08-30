@@ -191,13 +191,24 @@ export default function BuilderPage() {
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePublish = async () => {
+    if (!checkGuestUsageLimit()) return;
+
+    setIsPublishing(true);
+
+    // If not signed in, mock the publish cleanly so guests can exhaust their quota without hitting the authentication wall instantly
     if (!isSignedIn) {
-      setAuthRequireMessage(
-        "You must be signed in to publish your application.",
-      );
+      setTimeout(() => {
+        setNotificationModal({
+          type: "success",
+          title: "Mock Publish Successful",
+          message:
+            "Guest applications cannot be hosted live. However, here's a simulated success! Sign in to claim a permanent URL.",
+        });
+        setIsPublishing(false);
+      }, 800);
       return;
     }
-    setIsPublishing(true);
+
     try {
       const res = await publishAppConfig(appId, configStr);
       if (res && res.success === false) throw new Error(res.error);
