@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
   "/builder/demo(.*)",
   "/builder/mock-(.*)",
   "/api/copilot(.*)",
+  "/api/health",
   "/api/webhooks/clerk(.*)",
 ]);
 
