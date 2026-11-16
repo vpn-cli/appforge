@@ -121,7 +121,7 @@ export function Navbar() {
             animate={{ opacity: 1, height: "auto", borderBottomWidth: 1 }}
             exit={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute top-full left-0 w-full bg-background border-border shadow-2xl flex flex-col md:hidden overflow-hidden origin-top z-40"
+            className="absolute top-full left-0 w-full bg-background border-border shadow-md border-b flex flex-col md:hidden overflow-hidden origin-top z-40"
           >
             <div className="p-4 flex flex-col gap-3">
               {["Dashboard", "Builder", "Templates"].map((text) => (

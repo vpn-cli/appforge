@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FolderPlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createApp } from "@/actions/apps";
@@ -22,7 +23,10 @@ export function FallbackEmpty() {
       </div>
       <h3 className="text-xl font-bold text-foreground mb-1">No apps yet</h3>
       <p className="text-muted-foreground max-w-sm mb-6 text-sm">
-        Create one from a prompt.
+        Create one from a prompt or{" "}
+        <Link href="/templates" className="text-brand hover:underline underline-offset-4 font-medium">
+          start from a template
+        </Link>.
       </p>
       <Button 
         onClick={handleCreate} 

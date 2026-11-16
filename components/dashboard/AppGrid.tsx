@@ -150,7 +150,7 @@ export function AppGrid({ initialApps }: { initialApps: AppData[] }) {
                 }}
               />
               <div className="relative flex flex-col items-center">
-                <span className="text-brand/30 mb-1 opacity-50">&lt;/&gt;</span>
+                <span className="text-muted-foreground/30 mb-1">&lt;/&gt;</span>
                 app.config.json
               </div>
             </div>

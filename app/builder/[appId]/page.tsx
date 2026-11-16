@@ -300,22 +300,23 @@ export default function BuilderPage() {
   return (
     <div className="flex flex-col h-screen w-full bg-background overflow-hidden">
       {/* Builder Toolbar */}
-      <div className="h-14 border-b border-border bg-card shrink-0 flex items-center justify-between px-4">
-        <div className="flex items-center gap-4">
+      <div className="h-11 border-b border-border bg-card shrink-0 flex items-center justify-between px-3 sm:px-4">
+        <div className="flex items-center gap-3">
           <Link href="/dashboard">
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-foreground leading-tight">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-foreground">
               App Builder
             </span>
-            <span className="text-[10px] text-muted-foreground font-mono">
+            <span className="text-muted-foreground/40 text-xs">/</span>
+            <span className="text-[11px] text-muted-foreground font-mono">
               {appId}
             </span>
           </div>

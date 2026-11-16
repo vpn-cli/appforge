@@ -117,6 +117,13 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        const target = e.target as HTMLElement | null;
+        if (target) {
+          const tagName = target.tagName.toLowerCase();
+          const isInput = tagName === "input" || tagName === "textarea" || target.isContentEditable;
+          const isEditor = target.closest(".monaco-editor, .cm-editor, [data-code-editor], textarea");
+          if (isInput || isEditor) return;
+        }
         e.preventDefault();
         setIsOpen(prev => !prev);
       }

@@ -60,7 +60,7 @@ export function LivePreview({ configStr }: { configStr: string }) {
   }
 
   return (
-    <div className="w-full h-[calc(100vh-56px)] bg-background overflow-y-auto p-4 md:p-8" data-lenis-prevent>
+    <div className="w-full h-[calc(100vh-44px)] bg-background overflow-y-auto p-4 md:p-8" data-lenis-prevent>
       <AnimatePresence mode="wait">
         {isStreaming ? (
           <PreviewSkeleton />

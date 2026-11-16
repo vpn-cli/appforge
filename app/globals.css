@@ -193,7 +193,7 @@
   --theme-error: #F43F5E;
   --theme-error-light: #2E1119;
   --theme-error-border: #8C2E44;
-  --theme-error-text: #F472B6; /* AA 6.77:1 on card, 6.55:1 on error-light */
+  --theme-error-text: #FB7185; /* Rose 400: AA 5.49:1 on card, 6.19:1 on error-light */
 
   --theme-warning: #F59E0B;
   --theme-warning-light: #2D1E0A;

@@ -53,13 +53,8 @@ async function DashboardContent() {
       <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 pt-10 pb-24 sm:pb-10 flex flex-col gap-10">
         
         {/* Header section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Creator Dashboard</h1>
-          </div>
-          <div className="text-xs font-mono bg-muted px-3 py-1.5 rounded-md border border-border text-muted-foreground">
-            User ID: {userId?.split('_')[1]?.substring(0, 5) || "MOCK"}***
-          </div>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Creator Dashboard</h1>
         </div>
 
         {/* Stats Strip */}
