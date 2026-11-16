@@ -22,7 +22,7 @@ className="bg-purple-500 text-gray-600"
 ## Typography
 
 - UI & Body Font: **Inter** (`--font-sans`)
-- Code & Tabular Data: **JetBrains Mono** (`--font-mono`)
+- Code & Tabular Data: **SF Mono / Geist Mono stack** (`--font-mono`): `"SF Mono"`, `ui-monospace`, `SFMono-Regular`, `Menlo`, `<Geist Mono>`, `monospace`
 
 | Element              | Font / Token          | Contrast (Light / Dark) |
 | -------------------- | --------------------- | ----------------------- |

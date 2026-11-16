@@ -1,21 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { inter, geistMono } from "@/lib/fonts";
 import "./globals.css";
 import { SmoothScroller } from "@/components/layout/SmoothScroller";
 import { ThemeProvider } from "next-themes";
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 import { Analytics } from '@vercel/analytics/next';
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "AppForge",
@@ -51,7 +41,7 @@ export default function RootLayout({
     >
       <html
         lang="en"
-        className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+        className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
         suppressHydrationWarning
       >
         <body className="min-h-full flex flex-col font-sans">
