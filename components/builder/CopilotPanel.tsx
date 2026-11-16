@@ -2,10 +2,29 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Loader2, Send } from "lucide-react";
 
-export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: { onApply: (components: unknown[]) => void, onStreamStart?: () => void, onStream?: (text: string) => void, onStreamEnd?: () => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [prompt, setPrompt] = useState("");
+export function CopilotPanel({
+  onApply,
+  onStreamStart,
+  onStream,
+  onStreamEnd,
+  initialPrompt,
+}: {
+  onApply: (components: unknown[]) => void;
+  onStreamStart?: () => void;
+  onStream?: (text: string) => void;
+  onStreamEnd?: () => void;
+  initialPrompt?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(!!initialPrompt);
+  const [prompt, setPrompt] = useState(initialPrompt || "");
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    if (initialPrompt) {
+      setPrompt(initialPrompt);
+      setIsOpen(true);
+    }
+  }, [initialPrompt]);
   const [messages, setMessages] = useState<{ role: "ai" | "user"; content: string }[]>([
     { role: "ai", content: "I am ready to build! Ask me to generate headers, grids, buttons, or full dashboard layouts for you." }
   ]);

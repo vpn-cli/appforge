@@ -9,7 +9,7 @@ import { validateConfig } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, Play, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth, SignInButton } from "@clerk/nextjs";
 import { getAppConfig, saveAppConfig, publishAppConfig } from "@/actions/apps";
 
@@ -65,6 +65,8 @@ export default function BuilderPage() {
   const params = useParams();
   const appId = params.appId as string;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialPrompt = searchParams.get("prompt") || undefined;
   const { isSignedIn } = useAuth();
   const isGuestRoute = appId.startsWith("template-") || appId === "mock-new-id";
   
@@ -380,6 +382,7 @@ export default function BuilderPage() {
               onApply={handleApplyCopilotComponents}
               onStreamStart={handleStreamStart}
               onStreamEnd={handleStreamEnd}
+              initialPrompt={initialPrompt}
             />
           </div>
           <div className="h-48 shrink-0">
