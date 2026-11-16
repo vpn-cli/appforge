@@ -1,8 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Loader2, Send, Sparkles } from "lucide-react";
+import { X, Loader2, ArrowUp } from "lucide-react";
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  onApply: (components: unknown[]) => void;
+  onStreamStart?: () => void;
+  onStream?: (text: string) => void;
+  onStreamEnd?: () => void;
+  initialPrompt?: string;
+  width: number;
+  onWidthChange: (w: number) => void;
+  inputRef?: React.RefObject<HTMLTextAreaElement | null>;
+};
+
+const suggestedPrompts = [
+  "Add a priority column to the table",
+  "Add a metrics card for weekly active users",
+  "Create a status badge with alert colors",
+];
 
 export function CopilotPanel({
   isOpen,
@@ -12,17 +31,22 @@ export function CopilotPanel({
   onStream,
   onStreamEnd,
   initialPrompt,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onApply: (components: unknown[]) => void;
-  onStreamStart?: () => void;
-  onStream?: (text: string) => void;
-  onStreamEnd?: () => void;
-  initialPrompt?: string;
-}) {
+  width,
+  onWidthChange,
+  inputRef: externalInputRef,
+}: Props) {
   const [prompt, setPrompt] = useState(initialPrompt || "");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [messages, setMessages] = useState<
+    { role: "ai" | "user"; content: string }[]
+  >([]);
+
+  const internalInputRef = useRef<HTMLTextAreaElement>(null);
+  const activeInputRef = externalInputRef || internalInputRef;
+
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartXRef = useRef<number>(0);
+  const startWidthRef = useRef<number>(width);
 
   useEffect(() => {
     if (initialPrompt) {
@@ -30,22 +54,45 @@ export function CopilotPanel({
     }
   }, [initialPrompt]);
 
-  const [messages, setMessages] = useState<
-    { role: "ai" | "user"; content: string }[]
-  >([
-    {
-      role: "ai",
-      content:
-        "I am ready to build! Describe what components, metrics, or tables you'd like to generate.",
+  // Handle resizing via left edge drag
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+      dragStartXRef.current = e.clientX;
+      startWidthRef.current = width;
     },
-  ]);
+    [width],
+  );
 
-  const handleGenerate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!prompt.trim() || isGenerating) return;
+  useEffect(() => {
+    if (!isDragging) return;
 
-    const currentPrompt = prompt;
-    setMessages((prev) => [...prev, { role: "user", content: currentPrompt }]);
+    const handleMouseMove = (e: MouseEvent) => {
+      // Dragging left increases width, dragging right decreases width
+      const delta = dragStartXRef.current - e.clientX;
+      const nextWidth = Math.min(560, Math.max(320, startWidthRef.current + delta));
+      onWidthChange(nextWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, onWidthChange]);
+
+  const handleGenerate = async (e?: React.FormEvent, customPrompt?: string) => {
+    if (e) e.preventDefault();
+    const targetPrompt = (customPrompt ?? prompt).trim();
+    if (!targetPrompt || isGenerating) return;
+
+    setMessages((prev) => [...prev, { role: "user", content: targetPrompt }]);
     setPrompt("");
 
     setIsGenerating(true);
@@ -56,7 +103,7 @@ export function CopilotPanel({
       const res = await fetch("/api/copilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: currentPrompt }),
+        body: JSON.stringify({ prompt: targetPrompt }),
       });
 
       if (!res.ok) {
@@ -120,7 +167,7 @@ export function CopilotPanel({
           ...prev,
           {
             role: "ai",
-            content: "I've synthesized the new components into your config!",
+            content: "Synthesized the requested changes into your config.",
           },
         ]);
       }
@@ -135,7 +182,7 @@ export function CopilotPanel({
           {
             role: "ai",
             content:
-              "Gemini API quota exhausted. Please check back shortly or update API keys.",
+              "AI rate limit reached. Please check back shortly or update API keys in .env.local.",
           },
         ]);
       } else {
@@ -152,57 +199,95 @@ export function CopilotPanel({
 
   if (!isOpen) return null;
 
+  const hasText = prompt.trim().length > 0;
+
   return (
-    <div className="fixed inset-y-0 right-0 z-[100] w-full sm:w-[420px] bg-card border-l border-border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
-      {/* Header */}
-      <div className="h-11 px-4 border-b border-border bg-card flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-brand" />
-          <span className="font-semibold text-xs text-foreground uppercase tracking-wider">
-            Gemini Copilot
-          </span>
-          <span className="text-[10px] font-mono text-muted-foreground border border-border px-1 py-0.5 rounded">
-            ⌘K
+    <aside
+      style={{ width: `${width}px` }}
+      className="relative shrink-0 h-full bg-card border-l border-border flex flex-col overflow-hidden select-none z-10"
+      aria-label="Copilot AI Panel"
+    >
+      {/* Left Resize Drag Handle */}
+      <div
+        onMouseDown={handleMouseDown}
+        className={`absolute left-0 top-0 bottom-0 w-1.5 -ml-0.5 cursor-col-resize hover:bg-brand/50 transition-colors z-20 ${
+          isDragging ? "bg-brand w-2" : ""
+        }`}
+        title="Drag to resize panel (320px - 560px)"
+      />
+
+      {/* Header: "Copilot" in sentence case with "Gemini" as small muted text, no sparkle/robot/star icons */}
+      <div className="h-9 px-3.5 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-semibold text-foreground">Copilot</span>
+          <span className="text-[11px] text-muted-foreground font-normal">
+            Gemini
           </span>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded hover:bg-muted"
+          className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
           aria-label="Close Copilot"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Messages Feed */}
+      {/* Messages / Empty State Feed */}
       <div
         data-lenis-prevent
         className="flex-1 bg-background/50 overflow-y-auto p-4 text-xs font-medium flex flex-col space-y-4"
       >
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`flex w-full ${m.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`p-3 max-w-[85%] text-xs leading-relaxed rounded-lg border ${
-                m.role === "user"
-                  ? "bg-brand text-text-inverse border-brand shadow-xs"
-                  : "bg-card border-border text-foreground shadow-xs"
-              }`}
-            >
-              <span className="leading-relaxed whitespace-pre-wrap">
-                {m.content}
-              </span>
+        {messages.length === 0 ? (
+          <div className="flex flex-col gap-3 py-2">
+            <p className="text-xs text-muted-foreground font-medium">
+              Describe a change to this app.
+            </p>
+            <div className="flex flex-col gap-2">
+              {suggestedPrompts.map((example, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setPrompt(example);
+                    activeInputRef.current?.focus();
+                  }}
+                  className="text-left text-xs p-2.5 rounded-md bg-muted/40 hover:bg-muted text-foreground border border-border/50 hover:border-border transition-colors leading-relaxed"
+                >
+                  {example}
+                </button>
+              ))}
             </div>
           </div>
-        ))}
+        ) : (
+          messages.map((m, i) => (
+            <div
+              key={i}
+              className={`flex w-full ${
+                m.role === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`p-3 max-w-[85%] text-xs leading-relaxed rounded-lg border ${
+                  m.role === "user"
+                    ? "bg-brand text-text-inverse border-brand shadow-xs"
+                    : "bg-card border-border text-foreground shadow-xs"
+                }`}
+              >
+                <span className="leading-relaxed whitespace-pre-wrap">
+                  {m.content}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+
         {isGenerating && (
           <div className="flex w-full justify-start">
-            <div className="bg-card border border-border text-foreground rounded-lg p-3 inline-flex items-center gap-2.5 text-xs shadow-xs">
-              <Loader2 className="w-4 h-4 animate-spin text-brand" />
-              <span>Generating JSON schema...</span>
+            <div className="bg-card border border-border text-foreground rounded-lg p-3 inline-flex items-center gap-2 text-xs shadow-xs">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-brand" />
+              <span>Generating changes...</span>
             </div>
           </div>
         )}
@@ -210,37 +295,43 @@ export function CopilotPanel({
 
       {/* Input Form */}
       <form
-        onSubmit={handleGenerate}
+        onSubmit={(e) => handleGenerate(e)}
         className="p-3 border-t border-border bg-card flex items-end gap-2 shrink-0"
       >
         <textarea
+          ref={activeInputRef}
           data-lenis-prevent
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              void handleGenerate(e);
+              void handleGenerate();
             }
           }}
-          placeholder="e.g. Add 3 KPI cards for fleet telemetry and an active incidents table..."
-          className="flex-1 bg-muted/60 border border-border rounded-lg min-h-[42px] max-h-[120px] py-2 px-3 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
+          placeholder="Describe a change to this app..."
+          className="flex-1 bg-muted/50 border border-border focus:border-brand rounded-md min-h-[40px] max-h-[120px] py-2 px-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
           disabled={isGenerating}
           rows={2}
         />
         <Button
           type="submit"
-          disabled={isGenerating || !prompt.trim()}
+          disabled={isGenerating || !hasText}
           size="sm"
-          className="h-[42px] px-3.5 rounded-lg bg-brand hover:bg-brand-dark text-text-inverse shrink-0 transition-colors disabled:opacity-50"
+          className={`h-[40px] w-[40px] p-0 rounded-md shrink-0 transition-colors flex items-center justify-center ${
+            hasText
+              ? "bg-brand hover:bg-brand-dark text-text-inverse shadow-xs cursor-pointer"
+              : "bg-muted text-muted-foreground/60 border border-border/50 cursor-not-allowed opacity-60"
+          }`}
+          aria-label="Send prompt to Copilot"
         >
           {isGenerating ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
           ) : (
-            <Send className="w-4 h-4" />
+            <ArrowUp className="w-4 h-4" />
           )}
         </Button>
       </form>
-    </div>
+    </aside>
   );
 }

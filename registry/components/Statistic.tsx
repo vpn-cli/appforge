@@ -33,7 +33,7 @@ export function Statistic({ label, value, trend, trendValue }: StatisticProps) {
     <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-sm flex flex-col gap-4">
       <p className="text-xs font-medium text-muted-foreground tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{label || "Statistic"}</p>
       <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-2xl font-bold text-foreground font-mono tracking-tighter shrink-0 leading-none">
+        <h3 className="text-2xl font-bold text-foreground font-sans tabular-nums tracking-tight shrink-0 leading-none">
           {formatCompactString(value)}
         </h3>
         {trend && trendValue && (

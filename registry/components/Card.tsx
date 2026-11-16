@@ -27,7 +27,7 @@ export function Card({
             <p
               className={
                 isMetric
-                  ? "text-xl font-bold tracking-tight text-foreground font-mono tabular-nums leading-snug"
+                  ? "text-xl font-bold tracking-tight text-foreground font-sans tabular-nums leading-snug"
                   : "text-sm font-medium text-foreground leading-snug"
               }
             >

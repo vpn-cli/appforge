@@ -60,9 +60,8 @@ export function ValidationPanel({
             </>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono">
-          <span>0 errors</span>
-          <ChevronUp className="w-3 h-3" />
+        <div className="flex items-center text-muted-foreground">
+          <ChevronUp className="w-3.5 h-3.5" />
         </div>
       </button>
     );
@@ -77,8 +76,8 @@ export function ValidationPanel({
         aria-label="Collapse validation log"
       >
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Validation Log
+          <span className="text-[11px] font-medium text-muted-foreground">
+            Validation log
           </span>
           {!isGenerating && (
             <div className="flex items-center gap-2.5">

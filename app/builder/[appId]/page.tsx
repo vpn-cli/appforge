@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
 import { CopilotPanel } from "@/components/builder/CopilotPanel";
 import { LivePreview } from "@/components/builder/LivePreview";
@@ -12,19 +12,13 @@ import {
   Save,
   Play,
   Loader2,
-  Sparkles,
   Sun,
   Moon,
   FileCode,
   Layout,
-  Code2,
-  Eye,
-  Columns,
   Monitor,
   Tablet,
   Smartphone,
-  ExternalLink,
-  RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -98,23 +92,53 @@ const defaultMockConfig = JSON.stringify(
   2,
 );
 
-type Direction = "A" | "B";
 type ViewportMode = "desktop" | "tablet" | "mobile";
-type ViewMode = "split" | "code" | "preview";
 
 export default function BuilderPage() {
   const params = useParams();
   const appId = (params?.appId as string) || "demo";
   const searchParams = useSearchParams();
   const initialPrompt = searchParams.get("prompt") || undefined;
-  const initialDirection = (searchParams.get("direction") as Direction) || "A";
 
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [direction, setDirection] = useState<Direction>(initialDirection);
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
-  const [viewMode, setViewMode] = useState<ViewMode>("split");
-  const [isCopilotOpen, setIsCopilotOpen] = useState(!!initialPrompt);
+
+  const copilotInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Remember open/closed per browser wrapped in try/catch (default open)
+  const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(() => {
+    if (initialPrompt) return true;
+    try {
+      const saved = localStorage.getItem("appforge_copilot_open");
+      if (saved !== null) return saved === "true";
+    } catch {}
+    return true; // open by default
+  });
+
+  // Remember width per browser wrapped in try/catch (default 380px, bounded 320 - 560)
+  const [copilotWidth, setCopilotWidth] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem("appforge_copilot_width");
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 320 && parsed <= 560) return parsed;
+      }
+    } catch {}
+    return 380;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("appforge_copilot_open", String(isCopilotOpen));
+    } catch {}
+  }, [isCopilotOpen]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("appforge_copilot_width", String(copilotWidth));
+    } catch {}
+  }, [copilotWidth]);
 
   const { isSignedIn } = useAuth();
   const isGuestRoute = appId.startsWith("template-") || appId === "mock-new-id";
@@ -148,8 +172,14 @@ export default function BuilderPage() {
                     },
                     {
                       type: "Card",
-                      title: "John Doe",
-                      subtitle: "Developer · On Call",
+                      title: "Sarah Jenkins",
+                      subtitle: "Product Lead",
+                      footer: [{ type: "ButtonAction", label: "View Profile" }],
+                    },
+                    {
+                      type: "Card",
+                      title: "Alex Thorne",
+                      subtitle: "Staff Engineer",
                       footer: [{ type: "ButtonAction", label: "View Profile" }],
                     },
                   ],
@@ -170,6 +200,7 @@ export default function BuilderPage() {
     [configStr],
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [authRequireMessage, setAuthRequireMessage] = useState<string | null>(
     null,
@@ -182,17 +213,6 @@ export default function BuilderPage() {
 
   useEffect(() => {
     setMounted(true);
-    const dirParam = searchParams.get("direction");
-    if (dirParam === "A" || dirParam === "B") {
-      setDirection(dirParam);
-    }
-    const themeParam = searchParams.get("theme");
-    if (themeParam === "light" || themeParam === "dark") {
-      setTheme(themeParam);
-    }
-  }, [searchParams, setTheme]);
-
-  useEffect(() => {
     if (!isGuestRoute && isSignedIn) {
       getAppConfig(appId)
         .then((config) => {
@@ -204,63 +224,74 @@ export default function BuilderPage() {
     }
   }, [appId, isGuestRoute, isSignedIn]);
 
-  // Global shortcut ⌘K for Copilot
+  // ⌘K / Ctrl+K keyboard shortcut toggles Copilot and focuses input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        const target = e.target as HTMLElement | null;
-        if (target) {
-          const tagName = target.tagName.toLowerCase();
-          const isInput =
-            tagName === "input" ||
-            tagName === "textarea" ||
-            target.isContentEditable;
-          const isEditor = target.closest(
-            ".monaco-editor, .cm-editor, [data-code-editor], textarea",
-          );
-          if (isInput || isEditor) return;
+        const activeEl = document.activeElement;
+        // Keep editor-focus exception if user is actively typing inside Monaco
+        if (activeEl?.closest(".monaco-editor")) {
+          return;
         }
+
         e.preventDefault();
-        setIsCopilotOpen((prev) => !prev);
+        setIsCopilotOpen((prev) => {
+          const next = !prev;
+          if (next) {
+            setTimeout(() => copilotInputRef.current?.focus(), 60);
+          }
+          return next;
+        });
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const handleToggleCopilot = () => {
+    setIsCopilotOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setTimeout(() => copilotInputRef.current?.focus(), 60);
+      }
+      return next;
+    });
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
-    if (!isSignedIn) {
-      setTimeout(() => {
-        setNotificationModal({
-          type: "success",
-          title: "Draft Saved Locally",
-          message:
-            "Guest changes are saved securely to your browser temporarily. Sign in to sync across devices!",
-        });
-        setIsSaving(false);
-      }, 400);
-      return;
-    }
-
     try {
       const res = await saveAppConfig(appId, configStr);
-      if (res && res.success === false) throw new Error(res.error);
-      setNotificationModal({
-        type: "success",
-        title: "Saved Successfully",
-        message: "Your draft has been saved securely to the database.",
-      });
+      if (!res.success) {
+        if (res.error?.toLowerCase().includes("unauthorized")) {
+          setAuthRequireMessage(
+            "Please sign in to save your application to your personal account.",
+          );
+        } else {
+          setNotificationModal({
+            type: "error",
+            title: "Saving Failed",
+            message: res.error || "Could not save your configuration.",
+          });
+        }
+      } else {
+        setNotificationModal({
+          type: "success",
+          title: "Draft Saved",
+          message: "All configurations and AST properties are synchronized.",
+        });
+      }
     } catch (e: unknown) {
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
         setAuthRequireMessage(
-          "Your session expired. Please sign in to save your draft.",
+          "Your session expired. Please sign in to save your changes.",
         );
       } else {
         setNotificationModal({
           type: "error",
-          title: "Failed to Save",
+          title: "Network Error",
           message: msg,
         });
       }
@@ -269,34 +300,30 @@ export default function BuilderPage() {
     }
   };
 
-  const [isPublishing, setIsPublishing] = useState(false);
-
   const handlePublish = async () => {
     setIsPublishing(true);
-    if (!isSignedIn) {
-      setTimeout(() => {
-        setNotificationModal({
-          type: "success",
-          title: "Simulated Deployment",
-          message:
-            "Guest preview published locally. Sign in with Clerk to generate a permanent public URL.",
-        });
-        setIsPublishing(false);
-      }, 600);
-      return;
-    }
-
     try {
       const res = await publishAppConfig(appId, configStr);
-      if (res && res.success === false) throw new Error(res.error);
-      setNotificationModal({
-        type: "success",
-        title: "Published Successfully",
-        message: "Redirecting you to the live application...",
-      });
-      setTimeout(() => {
-        window.location.href = `/apps/${appId}`;
-      }, 1200);
+      if (!res.success) {
+        if (res.error?.toLowerCase().includes("unauthorized")) {
+          setAuthRequireMessage(
+            "Please sign in to deploy and publish your dynamic application.",
+          );
+        } else {
+          setNotificationModal({
+            type: "error",
+            title: "Deployment Error",
+            message: res.error || "Failed to publish app runtime.",
+          });
+        }
+      } else {
+        setNotificationModal({
+          type: "success",
+          title: "App Published!",
+          message:
+            "Your application has been deployed live with updated schema routes.",
+        });
+      }
     } catch (e: unknown) {
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
@@ -375,8 +402,8 @@ export default function BuilderPage() {
     <div className="flex flex-col h-screen w-full bg-background overflow-hidden text-foreground antialiased select-none">
       {/* =========================================================================
           TOP APPLICATION TOOLBAR (h-11, 44px)
-          Unified surface, 1px border-border, Copilot trigger left of Save Draft,
-          Breadcrumb in regular sans font!
+          Unified surface, 1px border-border, Copilot trigger always visible,
+          No Dir A / Dir B switcher.
           ========================================================================= */}
       <header className="h-11 border-b border-border bg-card shrink-0 flex items-center justify-between px-3 sm:px-4 z-20">
         {/* Left: Navigation & Sans Breadcrumb */}
@@ -406,83 +433,14 @@ export default function BuilderPage() {
           </div>
         </div>
 
-        {/* Center: Direction B View Mode Switcher / Direction A Filename */}
-        {direction === "B" ? (
-          <div className="hidden md:flex items-center bg-muted/60 p-0.5 rounded-lg border border-border text-xs">
-            <button
-              type="button"
-              onClick={() => setViewMode("code")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
-                viewMode === "code"
-                  ? "bg-card text-foreground shadow-xs font-medium"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Code2 className="w-3.5 h-3.5" />
-              <span>Code</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("split")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
-                viewMode === "split"
-                  ? "bg-card text-foreground shadow-xs font-medium"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Columns className="w-3.5 h-3.5" />
-              <span>Split</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("preview")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors ${
-                viewMode === "preview"
-                  ? "bg-card text-foreground shadow-xs font-medium"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Canvas</span>
-            </button>
-          </div>
-        ) : (
-          <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-muted/40 rounded-md border border-border text-[11px] font-mono text-muted-foreground">
-            <FileCode className="w-3.5 h-3.5 text-brand" />
-            <span>config.json</span>
-          </div>
-        )}
+        {/* Center: File indicator */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-muted/40 rounded-md border border-border text-[11px] font-mono text-muted-foreground">
+          <FileCode className="w-3.5 h-3.5 text-brand" />
+          <span>config.json</span>
+        </div>
 
         {/* Right Toolbar Actions */}
         <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Direction Switcher Pill (For Visual Target Evaluation) */}
-          <div className="flex items-center bg-muted/50 p-0.5 rounded-md border border-border text-[10px] font-sans font-medium mr-1">
-            <button
-              type="button"
-              onClick={() => setDirection("A")}
-              className={`px-2 py-0.5 rounded transition-colors ${
-                direction === "A"
-                  ? "bg-card text-foreground shadow-xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              title="Direction A: Studio IDE (Zed + Linear)"
-            >
-              Dir A
-            </button>
-            <button
-              type="button"
-              onClick={() => setDirection("B")}
-              className={`px-2 py-0.5 rounded transition-colors ${
-                direction === "B"
-                  ? "bg-card text-foreground shadow-xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              title="Direction B: Command Canvas (v0 + Linear)"
-            >
-              Dir B
-            </button>
-          </div>
-
           {/* Theme Toggle (Light / Dark) */}
           {mounted && (
             <Button
@@ -502,17 +460,19 @@ export default function BuilderPage() {
             </Button>
           )}
 
-          {/* Copilot Trigger: MOVED OUT of the code area into top toolbar, left of Save Draft */}
+          {/* Visible "Copilot ⌘K" toggle button (Always present, no sparkle/robot/star icons) */}
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setIsCopilotOpen((prev) => !prev)}
-            className="h-8 bg-card border-border hover:bg-muted hover:text-foreground text-foreground font-medium text-xs gap-1.5 transition-colors shadow-xs"
-            aria-label="Trigger Gemini Copilot"
+            onClick={handleToggleCopilot}
+            className={`h-8 px-2.5 border-border hover:bg-muted text-foreground font-medium text-xs gap-1.5 transition-colors shadow-xs ${
+              isCopilotOpen ? "bg-muted font-semibold" : "bg-card"
+            }`}
+            aria-label="Toggle Copilot panel"
+            aria-expanded={isCopilotOpen}
           >
-            <Sparkles className="w-3.5 h-3.5 text-brand" />
-            <span className="hidden sm:inline">Copilot</span>
-            <kbd className="hidden md:inline-block px-1 py-0.2 text-[9px] font-mono bg-muted text-muted-foreground rounded border border-border">
+            <span>Copilot</span>
+            <kbd className="px-1 py-0.2 text-[9px] font-mono bg-muted-foreground/10 text-muted-foreground rounded border border-border">
               ⌘K
             </kbd>
           </Button>
@@ -552,139 +512,128 @@ export default function BuilderPage() {
 
       {/* =========================================================================
           WORKSPACE WORK AREA
-          Consistent 36px (h-9) panel headers, 1px border-border, unified surfaces
+          Docked Copilot: sits beside preview and shrinks it. Never overlays.
           ========================================================================= */}
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-        {/* LEFT COLUMN: Editor & Validation */}
-        {(direction === "A" || viewMode !== "preview") && (
-          <section
-            aria-label="Code Editor and Validation Panel"
-            className={`${
-              direction === "B" && viewMode === "code"
-                ? "w-full"
-                : "w-full md:w-1/2"
-            } flex flex-col h-full border-b md:border-b-0 md:border-r border-border bg-card`}
-          >
-            {/* Editor Panel Header: 36px (h-9) */}
-            <div className="h-9 px-3.5 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
-              <div className="flex items-center gap-2">
-                <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  Config Editor
-                </span>
-                <span className="text-[10px] text-muted-foreground font-mono">
-                  (JSON)
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                <span className="font-mono">UTF-8</span>
-              </div>
+        {/* LEFT COLUMN: Config Editor & Validation */}
+        <section
+          aria-label="Code Editor and Validation Panel"
+          className={`${
+            isCopilotOpen
+              ? "w-full md:flex-1 md:min-w-[380px] md:max-w-[50%]"
+              : "w-full md:w-1/2"
+          } flex flex-col h-full border-b md:border-b-0 md:border-r border-border bg-card shrink-0`}
+        >
+          {/* Editor Panel Header: 36px (h-9) in sentence case */}
+          <div className="h-9 px-3.5 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
+            <div className="flex items-center gap-2">
+              <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs font-medium text-foreground">
+                Config
+              </span>
             </div>
-
-            {/* Monaco Editor (No floating overlays, Geist Mono font stack, custom theme) */}
-            <div className="flex-1 min-h-0 relative bg-card overflow-hidden">
-              <ConfigEditor
-                value={configStr}
-                onChange={(val) => setConfigStr(val || "")}
-              />
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span className="font-mono">UTF-8</span>
             </div>
+          </div>
 
-            {/* Validation Log (Collapsed to single 28px row when 0 issues, expandable) */}
-            <ValidationPanel
-              errors={errors}
-              warnings={warnings}
-              isGenerating={isGenerating}
+          {/* Monaco Editor */}
+          <div className="flex-1 min-h-0 relative bg-card overflow-hidden">
+            <ConfigEditor
+              value={configStr}
+              onChange={(val) => setConfigStr(val || "")}
             />
-          </section>
-        )}
+          </div>
 
-        {/* RIGHT COLUMN: Framed Canvas Preview */}
-        {(direction === "A" || viewMode !== "code") && (
-          <section
-            aria-label="Application Live Preview Canvas"
-            className={`${
-              direction === "B" && viewMode === "preview"
-                ? "w-full"
-                : "w-full md:w-1/2"
-            } flex flex-col h-full bg-background`}
-          >
-            {/* Preview Panel Header: 36px (h-9) */}
-            <div className="h-9 px-3.5 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
-              <div className="flex items-center gap-2">
-                <Layout className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  Live Preview
-                </span>
-                <span className="text-[10px] text-muted-foreground font-sans">
-                  · Dynamic Runtime
-                </span>
-              </div>
+          {/* Validation Log */}
+          <ValidationPanel
+            errors={errors}
+            warnings={warnings}
+            isGenerating={isGenerating}
+          />
+        </section>
 
-              {/* Viewport Width Controls in Direction A */}
-              <div className="flex items-center gap-1 bg-muted/50 p-0.5 rounded border border-border">
-                <button
-                  type="button"
-                  onClick={() => setViewport("desktop")}
-                  className={`p-1 rounded transition-colors ${
-                    viewport === "desktop"
-                      ? "bg-card text-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  title="Desktop (100%)"
-                  aria-label="Desktop viewport"
-                >
-                  <Monitor className="w-3 h-3" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewport("tablet")}
-                  className={`p-1 rounded transition-colors ${
-                    viewport === "tablet"
-                      ? "bg-card text-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  title="Tablet (768px)"
-                  aria-label="Tablet viewport"
-                >
-                  <Tablet className="w-3 h-3" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewport("mobile")}
-                  className={`p-1 rounded transition-colors ${
-                    viewport === "mobile"
-                      ? "bg-card text-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  title="Mobile (375px)"
-                  aria-label="Mobile viewport"
-                >
-                  <Smartphone className="w-3 h-3" />
-                </button>
-              </div>
+        {/* MIDDLE COLUMN: Live Preview Canvas (shrinks when Copilot is open) */}
+        <section
+          aria-label="Application Live Preview Canvas"
+          className="flex-1 min-w-0 flex flex-col h-full bg-background overflow-hidden"
+        >
+          {/* Preview Panel Header: 36px (h-9) in sentence case */}
+          <div className="h-9 px-3.5 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
+            <div className="flex items-center gap-2">
+              <Layout className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs font-medium text-foreground">
+                Preview
+              </span>
             </div>
 
-            {/* Framed Browser Viewport Container */}
-            <div className="flex-1 min-h-0 bg-background overflow-hidden relative">
-              <LivePreview
-                configStr={configStr}
-                appId={appId}
-                viewport={viewport}
-                onViewportChange={setViewport}
-                showInnerToolbar={direction === "A"}
-              />
+            {/* Viewport Width Controls */}
+            <div className="flex items-center gap-1 bg-muted/50 p-0.5 rounded border border-border">
+              <button
+                type="button"
+                onClick={() => setViewport("desktop")}
+                className={`p-1 rounded transition-colors ${
+                  viewport === "desktop"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Desktop"
+                aria-label="Desktop viewport"
+              >
+                <Monitor className="w-3 h-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewport("tablet")}
+                className={`p-1 rounded transition-colors ${
+                  viewport === "tablet"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Tablet"
+                aria-label="Tablet viewport"
+              >
+                <Tablet className="w-3 h-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewport("mobile")}
+                className={`p-1 rounded transition-colors ${
+                  viewport === "mobile"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Mobile"
+                aria-label="Mobile viewport"
+              >
+                <Smartphone className="w-3 h-3" />
+              </button>
             </div>
-          </section>
-        )}
+          </div>
 
-        {/* Copilot Drawer (Docked from the right, not floating over editor text) */}
+          {/* Framed Browser Viewport Container */}
+          <div className="flex-1 min-h-0 bg-background overflow-hidden relative">
+            <LivePreview
+              configStr={configStr}
+              appId={appId}
+              viewport={viewport}
+              onViewportChange={setViewport}
+              showInnerToolbar={true}
+            />
+          </div>
+        </section>
+
+        {/* RIGHT COLUMN: Docked Copilot Panel (beside preview, resizable 320 - 560px) */}
         <CopilotPanel
           isOpen={isCopilotOpen}
+          width={copilotWidth}
+          onWidthChange={setCopilotWidth}
           onClose={() => setIsCopilotOpen(false)}
           onApply={handleApplyCopilotComponents}
           onStreamStart={handleStreamStart}
           onStreamEnd={handleStreamEnd}
           initialPrompt={initialPrompt}
+          inputRef={copilotInputRef}
         />
       </main>
 
