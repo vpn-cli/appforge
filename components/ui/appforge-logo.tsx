@@ -52,7 +52,7 @@ export function AppForgeLogo({ className = "", size = 24, isHovered }: { classNa
         cx="50"
         cy="40"
         r="4"
-        fill="#FFFFFF"
+        fill="currentColor"
         variants={{
           rest: { scale: 0, opacity: 0 },
           hover: { scale: 1.5, opacity: 1, y: -10 }

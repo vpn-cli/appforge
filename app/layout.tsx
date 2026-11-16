@@ -38,6 +38,26 @@ export default function RootLayout({
         className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
         suppressHydrationWarning
       >
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                try {
+                  const p = new URLSearchParams(window.location.search).get('theme');
+                  if (p === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.style.colorScheme = 'light';
+                    localStorage.setItem('theme', 'light');
+                  } else if (p === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.style.colorScheme = 'dark';
+                    localStorage.setItem('theme', 'dark');
+                  }
+                } catch(e) {}
+              `,
+            }}
+          />
+        </head>
         <body className="min-h-full flex flex-col font-sans">
           <a
             href="#main-content"
