@@ -48,6 +48,10 @@ agent-skills
 agent_skills
 claude.md
 agents.md
+# Screenshots & Visual Audits
+.screenshots/
+public/audit-screenshots/
+.taste-skill/
 
 CLAUDE.md
 AGENTS.md

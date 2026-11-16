@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { LayoutTemplate } from "lucide-react";
@@ -85,22 +85,22 @@ export function Hero() {
           className="bg-card rounded-xl border border-border shadow-[0_15px_35px_-10px_rgba(0,0,0,0.1),0_5px_15px_-5px_rgba(108,87,164,0.1)] flex flex-col md:flex-row overflow-hidden text-left min-h-[440px] transition-all duration-500 relative z-10 w-full"
         >
           {/* Editor Side: Full Mac Window Pane */}
-          <div className="w-full md:w-1/2 min-w-0 bg-[#1a1b24]/90 backdrop-blur-xl border-b md:border-b-0 md:border-r border-border relative flex flex-col font-mono overflow-hidden">
+          <div className="w-full md:w-1/2 min-w-0 bg-card/95 backdrop-blur-xl border-b md:border-b-0 md:border-r border-border relative flex flex-col font-mono overflow-hidden">
             {/* Traffic Light Menu Bar */}
-            <div className="h-12 bg-[#2d2d33]/50 border-b border-white/5 flex items-center px-5 relative shrink-0">
+            <div className="h-12 bg-muted/50 border-b border-border flex items-center px-5 relative shrink-0">
               <div className="flex gap-[6px]">
-                <div className="w-3.5 h-3.5 rounded-full bg-[#ff5f56]" />
-                <div className="w-3.5 h-3.5 rounded-full bg-[#ffbd2e]" />
-                <div className="w-3.5 h-3.5 rounded-full bg-[#27c93f]" />
+                <div className="w-3.5 h-3.5 rounded-full bg-error" />
+                <div className="w-3.5 h-3.5 rounded-full bg-warning" />
+                <div className="w-3.5 h-3.5 rounded-full bg-success" />
               </div>
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                 <span className="text-white/30 text-xs tracking-widest font-semibold">app.config.json</span>
+                 <span className="text-muted-foreground text-xs tracking-widest font-semibold">app.config.json</span>
               </div>
             </div>
             
             {/* Code */}
             <div className="p-8 md:p-10 overflow-x-auto flex-1 relative flex items-center">
-              <pre className="text-sm md:text-[15px] leading-loose text-[#D4D4D4]">
+              <pre className="text-sm md:text-[15px] leading-loose text-foreground">
 {`{
   "app": "ops_dashboard",
   "pages": [{

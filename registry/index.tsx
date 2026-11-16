@@ -34,7 +34,7 @@ export function RenderNode({ config }: { config: unknown }) {
   
   if (!type) {
     return (
-      <div className="p-3 bg-[#FFBD2E]/10 border border-[#FFBD2E]/20 text-[#FFBD2E] text-[11px] font-mono rounded flex flex-col gap-1 my-2">
+      <div className="p-3 bg-warning-light border border-warning-border text-warning-text text-xs font-mono rounded-md flex flex-col gap-1 my-2">
         <span className="font-bold tracking-widest uppercase">Warning</span>
         <span>A nested component block is missing its &quot;type&quot; identifier.</span>
       </div>
@@ -45,9 +45,9 @@ export function RenderNode({ config }: { config: unknown }) {
 
   if (!Component) {
     return (
-      <div className="p-3 bg-[#FF5F56]/10 border border-[#FF5F56]/20 text-[#FF5F56] text-[11px] font-mono rounded relative overflow-hidden group cursor-help my-2">
+      <div className="p-3 bg-error-light border border-error-border text-error-text text-xs font-mono rounded-md relative overflow-hidden group cursor-help my-2">
         <span className="font-bold mr-1 uppercase">Unknown Component Type:</span> {String(type)}
-        <div className="absolute inset-0 bg-[#FF5F56]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-error/5 opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
     );
   }

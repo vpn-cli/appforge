@@ -20,24 +20,24 @@ export function FallbackEmpty() {
       <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-6 shadow-inner">
         <FolderPlus className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h3 className="text-xl font-bold text-foreground mb-2">No Applications Found</h3>
+      <h3 className="text-xl font-bold text-foreground mb-1">No apps yet</h3>
       <p className="text-muted-foreground max-w-sm mb-6 text-sm">
-        Your workspace is completely empty. Initiate your first project instance to begin leveraging the AppForge engine.
+        Create one from a prompt.
       </p>
       <Button 
         onClick={handleCreate} 
         disabled={isPending}
-        className="bg-brand hover:bg-brand-dark text-white font-semibold transition-all px-6 py-2 shadow-lg shadow-brand/10 h-10"
+        className="bg-brand hover:bg-brand-dark text-text-inverse font-medium transition-colors px-6 py-2 h-9"
       >
         {isPending ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Booting Template...
+            Creating...
           </>
         ) : (
           <>
             <FolderPlus className="w-4 h-4 mr-2" />
-            Initialize First App
+            Create App
           </>
         )}
       </Button>

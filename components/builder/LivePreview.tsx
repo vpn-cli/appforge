@@ -1,4 +1,4 @@
-﻿import { RenderNode } from "@/registry";
+import { RenderNode } from "@/registry";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -26,17 +26,37 @@ function PreviewSkeleton() {
   );
 }
 
+function extractJsonParsePosition(err: unknown, raw: string): { line?: number; column?: number } {
+  if (!(err instanceof Error)) return {};
+  const msg = err.message;
+  const lineColMatch = msg.match(/line\s+(\d+).*?column\s+(\d+)/i);
+  if (lineColMatch) {
+    return { line: parseInt(lineColMatch[1], 10), column: parseInt(lineColMatch[2], 10) };
+  }
+  const posMatch = msg.match(/position\s+(\d+)/i);
+  if (posMatch) {
+    const pos = parseInt(posMatch[1], 10);
+    if (!isNaN(pos) && pos >= 0 && pos <= raw.length) {
+      const lines = raw.slice(0, pos).split("\n");
+      return { line: lines.length, column: lines[lines.length - 1].length + 1 };
+    }
+  }
+  return {};
+}
+
 export function LivePreview({ configStr }: { configStr: string }) {
   let config;
   let parseError = false;
+  let errorPosition: { line?: number; column?: number } = {};
   const isStreaming = configStr.includes('"<<<REPLACE>>>"');
 
   try {
     if (!isStreaming) {
       config = JSON.parse(configStr);
     }
-  } catch {
+  } catch (err: unknown) {
     parseError = true;
+    errorPosition = extractJsonParsePosition(err, configStr);
   }
 
   return (
@@ -50,10 +70,16 @@ export function LivePreview({ configStr }: { configStr: string }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-[#FFBD2E]/80 text-sm flex flex-col gap-4 items-center justify-center h-full font-mono"
+            className="text-warning-text text-sm flex flex-col gap-2 items-center justify-center h-full font-mono p-6 bg-warning-light/30 border border-warning-border/50 rounded-lg max-w-md mx-auto"
           >
-            <span className="text-4xl opacity-50">⚠️</span>
-            Syntax Error in JSON Config. Fix commas/quotes to compile.
+            <span className="text-2xl opacity-80">⚠️</span>
+            <span className="text-center font-semibold">
+              Malformed configuration JSON
+              {errorPosition.line ? ` at line ${errorPosition.line}, column ${errorPosition.column}` : ""}
+            </span>
+            <span className="text-center text-xs text-muted-foreground font-sans">
+              Inspect quotes, commas, and entity structures.
+            </span>
           </motion.div>
         ) : (
           <motion.div 

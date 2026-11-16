@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -39,21 +39,11 @@ export function Navbar() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-         <motion.div 
-          animate={isHovered ? { scale: 1.1 } : { scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 10 }}
-          className="w-10 h-10 bg-gradient-to-br from-brand to-brand-dark rounded-xl flex items-center justify-center shadow-lg shadow-brand/30 relative overflow-hidden"
-        >
-           <AppForgeLogo size={22} isHovered={isHovered} className="text-white drop-shadow-md relative z-10" />
-           <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        </motion.div>
-        <div className="relative font-bold text-xl tracking-tight">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand to-brand-dark dark:from-indigo-200 dark:to-purple-300 transition-opacity duration-300 group-hover:opacity-0 relative z-10 block">
-            AppForge
-          </span>
-          <span className="absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-clip-text text-transparent animate-text-gradient bg-[linear-gradient(to_right,#4C1D95,#7E22CE,#BE185D,#4C1D95)] dark:bg-[linear-gradient(to_right,#C084FC,#F472B6,#818CF8,#C084FC)] bg-[length:200%_auto] z-20 block whitespace-nowrap">
-            AppForge
-          </span>
+         <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center text-text-inverse shadow-sm relative overflow-hidden">
+           <AppForgeLogo size={18} isHovered={isHovered} className="text-white drop-shadow-sm relative z-10" />
+         </div>
+        <div className="font-bold text-lg tracking-tight text-foreground group-hover:text-brand transition-colors">
+          AppForge
         </div>
       </Link>
 
@@ -103,9 +93,9 @@ export function Navbar() {
               </Button>
             </SignInButton>
           </motion.div>
-          <motion.div variants={item} className="hidden sm:block" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <motion.div variants={item} className="hidden sm:block" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-              <Button className="bg-brand hover:bg-brand-dark text-white shadow-md shadow-brand/20">
+              <Button className="bg-brand hover:bg-brand-dark text-text-inverse font-medium text-xs h-8 px-3 shadow-sm transition-colors">
                 Start for free
               </Button>
             </SignUpButton>
@@ -153,7 +143,7 @@ export function Navbar() {
                   </Button>
                 </SignInButton>
                 <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-                  <Button className="w-full justify-center h-10 bg-brand hover:bg-brand-dark text-white shadow-brand/20">
+                  <Button className="w-full justify-center h-10 bg-brand hover:bg-brand-dark text-text-inverse font-medium shadow-sm">
                     Start for free
                   </Button>
                 </SignUpButton>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,11 +78,11 @@ export function AppGrid({ initialApps }: { initialApps: AppData[] }) {
         onClick={handleCreate}
         className="bg-card/50 border-dashed border-2 border-border hover:border-brand/60 hover:bg-card transition-all cursor-pointer flex flex-col items-center justify-center min-h-[220px] group shadow-none"
       >
-        <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center mb-4 group-hover:bg-brand group-hover:text-white transition-colors shadow-sm">
+        <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center mb-3 group-hover:bg-brand group-hover:text-text-inverse transition-colors">
           {isPending ? (
-            <Loader2 className="h-7 w-7 text-muted-foreground group-hover:text-white animate-spin" />
+            <Loader2 className="h-6 w-6 text-muted-foreground group-hover:text-text-inverse animate-spin" />
           ) : (
-            <Plus className="h-7 w-7 text-muted-foreground group-hover:text-white transition-colors" />
+            <Plus className="h-6 w-6 text-muted-foreground group-hover:text-text-inverse transition-colors" />
           )}
         </div>
         <CardTitle className="text-lg font-bold text-foreground group-hover:text-brand transition-colors">
@@ -120,10 +120,10 @@ export function AppGrid({ initialApps }: { initialApps: AppData[] }) {
               </div>
               <div className="flex flex-col items-end gap-2 shrink-0">
                 <span
-                  className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm ${
+                  className={`px-2 py-0.5 rounded text-[11px] font-medium ${
                     app.status === "Published"
-                      ? "bg-brand/10 text-brand border border-brand/20 shadow-brand/10"
-                      : "bg-accent text-muted-foreground border border-border"
+                      ? "bg-success-light text-success-text border border-success-border"
+                      : "bg-muted text-muted-foreground border border-border"
                   }`}
                 >
                   {app.status}
@@ -167,7 +167,7 @@ export function AppGrid({ initialApps }: { initialApps: AppData[] }) {
             </Link>
             {app.status === "Published" && (
               <Link href={`/apps/${app.id}`} className="w-full flex-1">
-                <Button className="w-full bg-brand hover:bg-brand-dark shadow-md shadow-brand/20 font-medium text-xs h-9 text-white">
+                <Button className="w-full bg-brand hover:bg-brand-dark font-medium text-xs h-9 text-text-inverse">
                   <ExternalLink className="w-3.5 h-3.5 mr-2" />
                   Run App
                 </Button>

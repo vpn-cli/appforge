@@ -1,6 +1,6 @@
-﻿import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, X, Loader2, Send } from "lucide-react";
+import { X, Loader2, Send } from "lucide-react";
 
 export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: { onApply: (components: unknown[]) => void, onStreamStart?: () => void, onStream?: (text: string) => void, onStreamEnd?: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -114,27 +114,38 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   if (!isOpen) {
     return (
       <Button 
         onClick={() => setIsOpen(true)}
-        className="absolute bottom-6 left-6 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shadow-purple-500/25 rounded-full px-6 h-12 flex gap-2 font-medium"
+        className="absolute bottom-6 left-6 z-50 bg-brand hover:bg-brand-dark text-text-inverse shadow-lg border border-border rounded-lg px-3.5 h-9 flex items-center gap-2 font-medium text-xs transition-colors"
       >
-        <Sparkles className="w-5 h-5" />
-        Ask AI
+        <span>Copilot</span>
+        <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-black/20 dark:bg-black/30 rounded border border-white/20 text-text-inverse/90">⌘K</kbd>
       </Button>
     );
   }
 
   return (
-    <div className="absolute bottom-6 left-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] max-w-[400px] bg-card border border-border shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200">
-      <div className="bg-gradient-to-r from-purple-600/10 to-indigo-600/10 p-4 border-b border-white/5 flex items-center justify-between">
+    <div className="absolute bottom-6 left-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] max-w-[400px] bg-card border border-border shadow-xl rounded-lg flex flex-col overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-150">
+      <div className="bg-muted/50 px-4 py-2.5 border-b border-border flex items-center justify-between">
          <div className="flex items-center gap-2">
-           <Sparkles className="w-4 h-4 text-purple-400" />
-           <span className="font-semibold text-foreground text-sm tracking-wide">AppForge Copilot</span>
+           <span className="font-semibold text-foreground text-xs uppercase tracking-wider">Copilot</span>
+           <span className="text-[10px] font-mono text-muted-foreground border border-border/60 px-1 py-0.5 rounded">⌘K</span>
          </div>
-         <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-4 h-4" />
+         <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted" aria-label="Close Copilot">
+            <X className="w-3.5 h-3.5" />
          </button>
       </div>
 
@@ -142,32 +153,21 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
          {messages.map((m, i) => (
            <div key={i} className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
              <div 
-               className={`p-3 max-w-[85%] shadow-sm ${
+               className={`p-3 max-w-[85%] text-xs leading-relaxed rounded-md border ${
                  m.role === 'user' 
-                   ? 'bg-purple-600 text-white text-left rounded-2xl' 
-                   : 'bg-muted border border-white/5 text-foreground rounded-2xl'
+                   ? 'bg-brand text-text-inverse border-brand' 
+                   : 'bg-muted border-border text-foreground'
                }`}
-               style={{
-                 borderTopRightRadius: m.role === 'user' ? '4px' : undefined,
-                 borderTopLeftRadius: m.role === 'ai' ? '4px' : undefined,
-                 border: m.role === 'user' ? '1px solid rgba(192, 132, 252, 0.5)' : undefined
-               }}
              >
-                {m.role === 'ai' && i === 0 && (
-                  <div className="flex items-center gap-1.5 mb-1 text-purple-400">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">AppForge</span>
-                  </div>
-                )}
                 <span className="leading-relaxed whitespace-pre-wrap">{m.content}</span>
              </div>
            </div>
          ))}
          {isGenerating && (
            <div className="flex w-full justify-start">
-             <div className="bg-muted border border-border text-foreground rounded-2xl rounded-tl-sm p-3 inline-flex items-center gap-2.5 shadow-sm max-w-[85%]">
-               <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-500" />
-               <span className="leading-relaxed">Synthesizing UI...</span>
+             <div className="bg-muted border border-border text-foreground rounded-md p-2.5 inline-flex items-center gap-2 text-xs">
+               <Loader2 className="w-3.5 h-3.5 animate-spin text-brand" />
+               <span>Synthesizing UI schema...</span>
              </div>
            </div>
          )}
@@ -187,18 +187,18 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
                void handleGenerate(e);
              }
            }}
-           placeholder="e.g. Generate a dark-mode CRM..."
-           className="flex-1 bg-muted border border-border/50 rounded-2xl min-h-[44px] max-h-[120px] py-3 px-4 text-sm text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-brand/50 transition-all overflow-y-auto leading-relaxed"
+           placeholder="e.g. Generate an incident dashboard with metrics..."
+           className="flex-1 bg-muted border border-border rounded-md min-h-[38px] max-h-[100px] py-2 px-3 text-xs text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring transition-colors overflow-y-auto leading-relaxed"
            disabled={isGenerating}
            rows={prompt.length > 50 ? 2 : 1}
         />
         <Button 
            type="submit" 
            disabled={isGenerating || !prompt.trim()}
-           size="icon"
-           className="w-[44px] h-[44px] rounded-2xl bg-gradient-to-br from-brand to-brand-dark hover:from-brand-light hover:to-brand text-white flex-shrink-0 shadow-[0_4px_14px_rgba(76,29,149,0.3)] transition-all duration-300 hover:scale-[1.05] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 border border-brand/20"
+           size="sm"
+           className="h-[38px] px-3 rounded-md bg-brand hover:bg-brand-dark text-text-inverse flex-shrink-0 transition-colors disabled:opacity-50"
         >
-          {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4 ml-0.5" />}
+          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
         </Button>
       </form>
     </div>

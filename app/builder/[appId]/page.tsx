@@ -323,15 +323,15 @@ export default function BuilderPage() {
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center text-xs text-muted-foreground mr-4">
             {isGenerating ? (
-              <span className="text-[#A78BFA] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#A78BFA] before:rounded-full before:mr-2 before:animate-pulse">
+              <span className="text-brand font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-brand before:rounded-full before:mr-2 before:animate-pulse">
                 Generating
               </span>
             ) : errors.length > 0 ? (
-              <span className="text-[#FF5F56] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#FF5F56] before:rounded-full before:mr-2">
+              <span className="text-error-text font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-error before:rounded-full before:mr-2">
                 Has Errors
               </span>
             ) : (
-              <span className="text-[#27C93F] font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-[#27C93F] before:rounded-full before:mr-2">
+              <span className="text-success-text font-medium flex items-center before:content-[''] before:w-1.5 before:h-1.5 before:bg-success before:rounded-full before:mr-2">
                 Ready
               </span>
             )}
@@ -354,7 +354,7 @@ export default function BuilderPage() {
             onClick={handlePublish}
             disabled={isPublishing}
             size="sm"
-            className="h-8 bg-brand hover:bg-brand-dark text-white font-medium text-xs shadow-md shadow-brand/20"
+            className="h-8 bg-brand hover:bg-brand-dark text-text-inverse font-medium text-xs shadow-sm transition-colors"
           >
             {isPublishing ? (
               <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
@@ -413,7 +413,7 @@ export default function BuilderPage() {
                 Cancel
               </Button>
               <SignInButton mode="modal">
-                <Button className="bg-brand hover:bg-brand-dark text-white">
+                <Button className="bg-brand hover:bg-brand-dark text-text-inverse">
                   Sign In
                 </Button>
               </SignInButton>
@@ -439,7 +439,7 @@ export default function BuilderPage() {
                 className={
                   notificationModal.type === "error"
                     ? "bg-red-600 hover:bg-red-700 text-white min-w-[100px]"
-                    : "bg-brand hover:bg-brand-dark text-white min-w-[100px]"
+                    : "bg-brand hover:bg-brand-dark text-text-inverse min-w-[100px]"
                 }
               >
                 Okay
