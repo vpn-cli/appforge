@@ -1,4 +1,5 @@
 import { RenderNode } from "../index";
+import { CardProvider } from "../context";
 
 export function Card({
   title,
@@ -11,26 +12,20 @@ export function Card({
   content?: unknown[];
   footer?: unknown[];
 }) {
-  // Detect if subtitle contains numeric metrics (e.g. "2 unresolved issues", "142 onboard", "$42,800", "114%")
-  const isMetric = subtitle ? /\d/.test(subtitle) || /^[+$€£¥%]/.test(subtitle) : false;
-
   return (
-    <div className="h-full bg-card border border-border rounded-lg overflow-hidden flex flex-col p-4 shadow-sm hover:border-border/80 transition-colors">
+    <div className="@container h-full bg-card border border-border rounded-lg overflow-hidden flex flex-col p-4 shadow-sm hover:border-border/80 transition-colors min-w-0">
       {(title || subtitle) && (
-        <div className="shrink-0 mb-3">
+        <div className="shrink-0 mb-3 min-w-0">
           {title && (
-            <h3 className="text-xs font-medium text-muted-foreground tracking-tight mb-1">
+            <h3
+              className="text-sm font-semibold text-foreground tracking-tight break-words [overflow-wrap:anywhere] min-w-0"
+              title={title}
+            >
               {title}
             </h3>
           )}
           {subtitle && (
-            <p
-              className={
-                isMetric
-                  ? "text-xl font-bold tracking-tight text-foreground font-sans tabular-nums leading-snug"
-                  : "text-sm font-medium text-foreground leading-snug"
-              }
-            >
+            <p className="text-xs text-muted-foreground leading-normal break-words [overflow-wrap:anywhere] min-w-0 mt-0.5">
               {subtitle}
             </p>
           )}
@@ -38,15 +33,22 @@ export function Card({
       )}
 
       {content && content.length > 0 && (
-        <div className="flex flex-col space-y-2.5 flex-1">
-          {content.map((child, idx) => (
-            <RenderNode key={idx} config={child} />
-          ))}
-        </div>
+        <CardProvider isInCard={true}>
+          <div className="flex flex-col divide-y divide-border/60 flex-1 min-w-0">
+            {content.map((child, idx) => (
+              <div
+                key={idx}
+                className="first:pt-0 pt-3 pb-3 last:pb-0 min-w-0"
+              >
+                <RenderNode config={child} />
+              </div>
+            ))}
+          </div>
+        </CardProvider>
       )}
 
       {footer && footer.length > 0 && (
-        <div className="pt-3 flex items-center gap-2 mt-auto">
+        <div className="pt-3 flex flex-wrap items-center gap-2 mt-auto min-w-0">
           {footer.map((child, idx) => (
             <RenderNode key={idx} config={child} />
           ))}

@@ -13,15 +13,19 @@ export function Grid({
   items = [],
   className = "",
 }: GridProps) {
-  // Safe Tailwind static class mapping
+  // Container-based column mapping adapting dynamically up to configured columns
   const colMap: Record<string, string> = {
     "1": "grid-cols-1",
-    "2": "grid-cols-1 md:grid-cols-2",
-    "3": "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-    "4": "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+    "2": "grid-cols-1 @[420px]:grid-cols-2",
+    "3": "grid-cols-1 @[420px]:grid-cols-2 @[720px]:grid-cols-3",
+    "4": "grid-cols-1 @[420px]:grid-cols-2 @[720px]:grid-cols-3 @[960px]:grid-cols-4",
+    "5": "grid-cols-1 @[420px]:grid-cols-2 @[720px]:grid-cols-3 @[960px]:grid-cols-5",
+    "6": "grid-cols-1 @[420px]:grid-cols-2 @[720px]:grid-cols-3 @[960px]:grid-cols-6",
+    "8": "grid-cols-1 @[420px]:grid-cols-2 @[720px]:grid-cols-4 @[960px]:grid-cols-6 @[1200px]:grid-cols-8",
   };
 
   const gapMap: Record<string, string> = {
+    "1": "gap-1",
     "2": "gap-2",
     "3": "gap-3",
     "4": "gap-4",
@@ -29,7 +33,11 @@ export function Grid({
     "8": "gap-8",
   };
 
-  const safeCols = colMap[String(columns)] || colMap["2"];
+  const safeCols = colMap[String(columns)] || (
+    Number(columns) > 4
+      ? "grid-cols-1 @[420px]:grid-cols-2 @[720px]:grid-cols-4"
+      : "grid-cols-1 @[420px]:grid-cols-2"
+  );
   const safeGap = gapMap[String(gap)] || gapMap["4"];
 
   if (!items || items.length === 0) {
@@ -41,12 +49,14 @@ export function Grid({
   }
 
   return (
-    <div className={`grid ${safeCols} ${safeGap} items-stretch w-full ${className}`}>
-      {items.map((item, idx) => (
-        <div key={idx} className="flex flex-col h-full w-full">
-          <RenderNode config={item} />
-        </div>
-      ))}
+    <div className={`@container w-full min-w-0 ${className}`}>
+      <div className={`grid ${safeCols} ${safeGap} items-stretch w-full min-w-0`}>
+        {items.map((item, idx) => (
+          <div key={idx} className="flex flex-col h-full w-full min-w-0">
+            <RenderNode config={item} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -128,25 +128,57 @@ export function DataTable({
     if (col.type === "badge") {
       const valStr = String(value).toLowerCase();
       let colorClass = "bg-muted text-muted-foreground border-border";
-      if (valStr.includes("active") || valStr.includes("success") || valStr.includes("published") || valStr.includes("paid")) {
+      if (
+        valStr.includes("active") ||
+        valStr.includes("success") ||
+        valStr.includes("published") ||
+        valStr.includes("paid") ||
+        valStr.includes("operational") ||
+        valStr.includes("nominal") ||
+        valStr.includes("resolved")
+      ) {
         colorClass = "bg-success-light text-success-text border-success-border";
-      } else if (valStr.includes("pending") || valStr.includes("warning") || valStr.includes("draft")) {
+      } else if (
+        valStr.includes("pending") ||
+        valStr.includes("warning") ||
+        valStr.includes("draft") ||
+        valStr.includes("investigating") ||
+        valStr.includes("degraded") ||
+        valStr.includes("in progress")
+      ) {
         colorClass = "bg-warning-light text-warning-text border-warning-border";
-      } else if (valStr.includes("error") || valStr.includes("failed") || valStr.includes("inactive")) {
+      } else if (
+        valStr.includes("error") ||
+        valStr.includes("failed") ||
+        valStr.includes("inactive") ||
+        valStr.includes("critical") ||
+        valStr.includes("major") ||
+        valStr.includes("down") ||
+        valStr.includes("breached")
+      ) {
         colorClass = "bg-error-light text-error-text border-error-border";
       }
       return (
-        <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-medium border ${colorClass}`}>
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${colorClass}`}
+        >
           {String(value)}
         </span>
       );
     }
 
-    return <span className="font-sans text-foreground">{String(value)}</span>;
+    return (
+      <span
+        className="font-sans text-foreground truncate max-w-[280px] inline-block align-middle"
+        title={String(value)}
+      >
+        {String(value)}
+      </span>
+    );
   };
 
   return (
-    <div className={`w-full flex flex-col ${className}`}>
+    <div className={`@container w-full min-w-0 flex flex-col ${className}`}>
       {/* Degraded State Indicator Banner */}
       {effectiveState === "degraded" && (
         <div className="bg-muted/70 border border-b-0 border-border rounded-t-lg px-3 py-1.5 flex items-center justify-between text-xs text-muted-foreground">

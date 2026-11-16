@@ -24,7 +24,7 @@ export function ButtonAction({
     <Button
       variant={variant || "default"}
       size="sm"
-      className={`rounded-md px-2.5 h-7 text-xs font-medium transition-colors flex items-center ${
+      className={`rounded-md px-2.5 h-7 text-xs font-medium transition-colors flex items-center min-w-0 max-w-full ${
         (!variant || variant === "default") &&
         "bg-brand hover:bg-brand-dark text-text-inverse"
       } ${
@@ -38,8 +38,10 @@ export function ButtonAction({
         "hover:bg-muted text-muted-foreground hover:text-foreground"
       }`}
     >
-      {IconComponent && <IconComponent className="w-3 h-3 mr-1.5" />}
-      {label || "Action"}
+      {IconComponent && <IconComponent className="w-3 h-3 mr-1.5 shrink-0" />}
+      <span className="truncate min-w-0" title={label || "Action"}>
+        {label || "Action"}
+      </span>
     </Button>
   );
 }
