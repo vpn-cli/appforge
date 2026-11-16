@@ -69,4 +69,22 @@ Border: border-error-border
 Text: text-text-primary text-sm
 ```
 
+### AppCard & Live Thumbnail
+*Main dashboard application card displaying a scaled-down 16:10 live registry preview and metadata.*
+```text
+Container: bg-card border border-border rounded-lg overflow-hidden transition-colors hover:border-foreground/30
+Thumbnail Frame: aspect-[16/10] w-full overflow-hidden bg-background/80 border-b border-border/60 select-none pointer-events-none
+Card Body: p-3.5 sm:p-4 flex flex-col justify-between flex-1 gap-2
+Title: text-sm font-semibold text-foreground truncate
+Status Badge: inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium shrink-0 whitespace-nowrap
+```
+
+### PromptBox (Command Bar & AI Cockpit)
+*Top-level prompt input with example chips and template link.*
+```text
+Linear Command Bar: bg-card border border-border rounded-lg p-3 sm:p-4
+Vercel Cockpit: bg-card border border-border rounded-xl p-5 shadow-xs
+Example Pill: text-[11px] font-medium text-muted-foreground hover:text-foreground bg-muted/40 border border-border/50 px-2 py-0.5 rounded
+```
+
 *(More components will be added dynamically by the `/imprint` skill)*

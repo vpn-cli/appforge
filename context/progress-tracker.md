@@ -22,6 +22,7 @@ Update this file after every completed feature. Any AI agent reading this should
 ### Phase 2 — Dashboard
 - [x] 04 Dashboard Page — UI First
 - [x] 05 Dashboard Logic
+- [x] 05b Dashboard UI Revamp (Two Directions exploration: Linear Studio vs Vercel Workspace, 16:10 live registry app thumbnails, AppShell, prompt-first generation, right-column activity rail)
 
 ### Phase 3 — App Builder
 - [x] 06 Builder Layout
