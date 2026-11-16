@@ -23,12 +23,12 @@ export function CustomCursor() {
 
   return (
     <AnimatedCursor
-      innerSize={10}
-      outerSize={40}
-      color="156, 135, 218"
+      innerSize={8}
+      outerSize={36}
+      color="109, 40, 217"
       outerAlpha={0.2}
       innerScale={0.7}
-      outerScale={1.5}
+      outerScale={1.4}
       innerStyle={{
         zIndex: 999999
       }}
@@ -37,14 +37,6 @@ export function CustomCursor() {
       }}
       clickables={[
         'a',
-        'input[type="text"]',
-        'input[type="email"]',
-        'input[type="number"]',
-        'input[type="submit"]',
-        'input[type="image"]',
-        'label[for]',
-        'select',
-        'textarea',
         'button',
         '.link',
         '[data-cursor]'

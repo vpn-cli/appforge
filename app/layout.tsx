@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScroller } from "@/components/layout/SmoothScroller";
-import { CustomCursor } from "@/components/layout/CustomCursor";
 import { ThemeProvider } from "next-themes";
+import { ClerkProvider } from '@clerk/nextjs';
+import { dark } from '@clerk/themes';
+import { Analytics } from '@vercel/analytics/next';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
@@ -19,10 +21,6 @@ export const metadata: Metadata = {
   title: "AppForge",
   description: "Stop writing boilerplate. Build enterprise React applications instantly with AppForge's JSON compiler.",
 };
-
-import { ClerkProvider } from '@clerk/nextjs'
-import { dark } from '@clerk/themes'
-import { Analytics } from '@vercel/analytics/next'
 
 export default function RootLayout({
   children,
@@ -34,7 +32,7 @@ export default function RootLayout({
       appearance={{
         baseTheme: dark,
         variables: {
-          colorPrimary: "#BE185D", // AppForge brand purple/pink
+          colorPrimary: "#6D28D9", // Unified AppForge brand violet
           colorBackground: "#09090b", // Deep dark background
           colorInputBackground: "#18181b", // Slightly elevated input bg
           colorInputText: "#fafafa",
@@ -53,11 +51,10 @@ export default function RootLayout({
     >
       <html
         lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
         suppressHydrationWarning
       >
-        <body className="min-h-full flex flex-col font-sans cursor-none">
-          <CustomCursor />
+        <body className="min-h-full flex flex-col font-sans">
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-4 focus:left-4 focus:bg-brand focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
