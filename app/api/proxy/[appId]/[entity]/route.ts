@@ -1,40 +1,124 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
+import { authorizeAppAccess } from "@/lib/app-access";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request, { params }: { params: Promise<{ appId: string, entity: string }> }) {
+type RouteParams = {
+  params: Promise<{ appId: string; entity: string }>;
+};
+
+export async function GET(request: Request, { params }: RouteParams) {
   const { appId, entity } = await params;
-  const supabase = await createInsforgeServer();
   
-  const cleanAppId = appId.replace(/-/g, '_');
-  const validEntityName = entity.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
-  const tableName = `app_${cleanAppId}_${validEntityName}`;
+  const authResult = await authorizeAppAccess(appId, entity, "read");
+  if (authResult.error) return authResult.error;
 
-  if (process.env.NODE_ENV === "development") {
-    // DEV BYPASS FALLBACK
-    return NextResponse.json([{ id: "mock-record-1", name: "Mock Row", _table: tableName }]);
+  const { tableName } = authResult;
+  const supabase = await createInsforgeServer();
+
+  const url = new URL(request.url);
+  const limit = Math.min(Math.max(1, parseInt(url.searchParams.get("limit") || "100", 10)), 1000);
+  const orderBy = url.searchParams.get("order") || "created_at";
+  const ascending = url.searchParams.get("ascending") === "true";
+
+  const { data, error } = await supabase
+    .from(tableName)
+    .select("*")
+    .order(orderBy, { ascending })
+    .limit(limit);
+
+  if (error) {
+    // If table doesn't exist yet in the database, return empty array gracefully
+    if (error.code === "42P01" || error.message?.includes("does not exist")) {
+      return NextResponse.json([]);
+    }
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
-
-  const { data, error } = await supabase.from(tableName).select("*");
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json(data);
 }
 
-export async function POST(request: Request, { params }: { params: Promise<{ appId: string, entity: string }> }) {
+export async function POST(request: Request, { params }: RouteParams) {
   const { appId, entity } = await params;
-  const body = await request.json();
-  const supabase = await createInsforgeServer();
-  
-  const cleanAppId = appId.replace(/-/g, '_');
-  const validEntityName = entity.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
-  const tableName = `app_${cleanAppId}_${validEntityName}`;
 
-  if (process.env.NODE_ENV === "development") {
-    return NextResponse.json({ id: "mock-record-2", ...body, _table: tableName }, { status: 201 });
+  const authResult = await authorizeAppAccess(appId, entity, "write");
+  if (authResult.error) return authResult.error;
+
+  const { tableName } = authResult;
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  const supabase = await createInsforgeServer();
   const { data, error } = await supabase.from(tableName).insert(body).select().single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 
   return NextResponse.json(data, { status: 201 });
+}
+
+export async function PUT(request: Request, { params }: RouteParams) {
+  const { appId, entity } = await params;
+
+  const authResult = await authorizeAppAccess(appId, entity, "write");
+  if (authResult.error) return authResult.error;
+
+  const { tableName } = authResult;
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id") || (body.id as string | undefined);
+  if (!id) {
+    return NextResponse.json({ error: "Missing record id to update" }, { status: 400 });
+  }
+
+  const supabase = await createInsforgeServer();
+  const { data, error } = await supabase
+    .from(tableName)
+    .update(body)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json(data);
+}
+
+export async function PATCH(request: Request, { params }: RouteParams) {
+  return PUT(request, { params });
+}
+
+export async function DELETE(request: Request, { params }: RouteParams) {
+  const { appId, entity } = await params;
+
+  const authResult = await authorizeAppAccess(appId, entity, "write");
+  if (authResult.error) return authResult.error;
+
+  const { tableName } = authResult;
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "Missing record id to delete" }, { status: 400 });
+  }
+
+  const supabase = await createInsforgeServer();
+  const { error } = await supabase.from(tableName).delete().eq("id", id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ success: true });
 }
