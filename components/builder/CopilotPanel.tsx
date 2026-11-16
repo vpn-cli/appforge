@@ -1,52 +1,32 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Loader2, ArrowUp } from "lucide-react";
+import { Loader2, ArrowUp, Bot, PanelLeftClose } from "lucide-react";
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
+type CopilotPanelProps = {
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+  width: number;
   onApply: (components: unknown[]) => void;
   onStreamStart?: () => void;
-  onStream?: (text: string) => void;
   onStreamEnd?: () => void;
   initialPrompt?: string;
-  width: number;
-  onWidthChange: (w: number) => void;
   inputRef?: React.RefObject<HTMLTextAreaElement | null>;
 };
 
-const suggestedPrompts = [
-  "Add a priority column to the table",
-  "Add a metrics card for weekly active users",
-  "Create a status badge with alert colors",
-];
-
 export function CopilotPanel({
-  isOpen,
-  onClose,
+  isCollapsed,
+  onToggleCollapse,
+  width,
   onApply,
   onStreamStart,
-  onStream,
   onStreamEnd,
   initialPrompt,
-  width,
-  onWidthChange,
-  inputRef: externalInputRef,
-}: Props) {
+  inputRef,
+}: CopilotPanelProps) {
   const [prompt, setPrompt] = useState(initialPrompt || "");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [messages, setMessages] = useState<
-    { role: "ai" | "user"; content: string }[]
-  >([]);
-
-  const internalInputRef = useRef<HTMLTextAreaElement>(null);
-  const activeInputRef = externalInputRef || internalInputRef;
-
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartXRef = useRef<number>(0);
-  const startWidthRef = useRef<number>(width);
 
   useEffect(() => {
     if (initialPrompt) {
@@ -54,45 +34,22 @@ export function CopilotPanel({
     }
   }, [initialPrompt]);
 
-  // Handle resizing via left edge drag
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      setIsDragging(true);
-      dragStartXRef.current = e.clientX;
-      startWidthRef.current = width;
+  const [messages, setMessages] = useState<
+    { role: "ai" | "user"; content: string }[]
+  >([
+    {
+      role: "ai",
+      content:
+        "Describe your data requirements or UI updates. I'll generate structured JSON matching the component registry.",
     },
-    [width],
-  );
+  ]);
 
-  useEffect(() => {
-    if (!isDragging) return;
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prompt.trim() || isGenerating) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      // Dragging left increases width, dragging right decreases width
-      const delta = dragStartXRef.current - e.clientX;
-      const nextWidth = Math.min(560, Math.max(320, startWidthRef.current + delta));
-      onWidthChange(nextWidth);
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isDragging, onWidthChange]);
-
-  const handleGenerate = async (e?: React.FormEvent, customPrompt?: string) => {
-    if (e) e.preventDefault();
-    const targetPrompt = (customPrompt ?? prompt).trim();
-    if (!targetPrompt || isGenerating) return;
-
-    setMessages((prev) => [...prev, { role: "user", content: targetPrompt }]);
+    const currentPrompt = prompt;
+    setMessages((prev) => [...prev, { role: "user", content: currentPrompt }]);
     setPrompt("");
 
     setIsGenerating(true);
@@ -103,7 +60,7 @@ export function CopilotPanel({
       const res = await fetch("/api/copilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: targetPrompt }),
+        body: JSON.stringify({ prompt: currentPrompt }),
       });
 
       if (!res.ok) {
@@ -122,10 +79,6 @@ export function CopilotPanel({
 
         const chunk = decoder.decode(value, { stream: true });
         streamedText += chunk;
-
-        if (onStream) {
-          onStream(streamedText);
-        }
       }
 
       let finalText = streamedText
@@ -167,7 +120,7 @@ export function CopilotPanel({
           ...prev,
           {
             role: "ai",
-            content: "Synthesized the requested changes into your config.",
+            content: "Components compiled and applied to your config.",
           },
         ]);
       }
@@ -182,7 +135,7 @@ export function CopilotPanel({
           {
             role: "ai",
             content:
-              "AI rate limit reached. Please check back shortly or update API keys in .env.local.",
+              "AI rate limit reached. Please check API keys or retry in a few moments.",
           },
         ]);
       } else {
@@ -197,136 +150,137 @@ export function CopilotPanel({
     }
   };
 
-  if (!isOpen) return null;
+  // Collapsed state renders slim rail (icon + label)
+  if (isCollapsed) {
+    return (
+      <aside
+        style={{ width: "38px" }}
+        className="h-full border-r border-border bg-card flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
+        onClick={onToggleCollapse}
+        title="Expand Copilot (⌘K)"
+        role="region"
+        aria-label="Copilot rail"
+      >
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleCollapse();
+          }}
+          className="p-1 rounded-md text-muted-foreground group-hover:text-foreground hover:bg-muted transition-colors mb-3"
+          aria-label="Expand Copilot panel"
+        >
+          <Bot className="w-4 h-4" />
+        </button>
+        <div className="flex-1 flex items-center justify-center">
+          <span className="[writing-mode:vertical-lr] rotate-180 text-[11px] font-medium text-muted-foreground group-hover:text-foreground tracking-wider select-none">
+            Copilot
+          </span>
+        </div>
+        <kbd className="text-[9px] font-mono text-muted-foreground/70 bg-muted/50 border border-border/80 px-1 py-0.5 rounded mt-auto">
+          ⌘K
+        </kbd>
+      </aside>
+    );
+  }
 
   const hasText = prompt.trim().length > 0;
 
   return (
     <aside
       style={{ width: `${width}px` }}
-      className="relative shrink-0 h-full bg-card border-l border-border flex flex-col overflow-hidden select-none z-10"
-      aria-label="Copilot AI Panel"
+      aria-label="Copilot Assistant"
+      className="h-full border-r border-border bg-card flex flex-col shrink-0 relative select-none min-w-[300px]"
+      role="region"
     >
-      {/* Left Resize Drag Handle */}
-      <div
-        onMouseDown={handleMouseDown}
-        className={`absolute left-0 top-0 bottom-0 w-1.5 -ml-0.5 cursor-col-resize hover:bg-brand/50 transition-colors z-20 ${
-          isDragging ? "bg-brand w-2" : ""
-        }`}
-        title="Drag to resize panel (320px - 560px)"
-      />
-
-      {/* Header: "Copilot" in sentence case with "Gemini" as small muted text, no sparkle/robot/star icons */}
-      <div className="h-9 px-3.5 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-semibold text-foreground">Copilot</span>
-          <span className="text-[11px] text-muted-foreground font-normal">
-            Gemini
+      {/* Panel Header: 36px (h-9) */}
+      <div className="h-9 px-3 border-b border-border bg-card flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <Bot className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs font-medium text-foreground">Copilot</span>
+          <span className="text-[10px] font-mono text-muted-foreground border border-border px-1 py-0.2 rounded">
+            ⌘K
           </span>
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={onToggleCollapse}
           className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
-          aria-label="Close Copilot"
+          aria-label="Collapse Copilot to slim rail"
+          title="Collapse to slim rail"
         >
-          <X className="w-3.5 h-3.5" />
+          <PanelLeftClose className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Messages / Empty State Feed */}
+      {/* Messages Feed */}
       <div
         data-lenis-prevent
-        className="flex-1 bg-background/50 overflow-y-auto p-4 text-xs font-medium flex flex-col space-y-4"
+        className="flex-1 bg-card overflow-y-auto p-3 text-xs font-normal flex flex-col space-y-3"
       >
-        {messages.length === 0 ? (
-          <div className="flex flex-col gap-3 py-2">
-            <p className="text-xs text-muted-foreground font-medium">
-              Describe a change to this app.
-            </p>
-            <div className="flex flex-col gap-2">
-              {suggestedPrompts.map((example, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    setPrompt(example);
-                    activeInputRef.current?.focus();
-                  }}
-                  className="text-left text-xs p-2.5 rounded-md bg-muted/40 hover:bg-muted text-foreground border border-border/50 hover:border-border transition-colors leading-relaxed"
-                >
-                  {example}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          messages.map((m, i) => (
+        {messages.map((m, i) => (
+          <div
+            key={i}
+            className={`flex w-full ${m.role === "user" ? "justify-end" : "justify-start"}`}
+          >
             <div
-              key={i}
-              className={`flex w-full ${
-                m.role === "user" ? "justify-end" : "justify-start"
+              className={`p-2.5 max-w-[90%] text-xs leading-relaxed rounded-lg border ${
+                m.role === "user"
+                  ? "bg-brand text-text-inverse border-brand font-medium"
+                  : "bg-muted/40 border-border text-foreground"
               }`}
             >
-              <div
-                className={`p-3 max-w-[85%] text-xs leading-relaxed rounded-lg border ${
-                  m.role === "user"
-                    ? "bg-brand text-text-inverse border-brand shadow-xs"
-                    : "bg-card border-border text-foreground shadow-xs"
-                }`}
-              >
-                <span className="leading-relaxed whitespace-pre-wrap">
-                  {m.content}
-                </span>
-              </div>
+              <span className="leading-relaxed whitespace-pre-wrap">
+                {m.content}
+              </span>
             </div>
-          ))
-        )}
-
+          </div>
+        ))}
         {isGenerating && (
           <div className="flex w-full justify-start">
-            <div className="bg-card border border-border text-foreground rounded-lg p-3 inline-flex items-center gap-2 text-xs shadow-xs">
+            <div className="bg-muted/40 border border-border text-foreground rounded-lg p-2.5 inline-flex items-center gap-2 text-xs">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-brand" />
-              <span>Generating changes...</span>
+              <span>Synthesizing components...</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Input Form */}
+      {/* Input Box: Solid brand with AA contrast when text, neutral gray when disabled */}
       <form
-        onSubmit={(e) => handleGenerate(e)}
-        className="p-3 border-t border-border bg-card flex items-end gap-2 shrink-0"
+        onSubmit={handleGenerate}
+        className="p-2.5 border-t border-border bg-card flex items-end gap-2 shrink-0"
       >
         <textarea
-          ref={activeInputRef}
+          ref={inputRef}
           data-lenis-prevent
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              void handleGenerate();
+              void handleGenerate(e);
             }
           }}
-          placeholder="Describe a change to this app..."
-          className="flex-1 bg-muted/50 border border-border focus:border-brand rounded-md min-h-[40px] max-h-[120px] py-2 px-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-brand transition-colors"
+          placeholder="Ask Copilot to generate or modify components..."
+          className="flex-1 bg-muted/40 border border-border rounded-lg min-h-[38px] max-h-[100px] py-2 px-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring transition-colors leading-relaxed"
           disabled={isGenerating}
           rows={2}
         />
+
         <Button
           type="submit"
           disabled={isGenerating || !hasText}
           size="sm"
-          className={`h-[40px] w-[40px] p-0 rounded-md shrink-0 transition-colors flex items-center justify-center ${
-            hasText
-              ? "bg-brand hover:bg-brand-dark text-text-inverse shadow-xs cursor-pointer"
-              : "bg-muted text-muted-foreground/60 border border-border/50 cursor-not-allowed opacity-60"
+          className={`h-[38px] w-[38px] p-0 rounded-lg shrink-0 transition-colors flex items-center justify-center ${
+            hasText && !isGenerating
+              ? "bg-brand hover:bg-brand-dark text-text-inverse font-medium"
+              : "bg-muted text-muted-foreground/50 border border-border hover:bg-muted cursor-not-allowed"
           }`}
           aria-label="Send prompt to Copilot"
         >
           {isGenerating ? (
-            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
             <ArrowUp className="w-4 h-4" />
           )}

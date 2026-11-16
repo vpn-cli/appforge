@@ -1,4 +1,4 @@
-﻿import { RenderNode } from "../index";
+import { RenderNode } from "../index";
 
 export interface GridProps {
   columns?: number | string;

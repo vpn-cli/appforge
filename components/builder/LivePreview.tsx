@@ -118,48 +118,8 @@ export function LivePreview({
               <span className="truncate">localhost:3000/apps/{appId}</span>
             </div>
 
-            {/* Viewport Toggles */}
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => handleViewport("desktop")}
-                className={`p-1 rounded transition-colors ${
-                  currentViewport === "desktop"
-                    ? "bg-muted text-foreground font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Desktop (100%)"
-                aria-label="Desktop viewport"
-              >
-                <Monitor className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => handleViewport("tablet")}
-                className={`p-1 rounded transition-colors ${
-                  currentViewport === "tablet"
-                    ? "bg-muted text-foreground font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Tablet (768px)"
-                aria-label="Tablet viewport"
-              >
-                <Tablet className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => handleViewport("mobile")}
-                className={`p-1 rounded transition-colors ${
-                  currentViewport === "mobile"
-                    ? "bg-muted text-foreground font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Mobile (375px)"
-                aria-label="Mobile viewport"
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            {/* End spacer balancing traffic lights */}
+            <div className="w-16" />
           </div>
         )}
 

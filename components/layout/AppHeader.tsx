@@ -27,7 +27,7 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
         {/* Left: Brand + Workspace + Nav */}
         <div className="flex items-center gap-3 sm:gap-4 shrink-0">
           <Link
-            href="/dashboard"
+            href="/"
             className="flex items-center gap-2 group outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-md p-1"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}

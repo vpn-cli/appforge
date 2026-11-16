@@ -14,7 +14,6 @@ type Props = {
   };
   onRename: (appId: string, currentName: string) => void;
   onDelete: (appId: string) => void;
-  variant?: "linear" | "vercel";
 };
 
 export function formatRelativeTime(dateStr: string): string {
@@ -35,7 +34,7 @@ export function formatRelativeTime(dateStr: string): string {
   return `${months} months ago`;
 }
 
-export function AppCard({ app, onRename, onDelete, variant = "linear" }: Props) {
+export function AppCard({ app, onRename, onDelete }: Props) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -53,11 +52,7 @@ export function AppCard({ app, onRename, onDelete, variant = "linear" }: Props) 
   return (
     <div
       onClick={handleCardClick}
-      className={`group cursor-pointer bg-card border border-border rounded-lg overflow-hidden transition-colors duration-150 flex flex-col relative select-none ${
-        variant === "linear"
-          ? "hover:border-foreground/40 shadow-none"
-          : "hover:border-foreground/30 shadow-xs"
-      }`}
+      className="group cursor-pointer bg-card border border-border rounded-lg overflow-hidden transition-colors duration-150 flex flex-col relative select-none hover:border-foreground/40 shadow-xs"
       role="link"
       tabIndex={0}
       onKeyDown={(e) => {

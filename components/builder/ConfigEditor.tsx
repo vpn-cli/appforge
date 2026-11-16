@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Editor, { OnMount, BeforeMount } from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
@@ -122,6 +122,7 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
           letterSpacing: 0,
           fontLigatures: false,
           minimap: { enabled: false },
+          automaticLayout: true,
           padding: { top: 16, bottom: 16 },
           scrollBeyondLastLine: false,
           smoothScrolling: true,

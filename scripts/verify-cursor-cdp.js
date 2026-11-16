@@ -170,3 +170,4 @@ runCheck().catch(err => {
   console.error('Error running cursor check:', err);
   process.exit(1);
 });
+
