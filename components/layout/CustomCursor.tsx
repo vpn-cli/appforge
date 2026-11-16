@@ -17,6 +17,18 @@ export function CustomCursor() {
     setIsTouchDevice(isTouch);
 
     setMounted(true);
+
+    return () => {
+      // Ensure the native cursor is fully restored when leaving the landing page
+      document.body.style.removeProperty("cursor");
+      document.documentElement.style.removeProperty("cursor");
+      const elementsWithInlineCursor = document.querySelectorAll<HTMLElement>("[style*='cursor']");
+      elementsWithInlineCursor.forEach((el) => {
+        if (el.style.cursor === "none") {
+          el.style.removeProperty("cursor");
+        }
+      });
+    };
   }, []);
 
   if (!mounted || isTouchDevice) return null;
