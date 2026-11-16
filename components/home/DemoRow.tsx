@@ -6,7 +6,7 @@ import { DemoPreviewCard } from "./DemoPreviewCard";
 
 export function DemoRow() {
   return (
-    <section className="w-full max-w-[1240px] mx-auto px-4 pb-16 relative z-10">
+    <section className="w-full max-w-[1240px] mx-auto px-4 pt-1 pb-10 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

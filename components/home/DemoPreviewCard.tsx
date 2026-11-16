@@ -11,10 +11,12 @@ const previewComponents = [
     trendValue: "+12%",
     chartWave: true,
     icon: "users",
+    variant: "panel",
   },
   {
     type: "DataTable",
     entity: "workflows",
+    variant: "dark-panel",
   },
 ];
 
@@ -41,7 +43,7 @@ export function DemoPreviewCard() {
       </div>
 
       {/* Rendered Application Body (Real Registry Components scoped in dark theme) */}
-      <div className="my-3.5 flex flex-col gap-3 min-w-0">
+      <div className="dark my-3.5 flex flex-col gap-3 min-w-0">
         {previewComponents.map((comp, idx) => (
           <RenderNode key={idx} config={comp} />
         ))}

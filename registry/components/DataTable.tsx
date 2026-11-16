@@ -157,15 +157,10 @@ export function DataTable({
           .join("")
           .slice(0, 2)
           .toUpperCase() || name.slice(0, 2).toUpperCase();
-      
-      const isInvoice = name.toLowerCase().includes("invoice");
-      const avatarStyle = isInvoice 
-        ? "bg-indigo-600/30 text-indigo-300 border-indigo-500/40" 
-        : "bg-slate-700/80 text-slate-200 border-slate-600/50";
 
       return (
         <div className="flex items-center gap-2.5">
-          <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-semibold select-none shrink-0 ${avatarStyle}`}>
+          <div className="w-6 h-6 rounded-full bg-muted text-foreground border border-border flex items-center justify-center text-[10px] font-semibold select-none shrink-0">
             {initials}
           </div>
           <span className="font-sans text-foreground truncate max-w-[280px]" title={name}>
@@ -191,9 +186,9 @@ export function DataTable({
         valStr.includes("resolved") ||
         isRunning
       ) {
-        colorClass = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+        colorClass = "bg-success-light text-success-text border-success-border";
       } else if (isIdle) {
-        colorClass = "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
+        colorClass = "bg-muted text-muted-foreground border-border";
       } else if (
         valStr.includes("pending") ||
         valStr.includes("warning") ||
@@ -219,10 +214,7 @@ export function DataTable({
           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${colorClass}`}
         >
           {isRunning && (
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-          )}
-          {isIdle && (
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
           )}
           {String(value)}
         </span>
@@ -276,7 +268,7 @@ export function DataTable({
                 <th
                   key={idx}
                   scope="col"
-                  className={`px-3 py-2 font-medium text-muted-foreground select-none whitespace-nowrap ${
+                  className={`px-3 py-2 font-medium select-none whitespace-nowrap text-xs text-muted-foreground ${
                     col.align === "right"
                       ? "text-right"
                       : col.align === "center"
@@ -340,24 +332,25 @@ export function DataTable({
 
             {/* 4. Loaded & Degraded States */}
             {(effectiveState === "loaded" || effectiveState === "degraded") &&
-              data.map((row, rowIdx) => {
+              resolvedData.map((row, rowIdx) => {
                 const isRowFocused = isInteractive && isTableFocused && focusedIndex === rowIdx;
+                const rowBorderClass = "border-b border-border/60 last:border-0 hover:bg-muted/40";
                 return (
                   <tr
                     key={rowIdx}
                     onClick={() => onRowClick && onRowClick(row, rowIdx)}
-                    className={`border-b border-border/60 last:border-0 transition-colors ${
+                    className={`${rowBorderClass} transition-colors ${
                       isInteractive ? "cursor-pointer" : ""
                     } ${
                       isRowFocused
                         ? "bg-muted/70 ring-1 ring-inset ring-ring"
-                        : "hover:bg-muted/40"
+                        : ""
                     }`}
                   >
                     {normalizedCols.map((col, colIdx) => (
                       <td
                         key={colIdx}
-                        className={`px-3 py-2 whitespace-nowrap text-xs ${
+                        className={`px-3 py-2.5 whitespace-nowrap text-xs ${
                           col.align === "right"
                             ? "text-right"
                             : col.align === "center"
