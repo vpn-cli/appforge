@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import React, { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -11,21 +10,6 @@ if (typeof window !== "undefined") {
 }
 
 export function SmoothScroller({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
-  // Reset any residual cursor:none outside the landing page
-  useEffect(() => {
-    if (pathname !== "/") {
-      document.body.style.removeProperty("cursor");
-      document.documentElement.style.removeProperty("cursor");
-      const elementsWithInlineCursor = document.querySelectorAll<HTMLElement>("[style*='cursor']");
-      elementsWithInlineCursor.forEach((el) => {
-        if (el.style.cursor === "none") {
-          el.style.removeProperty("cursor");
-        }
-      });
-    }
-  }, [pathname]);
   useEffect(() => {
     const lenis = new Lenis({
       lerp: 0.08, // Adjust for smoothness
