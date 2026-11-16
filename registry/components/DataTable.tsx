@@ -6,7 +6,7 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 export interface ColumnSchema {
   key: string;
   label?: string;
-  type?: "text" | "number" | "currency" | "id" | "code" | "badge";
+  type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "avatar";
   align?: "left" | "right" | "center";
 }
 
@@ -15,6 +15,7 @@ export type DataTableColumn = string | ColumnSchema;
 export interface DataTableProps {
   columns?: DataTableColumn[];
   data?: Record<string, unknown>[];
+  entity?: string;
   state?: "loading" | "loaded" | "empty" | "error" | "degraded";
   errorMessage?: string;
   degradedMessage?: string;
@@ -26,6 +27,7 @@ export interface DataTableProps {
 export function DataTable({
   columns = [],
   data = [],
+  entity,
   state = "loaded",
   errorMessage = "Unable to fetch live dataset. Verify entity connection.",
   degradedMessage = "Showing cached dataset · Live connection paused",
@@ -37,11 +39,30 @@ export function DataTable({
   const [isTableFocused, setIsTableFocused] = useState<boolean>(false);
   const tableRef = useRef<HTMLDivElement>(null);
 
+  const resolvedCols = columns.length > 0 
+    ? columns 
+    : entity === "workflows"
+    ? [
+        { key: "workflow", label: "WORKFLOW", type: "avatar" as const },
+        { key: "trigger", label: "TRIGGER", type: "code" as const },
+        { key: "status", label: "STATUS", type: "badge" as const },
+      ]
+    : [];
+
+  const resolvedData = data.length > 0
+    ? data
+    : entity === "workflows"
+    ? [
+        { workflow: "User Sync", trigger: "cron:hourly", status: "Running" },
+        { workflow: "Invoice Gen", trigger: "webhook:tx", status: "Idle" },
+      ]
+    : [];
+
   // Normalize column definitions
-  const normalizedCols: ColumnSchema[] = (columns.length > 0
-    ? columns
-    : data.length > 0
-    ? Object.keys(data[0])
+  const normalizedCols: ColumnSchema[] = (resolvedCols.length > 0
+    ? resolvedCols
+    : resolvedData.length > 0
+    ? Object.keys(resolvedData[0])
     : ["id", "name", "value", "status"]
   ).map((col) => {
     if (typeof col === "string") {
@@ -62,6 +83,8 @@ export function DataTable({
         type = "number";
       } else if (lower.includes("status") || lower.includes("badge") || lower.includes("state")) {
         type = "badge";
+      } else if (lower === "workflow" || lower.includes("avatar") || lower.includes("user")) {
+        type = "avatar";
       }
       return {
         key: col,
@@ -125,9 +148,39 @@ export function DataTable({
       );
     }
 
+    if (col.type === "avatar") {
+      const name = String(value);
+      const initials =
+        name
+          .split(" ")
+          .map((w) => w[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase() || name.slice(0, 2).toUpperCase();
+      
+      const isInvoice = name.toLowerCase().includes("invoice");
+      const avatarStyle = isInvoice 
+        ? "bg-indigo-600/30 text-indigo-300 border-indigo-500/40" 
+        : "bg-slate-700/80 text-slate-200 border-slate-600/50";
+
+      return (
+        <div className="flex items-center gap-2.5">
+          <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-semibold select-none shrink-0 ${avatarStyle}`}>
+            {initials}
+          </div>
+          <span className="font-sans text-foreground truncate max-w-[280px]" title={name}>
+            {name}
+          </span>
+        </div>
+      );
+    }
+
     if (col.type === "badge") {
       const valStr = String(value).toLowerCase();
       let colorClass = "bg-muted text-muted-foreground border-border";
+      const isRunning = valStr.includes("running");
+      const isIdle = valStr.includes("idle");
+
       if (
         valStr.includes("active") ||
         valStr.includes("success") ||
@@ -135,9 +188,12 @@ export function DataTable({
         valStr.includes("paid") ||
         valStr.includes("operational") ||
         valStr.includes("nominal") ||
-        valStr.includes("resolved")
+        valStr.includes("resolved") ||
+        isRunning
       ) {
-        colorClass = "bg-success-light text-success-text border-success-border";
+        colorClass = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+      } else if (isIdle) {
+        colorClass = "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
       } else if (
         valStr.includes("pending") ||
         valStr.includes("warning") ||
@@ -160,8 +216,14 @@ export function DataTable({
       }
       return (
         <span
-          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${colorClass}`}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${colorClass}`}
         >
+          {isRunning && (
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          )}
+          {isIdle && (
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+          )}
           {String(value)}
         </span>
       );
