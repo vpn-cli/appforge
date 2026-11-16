@@ -50,6 +50,30 @@ Published (Success): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text
 Draft (Neutral): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[13px] font-medium bg-muted text-muted-foreground border border-border
 ```
 
+### Home Reference Layout (New Direction Glassmorphism)
+
+**Glass Card Surface**
+```text
+bg-white/80 dark:bg-[#12131F]/80 backdrop-blur-xl border border-white/70 dark:border-white/10 rounded-2xl p-5 shadow-[0_20px_48px_-12px_rgba(30,27,75,0.08)]
+```
+
+**Eyebrow Badge**
+```text
+bg-[#EDEBFB] dark:bg-indigo-950/40 border border-[#DDD8F8] dark:border-indigo-800/40 text-[13px] font-medium text-[#4F46E5] dark:text-[#818CF8] px-3.5 py-1 rounded-full shadow-sm
+```
+
+**Headline Gradient**
+```text
+bg-gradient-to-r from-[#6366F1] via-[#4F46E5] to-[#2563EB] dark:from-[#818CF8] dark:via-[#6366F1] dark:to-[#3B82F6] bg-clip-text text-transparent
+```
+
+**Dark Slate Inner Panels (Editor & Preview Stat)**
+```text
+Editor: bg-[#14141E] border border-white/5 rounded-xl p-4 sm:p-5 font-mono text-[13px]
+Stat Panel: bg-[#1A1B29] border border-white/5 rounded-xl p-5 relative overflow-hidden text-white
+Table Frame: bg-[#161724] border border-white/5 rounded-xl text-slate-100 text-xs
+```
+
 ---
 
 ## Base Architecture Components
