@@ -1,32 +1,42 @@
 "use server";
-//acts as a parser for the app config and generates the ddl commands for the app
+// Acts as a parser for the app config and generates DDL commands for the app
 import { createInsforgeServer } from "@/lib/insforge-server";
+import { authorizeAppAccess } from "@/lib/app-access";
 
 export async function syncAppSchema(appId: string, entities: unknown, userId: string | null) {
   const supabase = await createInsforgeServer();
 
   // If there's no Clerk userId (e.g. guest mode)
   if (!userId) {
-    // DEV BYPASS FALLBACK ( for dev mode only)
+    // DEV BYPASS FALLBACK (for dev mode only)
     if (process.env.NODE_ENV === "development") {
       console.log("[DEV BYPASS] Mocking Schema Extraction for:", appId);
       return { success: true, message: "Mock schema generated successfully." };
     }
     return { success: false, message: "Unauthorized" };
   }
+
   if (!entities || typeof entities !== "object") {
     return { success: false, message: "No entities defined in config." };
   }
-
-  const cleanAppId = appId.replace(/-/g, '_');
-  const ddlCommands = [];
 
   for (const [entityName, fields] of Object.entries(entities)) {
     // Sanitize entity name
     const validEntityName = entityName.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
     if (!validEntityName) continue;
 
-    const tableName = `app_${cleanAppId}_${validEntityName}`;
+    // Verify ownership and write authorization before executing structural DDL.
+    // skipEntityCheck is explicitly used here because the entity table is about to be created/synced.
+    const authResult = await authorizeAppAccess(appId, validEntityName, "write", { skipEntityCheck: true });
+    if (authResult.error) {
+      const status = authResult.error.status;
+      return {
+        success: false,
+        message: status === 401 ? "Unauthorized" : "App not found or not owned by user",
+      };
+    }
+
+    const tableName = authResult.tableName;
     
     // Default columns
     const columns = [
@@ -48,15 +58,29 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
     }
 
     const ddl = `CREATE TABLE IF NOT EXISTS ${tableName} (${columns.join(', ')});`;
-    ddlCommands.push(ddl);
-  }
 
-  // Execute each generated DDL statement using our custom RPC function
-  for (const query of ddlCommands) {
-    const { error } = await supabase.rpc('execute_app_ddl', { app_id: appId, query });
-    if (error) {
-      console.error("[syncAppSchema] Failed DDL execution:", error);
-      return { success: false, message: `Failed to create tables: ${error.message}` };
+    // Execute generated DDL statement using RPC
+    const { error: ddlError } = await supabase.rpc('execute_app_ddl', { app_id: appId, query: ddl });
+    if (ddlError) {
+      console.error("[syncAppSchema] Failed DDL execution:", ddlError);
+      return { success: false, message: `Failed to create tables: ${ddlError.message}` };
+    }
+
+    // Upsert a row in app_schemas after successful DDL using consistent validEntityName
+    const { error: upsertError } = await supabase
+      .from("app_schemas")
+      .upsert(
+        {
+          app_id: appId,
+          table_name: validEntityName,
+          schema_definition: fields,
+        },
+        { onConflict: "app_id,table_name" }
+      );
+
+    if (upsertError) {
+      console.error("[syncAppSchema] Failed to upsert app_schemas:", upsertError);
+      return { success: false, message: `Failed to record schema definition: ${upsertError.message}` };
     }
   }
 
