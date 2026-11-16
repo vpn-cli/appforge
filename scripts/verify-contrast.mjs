@@ -181,6 +181,13 @@ const lightTests = [
   { category: 'Editor Light', name: 'Editor Keywords (#C2410C) vs Editor Surface', fg: parseCssColor('#C2410C'), bg: [255, 255, 255], min: 4.5 },
   { category: 'Editor Light', name: 'Editor Punctuation (#52525B) vs Editor Surface', fg: parseCssColor('#52525B'), bg: [255, 255, 255], min: 4.5 },
   { category: 'Editor Light', name: 'Editor Cursor (#111110) vs Editor Surface', fg: lightFg, bg: [255, 255, 255], min: 4.5 },
+
+  // Landing Elements Verification (Light)
+  { category: 'Landing Buttons', name: 'Start Building Button Label (#FFFFFF) on Primary (#111110)', fg: lightPrimaryFg, bg: lightPrimary, min: 4.5 },
+  { category: 'Landing Buttons', name: 'View Templates Button Label (#111110) on Card (#FFFFFF)', fg: lightFg, bg: lightCard, min: 4.5 },
+  { category: 'Landing Badges', name: 'Running Badge Label (#166534) on Success Tint (#ECFDF3)', fg: lightSuccessText, bg: lightSuccessPill, min: 4.5 },
+  { category: 'Landing Badges', name: 'Idle Badge Label (#63625C) on Raised (#F4F4F2)', fg: lightMutedFg, bg: lightMuted, min: 4.5 },
+  { category: 'Landing Avatars', name: 'Avatar Initials (#111110) on Raised/Muted (#F4F4F2)', fg: lightFg, bg: lightMuted, min: 4.5 },
 ];
 
 const darkTests = [
@@ -218,6 +225,39 @@ const darkTests = [
   { category: 'Editor Dark', name: 'Editor Keywords (#FDBA74) vs Editor Surface', fg: parseCssColor('#FDBA74'), bg: darkCard, min: 4.5 },
   { category: 'Editor Dark', name: 'Editor Punctuation (#A1A1AA) vs Editor Surface', fg: parseCssColor('#A1A1AA'), bg: darkCard, min: 4.5 },
   { category: 'Editor Dark', name: 'Editor Cursor (#EDEDEA) vs Editor Surface', fg: darkFg, bg: darkCard, min: 4.5 },
+
+  // Landing Elements Verification (Dark)
+  { category: 'Landing Buttons', name: 'Start Building Button Label (#111110) on Primary (#EDEDEA)', fg: darkPrimaryFg, bg: darkPrimary, min: 4.5 },
+  { category: 'Landing Buttons', name: 'View Templates Button Label (#EDEDEA) on Card (#171716)', fg: darkFg, bg: darkCard, min: 4.5 },
+  { category: 'Landing Badges', name: 'Running Badge Label (#4ADE80) on Success Tint (#0F2417)', fg: darkSuccessText, bg: darkSuccessPill, min: 4.5 },
+  { category: 'Landing Badges', name: 'Idle Badge Label (#A3A29C) on Raised (#1F1F1D)', fg: darkMutedFg, bg: darkMuted, min: 4.5 },
+  { category: 'Landing Avatars', name: 'Avatar Initials (#EDEDEA) on Raised/Muted (#1F1F1D)', fg: darkFg, bg: darkMuted, min: 4.5 },
+];
+
+// Reference Home Specification Contrast Pairs (Light & Dark)
+const homeSpecLightTests = [
+  { category: 'Home Light', name: 'Headline Near-Black (#09090B) on Lavender Canvas (#EEF0FD)', fg: parseCssColor('#09090B'), bg: parseCssColor('#EEF0FD'), min: 4.5 },
+  { category: 'Home Light', name: 'Headline Gradient Violet (#6366F1) on Canvas (Large text)', fg: parseCssColor('#6366F1'), bg: parseCssColor('#EEF0FD'), min: 3.0 },
+  { category: 'Home Light', name: 'Headline Gradient Blue (#2563EB) on Canvas (Large text)', fg: parseCssColor('#2563EB'), bg: parseCssColor('#EEF0FD'), min: 3.0 },
+  { category: 'Home Light', name: 'Hero Subtitle (#475569) on Lavender Canvas (#EEF0FD)', fg: parseCssColor('#475569'), bg: parseCssColor('#EEF0FD'), min: 4.5 },
+  { category: 'Home Light', name: 'Eyebrow Text (#4338CA) on Eyebrow Pill (#EDEBFB)', fg: parseCssColor('#4338CA'), bg: parseCssColor('#EDEBFB'), min: 4.5 },
+  { category: 'Home Light', name: 'Sidebar Active Text (#4338CA) on Active Fill (#E6E4FA)', fg: parseCssColor('#4338CA'), bg: parseCssColor('#E6E4FA'), min: 4.5 },
+  { category: 'Home Light', name: 'Sidebar Inactive Text (#475569) on Sidebar Surface (#F0EFFD)', fg: parseCssColor('#475569'), bg: parseCssColor('#F0EFFD'), min: 4.5 },
+  { category: 'Home Light', name: 'Primary CTA Text (#FFFFFF) on Button (#09090B)', fg: parseCssColor('#FFFFFF'), bg: parseCssColor('#09090B'), min: 4.5 },
+  { category: 'Home Light', name: 'Secondary CTA Text (#0F172A) on Glass Button (#FFFFFF)', fg: parseCssColor('#0F172A'), bg: parseCssColor('#FFFFFF'), min: 4.5 },
+];
+
+const homeSpecDarkTests = [
+  { category: 'Home Dark', name: 'Headline Solid Text (#F8FAFC) on Deep Navy Canvas (#090A10)', fg: parseCssColor('#F8FAFC'), bg: parseCssColor('#090A10'), min: 4.5 },
+  { category: 'Home Dark', name: 'Headline Grad Violet (#818CF8) on Canvas (Large text)', fg: parseCssColor('#818CF8'), bg: parseCssColor('#090A10'), min: 3.0 },
+  { category: 'Home Dark', name: 'Headline Grad Blue (#3B82F6) on Canvas (Large text)', fg: parseCssColor('#3B82F6'), bg: parseCssColor('#090A10'), min: 3.0 },
+  { category: 'Home Dark', name: 'Hero Subtitle (#94A3B8) on Deep Navy Canvas (#090A10)', fg: parseCssColor('#94A3B8'), bg: parseCssColor('#090A10'), min: 4.5 },
+  { category: 'Home Dark', name: 'Eyebrow Text (#A5B4FC) on Dark Pill (#1E1B4B)', fg: parseCssColor('#A5B4FC'), bg: parseCssColor('#1E1B4B'), min: 4.5 },
+  { category: 'Home Dark', name: 'Stat Panel Value (#FFFFFF) on Stat Panel (#1A1B29)', fg: parseCssColor('#FFFFFF'), bg: parseCssColor('#1A1B29'), min: 4.5 },
+  { category: 'Home Dark', name: 'Stat Panel Label (#94A3B8) on Stat Panel (#1A1B29)', fg: parseCssColor('#94A3B8'), bg: parseCssColor('#1A1B29'), min: 4.5 },
+  { category: 'Home Dark', name: 'Table Cell Text (#F1F5F9) on Table Panel (#1A1B29)', fg: parseCssColor('#F1F5F9'), bg: parseCssColor('#1A1B29'), min: 4.5 },
+  { category: 'Home Dark', name: 'Table Header Muted (#94A3B8) on Table Panel (#1A1B29)', fg: parseCssColor('#94A3B8'), bg: parseCssColor('#1A1B29'), min: 4.5 },
+  { category: 'Home Dark', name: 'Primary CTA Text (#09090B) on Button (#FFFFFF)', fg: parseCssColor('#09090B'), bg: parseCssColor('#FFFFFF'), min: 4.5 },
 ];
 
 function runSuite(title, suite) {
@@ -235,8 +275,10 @@ function runSuite(title, suite) {
 
 const lp = runSuite('LIGHT THEME WCAG 2.2 AA VERIFICATION (MONOCHROME PALETTE)', lightTests);
 const dp = runSuite('DARK THEME WCAG 2.2 AA VERIFICATION (MONOCHROME PALETTE)', darkTests);
+const hlp = runSuite('HOME SPEC LIGHT THEME WCAG 2.2 AA VERIFICATION', homeSpecLightTests);
+const hdp = runSuite('HOME SPEC DARK THEME WCAG 2.2 AA VERIFICATION', homeSpecDarkTests);
 
-if (lp && dp) {
+if (lp && dp && hlp && hdp) {
   console.log('\n>>> ALL AUDITED PAIRS (TEXT & NON-TEXT) MEET WCAG 2.2 AA IN BOTH THEMES <<<\n');
 } else {
   console.error('\n>>> SOME PAIRS FAILED WCAG CHECKS <<<\n');
