@@ -10,8 +10,10 @@ async function capture() {
   console.log('Browser launched successfully');
   const page = await browser.newPage({ width: 1440, height: 900 });
 
-  // 1. Desktop full views (Dashboard, Builder, Shell)
+  // 1. Desktop full views (Dashboard Direction 1, Dashboard Direction 2, Default Dashboard, Builder, Shell)
   const views = [
+    { url: 'http://localhost:3000/dashboard?direction=1', name: 'dashboard-direction-1' },
+    { url: 'http://localhost:3000/dashboard?direction=2', name: 'dashboard-direction-2' },
     { url: 'http://localhost:3000/dashboard', name: 'dashboard-desktop' },
     { url: 'http://localhost:3000/builder/demo', name: 'builder-desktop' },
     { url: 'http://localhost:3000/test-renderers', name: 'renderers-showcase' }

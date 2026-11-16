@@ -105,7 +105,7 @@ export function AppThumbnail({ config }: Props) {
       ) : (
         <ThumbnailErrorBoundary fallback={errorFallback}>
           {/* Scaled desktop viewport container */}
-          <div className="absolute top-0 left-0 w-[840px] h-[525px] origin-top-left transform scale-[0.35] sm:scale-[0.38] lg:scale-[0.35] p-6 bg-background flex flex-col gap-4 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-0 w-[840px] h-[525px] origin-top-left transform scale-[0.44] sm:scale-[0.48] p-5 bg-background flex flex-col gap-4 overflow-hidden pointer-events-none">
             {components.slice(0, 4).map((comp, idx) => (
               <RenderNode key={idx} config={comp} />
             ))}

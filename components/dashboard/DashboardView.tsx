@@ -186,13 +186,7 @@ export function DashboardView({ initialApps }: Props) {
                 </p>
               </div>
             ) : (
-              <div
-                className={`grid gap-5 sm:gap-6 ${
-                  direction === "linear"
-                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
-                    : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
-                }`}
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
                 {filteredApps.map((app) => (
                   <AppCard
                     key={app.id}
@@ -207,9 +201,34 @@ export function DashboardView({ initialApps }: Props) {
           </div>
 
           {/* Activity Column (Desktop: right-hand column, Mobile: below grid) */}
-          <div className="lg:col-span-4 xl:col-span-3 w-full">
-            <div className="sticky top-20">
+          <div className="lg:col-span-4 xl:col-span-3 w-full flex flex-col gap-4">
+            <div className="sticky top-20 flex flex-col gap-4">
               <RecentActivity apps={initialApps} />
+
+              {/* Workspace status / developer resources */}
+              <div className="w-full bg-card/60 border border-border rounded-lg p-4 text-xs">
+                <div className="flex items-center justify-between text-muted-foreground pb-2 mb-2.5 border-b border-border/50">
+                  <span className="font-semibold text-foreground text-[11px]">Runtime status</span>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-500 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Nominal
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2 text-muted-foreground text-[11px]">
+                  <div className="flex justify-between items-center">
+                    <span>Engine</span>
+                    <span className="font-mono text-foreground">v2.4 AST</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Renderer registry</span>
+                    <span className="font-mono text-foreground">6 primitives</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>AI Dual-provider</span>
+                    <span className="text-foreground">Gemini + Groq</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
