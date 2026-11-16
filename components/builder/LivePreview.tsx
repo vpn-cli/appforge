@@ -165,7 +165,7 @@ export function LivePreview({
 
         {/* Viewport Content Area: Fills frame height */}
         <div
-          className="flex-1 overflow-y-auto p-4 sm:p-6 bg-card"
+          className="@container flex-1 overflow-y-auto p-4 @sm:p-6 bg-card min-w-0"
           data-lenis-prevent
         >
           <AnimatePresence mode="wait">
@@ -196,7 +196,7 @@ export function LivePreview({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                className="flex flex-col gap-6"
+                className="flex flex-col gap-4 min-w-0"
               >
                 {config?.pages?.[0]?.components?.map(
                   (comp: Record<string, unknown>, i: number) => (

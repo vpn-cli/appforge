@@ -157,6 +157,15 @@ const lightTests = [
 
   { category: 'Non-Text', name: 'Solid Focus Ring vs Background', fg: lightRing, bg: lightBg, min: 3.0 },
   { category: 'Non-Text', name: 'Input Border vs Background', fg: lightInput, bg: lightBg, min: 3.0 },
+
+  // Monaco Editor Token Contrast (Light Theme on #FFFFFF)
+  { category: 'Editor Light', name: 'Editor Foreground (#18181B) vs Editor Surface', fg: parseCssColor('#18181B'), bg: [255, 255, 255], min: 4.5 },
+  { category: 'Editor Light', name: 'Editor Keys (#1D4ED8) vs Editor Surface', fg: parseCssColor('#1D4ED8'), bg: [255, 255, 255], min: 4.5 },
+  { category: 'Editor Light', name: 'Editor Strings (#15803D) vs Editor Surface', fg: parseCssColor('#15803D'), bg: [255, 255, 255], min: 4.5 },
+  { category: 'Editor Light', name: 'Editor Numbers (#A16207) vs Editor Surface', fg: parseCssColor('#A16207'), bg: [255, 255, 255], min: 4.5 },
+  { category: 'Editor Light', name: 'Editor Keywords (#C2410C) vs Editor Surface', fg: parseCssColor('#C2410C'), bg: [255, 255, 255], min: 4.5 },
+  { category: 'Editor Light', name: 'Editor Punctuation (#52525B) vs Editor Surface', fg: parseCssColor('#52525B'), bg: [255, 255, 255], min: 4.5 },
+  { category: 'Editor Light', name: 'Editor Cursor (#6D28D9) vs Editor Surface', fg: parseCssColor('#6D28D9'), bg: [255, 255, 255], min: 4.5 },
 ];
 
 const darkTests = [
@@ -178,6 +187,15 @@ const darkTests = [
 
   { category: 'Non-Text', name: 'Solid Focus Ring vs Background', fg: darkRing, bg: darkBg, min: 3.0 },
   { category: 'Non-Text', name: 'Input Border vs Background', fg: darkInput, bg: darkBg, min: 3.0 },
+
+  // Monaco Editor Token Contrast (Dark Theme on #18181B)
+  { category: 'Editor Dark', name: 'Editor Foreground (#E4E4E7) vs Editor Surface', fg: parseCssColor('#E4E4E7'), bg: parseCssColor('#18181B'), min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Keys (#93C5FD) vs Editor Surface', fg: parseCssColor('#93C5FD'), bg: parseCssColor('#18181B'), min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Strings (#86EFAC) vs Editor Surface', fg: parseCssColor('#86EFAC'), bg: parseCssColor('#18181B'), min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Numbers (#FDE047) vs Editor Surface', fg: parseCssColor('#FDE047'), bg: parseCssColor('#18181B'), min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Keywords (#FDBA74) vs Editor Surface', fg: parseCssColor('#FDBA74'), bg: parseCssColor('#18181B'), min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Punctuation (#A1A1AA) vs Editor Surface', fg: parseCssColor('#A1A1AA'), bg: parseCssColor('#18181B'), min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Cursor (#A78BFA) vs Editor Surface', fg: parseCssColor('#A78BFA'), bg: parseCssColor('#18181B'), min: 4.5 },
 ];
 
 function runSuite(title, suite) {

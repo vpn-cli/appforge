@@ -28,59 +28,78 @@ import { getAppConfig, saveAppConfig, publishAppConfig } from "@/actions/apps";
 
 const defaultMockConfig = JSON.stringify(
   {
-    app: "Employee Control Center",
+    app: "Incident Command Center",
     pages: [
       {
         components: [
           {
             type: "Header",
-            title: "Operations Hub",
-            subtitle: "Manage fleet logistics and security incidents globally.",
+            title: "Incident Command Center",
+            subtitle:
+              "Real-time service degradation alerts, active remediation runs, and edge latency telemetry.",
             size: "lg",
           },
           {
             type: "Grid",
-            columns: 3,
-            gap: 4,
+            columns: 4,
+            gap: 3,
             items: [
               {
-                type: "Card",
-                title: "System Alerts",
-                subtitle: "2 unresolved issues",
-                footer: [
-                  {
-                    type: "ButtonAction",
-                    label: "View Logs",
-                    variant: "outline",
-                    icon: "search",
-                  },
-                ],
+                type: "Statistic",
+                label: "Active Incidents",
+                value: "2",
+                trend: { value: "-3", sentiment: "positive" },
               },
               {
-                type: "Card",
-                title: "Active Personnel",
-                subtitle: "142 onboard",
-                footer: [
-                  {
-                    type: "ButtonAction",
-                    label: "Message All",
-                    variant: "ghost",
-                    icon: "play",
-                  },
-                ],
+                type: "Statistic",
+                label: "Mean Time to Recovery",
+                value: "14m",
+                trend: { value: "-4m", sentiment: "positive" },
               },
               {
-                type: "Card",
-                title: "Fleet Status",
-                subtitle: "All units nominal",
-                footer: [
-                  {
-                    type: "ButtonAction",
-                    label: "Run Diagnostic",
-                    variant: "secondary",
-                    icon: "arrow-right",
-                  },
-                ],
+                type: "Statistic",
+                label: "Degraded Services",
+                value: "1",
+                trend: { value: "+1", sentiment: "negative" },
+              },
+              {
+                type: "Statistic",
+                label: "Global Uptime",
+                value: "99.98%",
+                trend: { value: "0.0%", sentiment: "neutral" },
+              },
+            ],
+          },
+          {
+            type: "DataTable",
+            columns: [
+              { key: "id", label: "Incident ID", type: "id" },
+              { key: "service", label: "Service", type: "text" },
+              { key: "severity", label: "Severity", type: "badge" },
+              { key: "status", label: "Status", type: "badge" },
+              { key: "impact", label: "Impact ($)", type: "currency" },
+            ],
+            data: [
+              {
+                id: "INC-4091",
+                service: "API Gateway Ingress",
+                severity: "Critical",
+                status: "Active",
+                impact: 18200,
+              },
+              {
+                id: "INC-4092",
+                service: "Auth0 Token Relay",
+                severity: "Warning",
+                status: "Pending",
+                impact: 4200,
+              },
+              {
+                id: "INC-4089",
+                service: "Postgres Read Replica",
+                severity: "Minor",
+                status: "Resolved",
+                impact: 950,
               },
             ],
           },

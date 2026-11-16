@@ -87,4 +87,19 @@ Vercel Cockpit: bg-card border border-border rounded-xl p-5 shadow-xs
 Example Pill: text-[11px] font-medium text-muted-foreground hover:text-foreground bg-muted/40 border border-border/50 px-2 py-0.5 rounded
 ```
 
+### Container-Aware Core Renderers (Tailwind v4 Container Queries)
+*Responsive renderers query container width, preventing overflow in narrow preview frames.*
+```text
+Preview Frame Root: @container flex-1 overflow-y-auto p-4 @sm:p-6 bg-card min-w-0
+Grid Wrapper: @container w-full min-w-0
+Adaptive Columns: grid-cols-1 @[420px]:grid-cols-2 @[720px]:grid-cols-3 @[960px]:grid-cols-4
+Card: @container h-full bg-card border border-border rounded-lg p-4 min-w-0
+Card Hierarchy: Title is primary (text-sm font-semibold text-foreground), Subtitle is secondary (text-xs text-muted-foreground)
+Card Divider Rule: Inside Card, content children use divide-y divide-border/60 with at most ONE bordered surface
+Statistic (Standalone): @container bg-card border border-border rounded-xl p-4 sm:p-5 shadow-sm min-w-0
+Statistic (Inside Card): @container bg-transparent border-0 rounded-none shadow-none p-2 min-w-0
+Statistic Typography: font-sans tabular-nums font-bold text-foreground clamp(1.125rem, 5cqi + 0.5rem, 1.875rem)
+Trend Arrow & Color: Arrow follows sign (+ up, - down). Color defaults to neutral (text-muted-foreground) unless explicit sentiment ("positive" | "negative") is passed.
+```
+
 *(More components will be added dynamically by the `/imprint` skill)*

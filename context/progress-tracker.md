@@ -32,6 +32,7 @@ Update this file after every completed feature. Any AI agent reading this should
 ### Phase 4 — Component Registry & Runtime
 - [x] 09 Component Registry Foundation
 - [x] 10 Core Components Renderers
+- [x] 10b Container-Based Responsive Renderers (Tailwind v4 container queries `@container`, `@sm:`, `@[420px]:`, `@[720px]:`, overflow wrapping `[overflow-wrap:anywhere]`, `CardContext` hairline divider rule with borderless stats, reverted Card title/subtitle hierarchy, sentiment-driven trend colors with arrow direction tied to sign, dev-only stress test suite `/dev/renderers`)
 - [x] 11 Live Preview Wiring
 
 ### Phase 5 — Dynamic Backend
