@@ -1,6 +1,6 @@
 # UI Tokens
 
-Design tokens for AppForge. We use a unified Brand Violet (`#6D28D9` / `rgb(109, 40, 217)`), Blush (error), Peach (warning), and Mint (success), engineered to meet or exceed WCAG 2.2 AA (>= 4.5:1) in both Light and Dark themes.
+Design tokens for AppForge. Monochrome palette (color only for meaning: success, warning, error, accent), engineered to meet or exceed WCAG 2.2 AA (>= 4.5:1 text, >= 3.0:1 non-text) in both Light and Dark themes.
 
 ---
 
@@ -10,57 +10,66 @@ This project uses **Tailwind CSS v4**. All design tokens are defined using the `
 
 ```tsx
 // Correct
-className="bg-surface text-text-primary border-border"
+className="bg-card text-foreground border-border hover:border-border-strong"
 
 // Never
-className="bg-[#F6F7FB] text-[#101828]"
+className="bg-[#FBFBFA] text-[#111110]"
 className="bg-purple-500 text-gray-600"
 ```
 
 ---
 
-## Typography
+## Palette (Monochrome, Color Only for Meaning)
 
-- UI & Body Font: **Inter** (`--font-sans`)
-- Code & Tabular Data: **SF Mono / Geist Mono stack** (`--font-mono`): `"SF Mono"`, `ui-monospace`, `SFMono-Regular`, `Menlo`, `<Geist Mono>`, `monospace`
+### Light Theme
+- `--background`: `#FBFBFA`
+- `--surface/card`: `#FFFFFF`
+- `--raised/muted`: `#F4F4F2`
+- `--border`: `#E6E5E1`
+- `--border-strong` (inputs): `#8F8E88`
+- `--foreground`: `#111110`
+- `--muted-foreground`: `#63625C`
+- `--primary`: `#111110` (primary buttons are BLACK)
+- `--primary-foreground`: `#FFFFFF`
+- `--primary-hover`: `#2A2A28`
+- `--accent`: `#1D4ED8` (links, focus ring, selection, active nav only)
 
-| Element              | Font / Token          | Contrast (Light / Dark) |
-| -------------------- | --------------------- | ----------------------- |
-| Body / General       | `text-text-primary`   | 18.97:1 / 19.80:1 (AA)  |
-| Panel Headers        | `text-text-primary`   | 18.97:1 / 19.80:1 (AA)  |
-| Secondary / Muted    | `text-text-secondary` | 7.14:1 / 7.66:1 (AA)    |
-| Code / AST Schema    | `font-mono text-xs`   | 7.14:1 / 7.66:1 (AA)    |
-| Primary Brand Text   | `text-brand`          | 6.81:1 / 7.27:1 (AA)    |
+### Dark Theme
+- `--background`: `#0F0F0E`
+- `--surface/card`: `#171716`
+- `--raised/muted`: `#1F1F1D`
+- `--border`: `#2B2A28`
+- `--border-strong` (inputs): `#6E6D68`
+- `--foreground`: `#EDEDEA`
+- `--muted-foreground`: `#A3A29C`
+- `--primary`: `#EDEDEA` (primary buttons are WHITE)
+- `--primary-foreground`: `#111110`
+- `--primary-hover`: `#D6D6D2`
+- `--accent`: `#8AB4F8`
 
----
-
-## Density & Heights
-
-High-density developer tool standards (Linear / Raycast / Vercel style):
-
-| Control Type         | Height Token          | Usage |
-| -------------------- | --------------------- | ----- |
-| Compact Badges/Btns  | `h-7` (28px)          | Table cell actions, tag pills |
-| Standard Inputs/Btns | `h-8` (32px)          | Form controls, toolbar actions |
-| Hero / Primary CTAs  | `h-9` (36px) - `h-10` | Primary page submission |
-| App / Studio Toolbar | `h-11` (44px)         | Top builder chrome bar |
-
----
-
-## State & Validation Tokens (WCAG 2.2 AA Verified)
-
-| Role | Light Value (Text / Bg) | Dark Value (Text / Bg) | Contrast |
-| :--- | :--- | :--- | :--- |
-| **Brand** | `#6D28D9` on `#FFFFFF` | `#A78BFA` on `#27272A` | 7.10:1 / 6.59:1 ✅ |
-| **Error** | `#8C2E44` on `#FBEAEE` | `#F472B6` on `#2E1119` | 6.99:1 / 6.55:1 ✅ |
-| **Warning** | `#784A15` on `#FDF1E7` | `#FBBF24` on `#2D1E0A` | 6.78:1 / 9.66:1 ✅ |
-| **Success** | `#2F7A55` on `#EAF7F0` | `#34D399` on `#0B281A` | 4.72:1 / 8.20:1 ✅ |
+### Semantic Tokens (Light / Dark)
+Each with text color, tinted background, and border:
+- **Success**: `#166534` on `#ECFDF3` / `#4ADE80` on `#0F2417`
+- **Warning**: `#B54708` on `#FFFAEB` / `#FBBF24` on `#2A1F07`
+- **Error**: `#B42318` on `#FEF3F2` / `#F87171` on `#2A1110`
 
 ---
 
-## Invariants
-- **Single Brand Token**: Unified Violet `#6D28D9` across `@theme`, Clerk modal, and Landing custom cursor.
-- **Never use raw Hex codes** inside components.
-- **Never invent color utilities** not specified via `@theme`.
-- **Film-Grain Overlay**: Locked `body::after` feTurbulence noise (z-index 9999, pointer-events none).
-- **Cursor**: Custom cursor scoped strictly to `/`. Native system cursors on all text, inputs, and in-app screens.
+## Type Scale
+
+- Base body: 15px, line-height 1.55
+- Nav and buttons: 14px medium (`text-sm font-medium`)
+- Meta text: 13px minimum (`text-[13px]`, never 12px in the chrome)
+- Page title: 30px semibold, letter-spacing -0.02em (`text-[30px] font-semibold tracking-[-0.02em]`)
+- Section headings: 18px semibold (`text-[18px] font-semibold`)
+- Card titles: 16px semibold (`text-[16px] font-semibold`)
+- Controls: buttons and inputs 36px tall (`h-9`), prompt input 48px tall (`h-12`) with 16px text (`text-base`)
+- Content container: max-width 1200px (`max-w-[1200px]`), aligned left edge across header, title row, and grid.
+
+---
+
+## Rules
+- Logo, org avatar, and every brand mark are monochrome (foreground on raised: `bg-muted text-foreground`). No green, no purple in the chrome.
+- Disabled buttons: `--raised` background (`bg-muted`), `--muted-foreground` text (`text-muted-foreground`), no tint. Generate is enabled (black/white) as soon as the input has text.
+- Success, warning, and error colors appear only for status, never as decoration.
+- Film grain overlay: locked `body::after` feTurbulence noise (z-index 9999, pointer-events none).

@@ -106,29 +106,29 @@ export function DashboardView({ initialApps }: Props) {
 
   return (
     <AppShell activeSearchQuery={searchQuery} onSearchChange={setSearchQuery}>
-      <div className="w-full max-w-7xl mx-auto px-4 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8">
+      <div className="w-full max-w-[1200px] mx-auto px-6 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8">
         {/* Page Title Row: Title + Count on left, "New app" button on right */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="text-[30px] font-semibold tracking-[-0.02em] leading-tight text-foreground">
               Apps
             </h1>
-            <p className="text-xs text-muted-foreground font-medium">
+            <p className="text-[13px] text-muted-foreground font-medium">
               {statsLine}
             </p>
           </div>
 
           <Button
             variant="outline"
-            size="sm"
+            size="default"
             onClick={handlePlainCreate}
             disabled={isPending}
-            className="h-8 text-xs border-border hover:bg-muted font-medium px-3"
+            className="h-9 text-sm border-border hover:bg-muted font-medium px-3.5"
           >
             {isPending ? (
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
             ) : (
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
+              <Plus className="w-4 h-4 mr-1.5" />
             )}
             <span>New app</span>
           </Button>
@@ -138,6 +138,7 @@ export function DashboardView({ initialApps }: Props) {
         <PromptBox
           onPlainCreate={handlePlainCreate}
           isPending={isPending}
+          appCount={initialApps.length}
         />
 
         {/* Main Content Layout */}
@@ -149,7 +150,7 @@ export function DashboardView({ initialApps }: Props) {
               <EmptyStateTemplates />
             ) : filteredApps.length === 0 ? (
               <div className="p-8 text-center border border-dashed border-border rounded-lg bg-card/20">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-[13px] text-muted-foreground">
                   No apps found matching &ldquo;{searchQuery}&rdquo;.
                 </p>
               </div>
@@ -171,31 +172,6 @@ export function DashboardView({ initialApps }: Props) {
           <div className="lg:col-span-4 xl:col-span-3 w-full flex flex-col gap-4">
             <div className="sticky top-20 flex flex-col gap-4">
               <RecentActivity apps={initialApps} />
-
-              {/* Workspace status / developer resources */}
-              <div className="w-full bg-card/60 border border-border rounded-lg p-4 text-xs">
-                <div className="flex items-center justify-between text-muted-foreground pb-2 mb-2.5 border-b border-border/50">
-                  <span className="font-semibold text-foreground text-[11px]">Runtime status</span>
-                  <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-500 font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Nominal
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2 text-muted-foreground text-[11px]">
-                  <div className="flex justify-between items-center">
-                    <span>Engine</span>
-                    <span className="font-mono text-foreground">v2.4 AST</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Renderer registry</span>
-                    <span className="font-mono text-foreground">6 primitives</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>AI Dual-provider</span>
-                    <span className="text-foreground">Gemini + Groq</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -208,27 +184,27 @@ export function DashboardView({ initialApps }: Props) {
             <h2 className="text-base font-semibold text-foreground mb-1.5">
               Delete application?
             </h2>
-            <p className="text-xs text-muted-foreground mb-5">
+            <p className="text-[13px] text-muted-foreground mb-5">
               This will permanently delete this app and its configuration. This action cannot be undone.
             </p>
             <div className="flex items-center justify-center gap-2">
               <Button
                 variant="outline"
-                size="sm"
+                size="default"
                 onClick={() => setAppToDelete(null)}
                 disabled={isPending}
-                className="text-xs h-8 border-border hover:bg-muted"
+                className="text-sm h-9 border-border hover:bg-muted"
               >
                 Cancel
               </Button>
               <Button
                 variant="destructive"
-                size="sm"
+                size="default"
                 onClick={confirmDelete}
                 disabled={isPending}
-                className="text-xs h-8 bg-red-600 hover:bg-red-700 text-white min-w-[90px]"
+                className="text-sm h-9 min-w-[90px]"
               >
-                {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto" /> : "Delete"}
+                {isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Delete"}
               </Button>
             </div>
           </div>

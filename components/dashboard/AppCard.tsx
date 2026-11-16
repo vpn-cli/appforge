@@ -52,7 +52,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
   return (
     <div
       onClick={handleCardClick}
-      className="group cursor-pointer bg-card border border-border rounded-lg overflow-hidden transition-colors duration-150 flex flex-col relative select-none hover:border-foreground/40 shadow-xs"
+      className="group cursor-pointer bg-card border border-border hover:border-border-strong rounded-lg overflow-hidden transition-colors duration-150 flex flex-col relative select-none"
       role="link"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -71,11 +71,11 @@ export function AppCard({ app, onRename, onDelete }: Props) {
           {/* App title & metadata */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-foreground truncate group-hover:text-brand transition-colors">
+              <h3 className="text-[16px] font-semibold text-foreground truncate transition-colors">
                 {app.name}
               </h3>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-[13px] text-muted-foreground mt-0.5">
               Edited {formatRelativeTime(app.updated_at)}
             </p>
           </div>
@@ -83,13 +83,13 @@ export function AppCard({ app, onRename, onDelete }: Props) {
           {/* Status Badge + Overflow menu */}
           <div className="flex items-center gap-2 shrink-0">
             <span
-              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium shrink-0 whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[13px] font-medium shrink-0 whitespace-nowrap ${
                 isPublished
                   ? "bg-success-light text-success-text border border-success-border"
                   : "bg-muted text-muted-foreground border border-border"
               }`}
             >
-              {isPublished && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />}
+              {isPublished && <span className="w-1.5 h-1.5 rounded-full bg-success-text shrink-0" />}
               <span>{app.status}</span>
             </span>
 
@@ -119,7 +119,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
                     }}
                   />
                   <div
-                    className="absolute right-0 top-full mt-1 w-44 rounded-md border border-border bg-card shadow-lg py-1 z-50 text-xs animate-in fade-in-50 zoom-in-95 duration-100"
+                    className="absolute right-0 top-full mt-1 w-44 rounded-md border border-border bg-card shadow-lg py-1 z-50 text-[13px] animate-in fade-in-50 zoom-in-95 duration-100"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Link
@@ -162,7 +162,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
                         setIsMenuOpen(false);
                         onDelete(app.id);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-red-500 hover:bg-red-500/10 transition-colors text-left"
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-error-text hover:bg-error-light transition-colors text-left"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Delete app</span>

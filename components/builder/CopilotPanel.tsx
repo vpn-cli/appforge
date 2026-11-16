@@ -226,7 +226,7 @@ export function CopilotPanel({
             <div
               className={`p-2.5 max-w-[90%] text-xs leading-relaxed rounded-lg border ${
                 m.role === "user"
-                  ? "bg-brand text-text-inverse border-brand font-medium"
+                  ? "bg-primary text-primary-foreground border-primary font-medium"
                   : "bg-muted/40 border-border text-foreground"
               }`}
             >
@@ -239,14 +239,14 @@ export function CopilotPanel({
         {isGenerating && (
           <div className="flex w-full justify-start">
             <div className="bg-muted/40 border border-border text-foreground rounded-lg p-2.5 inline-flex items-center gap-2 text-xs">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-brand" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
               <span>Synthesizing components...</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Input Box: Solid brand with AA contrast when text, neutral gray when disabled */}
+      {/* Input Box: Solid primary with AA contrast when text, neutral gray when disabled */}
       <form
         onSubmit={handleGenerate}
         className="p-2.5 border-t border-border bg-card flex items-end gap-2 shrink-0"
@@ -274,8 +274,8 @@ export function CopilotPanel({
           size="sm"
           className={`h-[38px] w-[38px] p-0 rounded-lg shrink-0 transition-colors flex items-center justify-center ${
             hasText && !isGenerating
-              ? "bg-brand hover:bg-brand-dark text-text-inverse font-medium"
-              : "bg-muted text-muted-foreground/50 border border-border hover:bg-muted cursor-not-allowed"
+              ? "bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground font-medium"
+              : "bg-muted text-muted-foreground border-transparent cursor-not-allowed"
           }`}
           aria-label="Send prompt to Copilot"
         >

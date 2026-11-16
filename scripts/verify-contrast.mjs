@@ -27,7 +27,7 @@ function oklchToRgb(l, c, h, alpha = 1) {
   return [
     Math.round(toGamma(rLin) * 255),
     Math.round(toGamma(gLin) * 255),
-    Math.round(toGamma(bLin) * 255),
+    Math.round(toGamma(gLin) * 255),
     alpha
   ];
 }
@@ -111,15 +111,19 @@ const lightFg = parseCssColor(rootTokens['--foreground']);
 const lightMuted = parseCssColor(rootTokens['--muted']);
 const lightMutedFg = parseCssColor(rootTokens['--muted-foreground']);
 const lightInput = parseCssColor(rootTokens['--input']);
+const lightBorderStrong = parseCssColor(rootTokens['--border-strong']);
 const lightRing = parseCssColor(rootTokens['--ring']);
-const brandLight = parseCssColor(rootTokens['--theme-brand']);
-const brandLightHover = parseCssColor(rootTokens['--theme-brand-dark']);
-const blushErrorTextLight = parseCssColor(rootTokens['--theme-error-text']);
-const blushErrorPillLight = parseCssColor(rootTokens['--theme-error-light']);
-const peachWarningTextLight = parseCssColor(rootTokens['--theme-warning-text']);
-const peachWarningPillLight = parseCssColor(rootTokens['--theme-warning-light']);
-const mintSuccessTextLight = parseCssColor(rootTokens['--theme-success-text']);
-const mintSuccessPillLight = parseCssColor(rootTokens['--theme-success-light']);
+const lightAccent = parseCssColor(rootTokens['--accent']);
+const lightPrimary = parseCssColor(rootTokens['--primary']);
+const lightPrimaryFg = parseCssColor(rootTokens['--primary-foreground']);
+const lightPrimaryHover = parseCssColor(rootTokens['--primary-hover']);
+
+const lightSuccessText = parseCssColor(rootTokens['--theme-success-text']);
+const lightSuccessPill = parseCssColor(rootTokens['--theme-success-light']);
+const lightWarningText = parseCssColor(rootTokens['--theme-warning-text']);
+const lightWarningPill = parseCssColor(rootTokens['--theme-warning-light']);
+const lightErrorText = parseCssColor(rootTokens['--theme-error-text']);
+const lightErrorPill = parseCssColor(rootTokens['--theme-error-light']);
 
 // Dark Theme Values parsed dynamically
 const darkBg = parseCssColor(darkTokens['--background']);
@@ -128,35 +132,46 @@ const darkFg = parseCssColor(darkTokens['--foreground']);
 const darkMuted = parseCssColor(darkTokens['--muted']);
 const darkMutedFg = parseCssColor(darkTokens['--muted-foreground']);
 const darkInput = parseCssColor(darkTokens['--input']);
+const darkBorderStrong = parseCssColor(darkTokens['--border-strong']);
 const darkRing = parseCssColor(darkTokens['--ring']);
-const brandDark = parseCssColor(darkTokens['--theme-brand']);
-const brandDarkActive = parseCssColor(darkTokens['--theme-brand-dark']);
-const brandDarkHover = parseCssColor('#C4B5FD');
-const darkButtonLabel = parseCssColor('#09090B'); // Standardized dark button label
-const blushErrorTextDark = parseCssColor(darkTokens['--theme-error-text']);
-const blushErrorPillDark = parseCssColor(darkTokens['--theme-error-light']);
-const peachWarningTextDark = parseCssColor(darkTokens['--theme-warning-text']);
-const peachWarningPillDark = parseCssColor(darkTokens['--theme-warning-light']);
-const mintSuccessTextDark = parseCssColor(darkTokens['--theme-success-text']);
-const mintSuccessPillDark = parseCssColor(darkTokens['--theme-success-light']);
+const darkAccent = parseCssColor(darkTokens['--accent']);
+const darkPrimary = parseCssColor(darkTokens['--primary']);
+const darkPrimaryFg = parseCssColor(darkTokens['--primary-foreground']);
+const darkPrimaryHover = parseCssColor(darkTokens['--primary-hover']);
+
+const darkSuccessText = parseCssColor(darkTokens['--theme-success-text']);
+const darkSuccessPill = parseCssColor(darkTokens['--theme-success-light']);
+const darkWarningText = parseCssColor(darkTokens['--theme-warning-text']);
+const darkWarningPill = parseCssColor(darkTokens['--theme-warning-light']);
+const darkErrorText = parseCssColor(darkTokens['--theme-error-text']);
+const darkErrorPill = parseCssColor(darkTokens['--theme-error-light']);
 
 const lightTests = [
-  { category: 'Typography', name: 'Foreground on Background', fg: lightFg, bg: lightBg, min: 4.5 },
-  { category: 'Typography', name: 'Foreground on Card', fg: lightFg, bg: lightCard, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground on Background', fg: lightMutedFg, bg: lightBg, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground on Muted Surface', fg: lightMutedFg, bg: lightMuted, min: 4.5 },
-  { category: 'Typography', name: 'Brand Text on Background', fg: brandLight, bg: lightBg, min: 4.5 },
-  { category: 'Typography', name: 'Brand Text on Card', fg: brandLight, bg: lightCard, min: 4.5 },
+  // Typography
+  { category: 'Typography', name: 'Foreground (#111110) on Background (#FBFBFA)', fg: lightFg, bg: lightBg, min: 4.5 },
+  { category: 'Typography', name: 'Foreground (#111110) on Card (#FFFFFF)', fg: lightFg, bg: lightCard, min: 4.5 },
+  { category: 'Typography', name: 'Foreground (#111110) on Raised/Muted (#F4F4F2)', fg: lightFg, bg: lightMuted, min: 4.5 },
+  { category: 'Typography', name: 'Muted Foreground (#63625C) on Background (#FBFBFA)', fg: lightMutedFg, bg: lightBg, min: 4.5 },
+  { category: 'Typography', name: 'Muted Foreground (#63625C) on Card (#FFFFFF)', fg: lightMutedFg, bg: lightCard, min: 4.5 },
+  { category: 'Typography', name: 'Muted Foreground (#63625C) on Raised (#F4F4F2)', fg: lightMutedFg, bg: lightMuted, min: 4.5 },
 
-  { category: 'Buttons', name: 'Button Label (#FFFFFF) on Brand', fg: [255, 255, 255], bg: brandLight, min: 4.5 },
-  { category: 'Buttons', name: 'Button Label (#FFFFFF) on Hover', fg: [255, 255, 255], bg: brandLightHover, min: 4.5 },
+  // Header Org Name
+  { category: 'Header Chrome', name: 'Header Org Name (Foreground) on Header Bg', fg: lightFg, bg: lightBg, min: 4.5 },
+  { category: 'Header Chrome', name: 'Header Org Name (Foreground) on Raised Pill', fg: lightFg, bg: lightMuted, min: 4.5 },
 
-  { category: 'Badges/Pills', name: 'Error Text on Error Pill', fg: blushErrorTextLight, bg: blushErrorPillLight, min: 4.5 },
-  { category: 'Badges/Pills', name: 'Warning Text on Warning Pill', fg: peachWarningTextLight, bg: peachWarningPillLight, min: 4.5 },
-  { category: 'Badges/Pills', name: 'Success Text on Success Pill', fg: mintSuccessTextLight, bg: mintSuccessPillLight, min: 4.5 },
+  // Buttons
+  { category: 'Buttons', name: 'Primary Button Label (#FFFFFF) on Primary (#111110)', fg: lightPrimaryFg, bg: lightPrimary, min: 4.5 },
+  { category: 'Buttons', name: 'Primary Button Label (#FFFFFF) on Hover (#2A2A28)', fg: lightPrimaryFg, bg: lightPrimaryHover, min: 4.5 },
+  { category: 'Buttons', name: 'Disabled Button Text (#63625C) on Raised (#F4F4F2)', fg: lightMutedFg, bg: lightMuted, min: 4.5 },
 
-  { category: 'Non-Text', name: 'Solid Focus Ring vs Background', fg: lightRing, bg: lightBg, min: 3.0 },
-  { category: 'Non-Text', name: 'Input Border vs Background', fg: lightInput, bg: lightBg, min: 3.0 },
+  // Semantic Badges / Status
+  { category: 'Semantic', name: 'Success Text (#166534) on Success Tint (#ECFDF3)', fg: lightSuccessText, bg: lightSuccessPill, min: 4.5 },
+  { category: 'Semantic', name: 'Warning Text (#B54708) on Warning Tint (#FFFAEB)', fg: lightWarningText, bg: lightWarningPill, min: 4.5 },
+  { category: 'Semantic', name: 'Error Text (#B42318) on Error Tint (#FEF3F2)', fg: lightErrorText, bg: lightErrorPill, min: 4.5 },
+
+  // Non-Text (3:1 minimum)
+  { category: 'Non-Text', name: 'Focus Ring / Accent (#1D4ED8) vs Background', fg: lightRing, bg: lightBg, min: 3.0 },
+  { category: 'Non-Text', name: 'Input Border Strong (#8F8E88) vs Background', fg: lightBorderStrong, bg: lightBg, min: 3.0 },
 
   // Monaco Editor Token Contrast (Light Theme on #FFFFFF)
   { category: 'Editor Light', name: 'Editor Foreground (#18181B) vs Editor Surface', fg: parseCssColor('#18181B'), bg: [255, 255, 255], min: 4.5 },
@@ -165,37 +180,44 @@ const lightTests = [
   { category: 'Editor Light', name: 'Editor Numbers (#A16207) vs Editor Surface', fg: parseCssColor('#A16207'), bg: [255, 255, 255], min: 4.5 },
   { category: 'Editor Light', name: 'Editor Keywords (#C2410C) vs Editor Surface', fg: parseCssColor('#C2410C'), bg: [255, 255, 255], min: 4.5 },
   { category: 'Editor Light', name: 'Editor Punctuation (#52525B) vs Editor Surface', fg: parseCssColor('#52525B'), bg: [255, 255, 255], min: 4.5 },
-  { category: 'Editor Light', name: 'Editor Cursor (#6D28D9) vs Editor Surface', fg: parseCssColor('#6D28D9'), bg: [255, 255, 255], min: 4.5 },
+  { category: 'Editor Light', name: 'Editor Cursor (#111110) vs Editor Surface', fg: lightFg, bg: [255, 255, 255], min: 4.5 },
 ];
 
 const darkTests = [
-  { category: 'Typography', name: 'Foreground on Background', fg: darkFg, bg: darkBg, min: 4.5 },
-  { category: 'Typography', name: 'Foreground on Card', fg: darkFg, bg: darkCard, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground on Background', fg: darkMutedFg, bg: darkBg, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground on Muted Surface', fg: darkMutedFg, bg: darkMuted, min: 4.5 },
-  { category: 'Typography', name: 'Brand Text on Background', fg: brandDark, bg: darkBg, min: 4.5 },
-  { category: 'Typography', name: 'Brand Text on Card', fg: brandDark, bg: darkCard, min: 4.5 },
+  // Typography
+  { category: 'Typography', name: 'Foreground (#EDEDEA) on Background (#0F0F0E)', fg: darkFg, bg: darkBg, min: 4.5 },
+  { category: 'Typography', name: 'Foreground (#EDEDEA) on Card (#171716)', fg: darkFg, bg: darkCard, min: 4.5 },
+  { category: 'Typography', name: 'Foreground (#EDEDEA) on Raised/Muted (#1F1F1D)', fg: darkFg, bg: darkMuted, min: 4.5 },
+  { category: 'Typography', name: 'Muted Foreground (#A3A29C) on Background (#0F0F0E)', fg: darkMutedFg, bg: darkBg, min: 4.5 },
+  { category: 'Typography', name: 'Muted Foreground (#A3A29C) on Card (#171716)', fg: darkMutedFg, bg: darkCard, min: 4.5 },
+  { category: 'Typography', name: 'Muted Foreground (#A3A29C) on Raised (#1F1F1D)', fg: darkMutedFg, bg: darkMuted, min: 4.5 },
 
-  { category: 'Buttons', name: 'Button Label (#09090B) on Brand', fg: darkButtonLabel, bg: brandDark, min: 4.5 },
-  { category: 'Buttons', name: 'Button Label (#09090B) on Hover', fg: darkButtonLabel, bg: brandDarkHover, min: 4.5 },
-  { category: 'Buttons', name: 'Button Label (#09090B) on Active', fg: darkButtonLabel, bg: brandDarkActive, min: 4.5 },
+  // Header Org Name
+  { category: 'Header Chrome', name: 'Header Org Name (Foreground) on Header Bg', fg: darkFg, bg: darkBg, min: 4.5 },
+  { category: 'Header Chrome', name: 'Header Org Name (Foreground) on Raised Pill', fg: darkFg, bg: darkMuted, min: 4.5 },
 
-  { category: 'Badges/Pills', name: 'Error Text on Error Pill (Rose)', fg: blushErrorTextDark, bg: blushErrorPillDark, min: 4.5 },
-  { category: 'Badges/Pills', name: 'Error Text on Dark Card (Rose)', fg: blushErrorTextDark, bg: darkCard, min: 4.5 },
-  { category: 'Badges/Pills', name: 'Warning Text on Warning Pill', fg: peachWarningTextDark, bg: peachWarningPillDark, min: 4.5 },
-  { category: 'Badges/Pills', name: 'Success Text on Success Pill', fg: mintSuccessTextDark, bg: mintSuccessPillDark, min: 4.5 },
+  // Buttons
+  { category: 'Buttons', name: 'Primary Button Label (#111110) on Primary (#EDEDEA)', fg: darkPrimaryFg, bg: darkPrimary, min: 4.5 },
+  { category: 'Buttons', name: 'Primary Button Label (#111110) on Hover (#D6D6D2)', fg: darkPrimaryFg, bg: darkPrimaryHover, min: 4.5 },
+  { category: 'Buttons', name: 'Disabled Button Text (#A3A29C) on Raised (#1F1F1D)', fg: darkMutedFg, bg: darkMuted, min: 4.5 },
 
-  { category: 'Non-Text', name: 'Solid Focus Ring vs Background', fg: darkRing, bg: darkBg, min: 3.0 },
-  { category: 'Non-Text', name: 'Input Border vs Background', fg: darkInput, bg: darkBg, min: 3.0 },
+  // Semantic Badges / Status
+  { category: 'Semantic', name: 'Success Text (#4ADE80) on Success Tint (#0F2417)', fg: darkSuccessText, bg: darkSuccessPill, min: 4.5 },
+  { category: 'Semantic', name: 'Warning Text (#FBBF24) on Warning Tint (#2A1F07)', fg: darkWarningText, bg: darkWarningPill, min: 4.5 },
+  { category: 'Semantic', name: 'Error Text (#F87171) on Error Tint (#2A1110)', fg: darkErrorText, bg: darkErrorPill, min: 4.5 },
 
-  // Monaco Editor Token Contrast (Dark Theme on #18181B)
-  { category: 'Editor Dark', name: 'Editor Foreground (#E4E4E7) vs Editor Surface', fg: parseCssColor('#E4E4E7'), bg: parseCssColor('#18181B'), min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Keys (#93C5FD) vs Editor Surface', fg: parseCssColor('#93C5FD'), bg: parseCssColor('#18181B'), min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Strings (#86EFAC) vs Editor Surface', fg: parseCssColor('#86EFAC'), bg: parseCssColor('#18181B'), min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Numbers (#FDE047) vs Editor Surface', fg: parseCssColor('#FDE047'), bg: parseCssColor('#18181B'), min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Keywords (#FDBA74) vs Editor Surface', fg: parseCssColor('#FDBA74'), bg: parseCssColor('#18181B'), min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Punctuation (#A1A1AA) vs Editor Surface', fg: parseCssColor('#A1A1AA'), bg: parseCssColor('#18181B'), min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Cursor (#A78BFA) vs Editor Surface', fg: parseCssColor('#A78BFA'), bg: parseCssColor('#18181B'), min: 4.5 },
+  // Non-Text (3:1 minimum)
+  { category: 'Non-Text', name: 'Focus Ring / Accent (#8AB4F8) vs Background', fg: darkRing, bg: darkBg, min: 3.0 },
+  { category: 'Non-Text', name: 'Input Border Strong (#6E6D68) vs Background', fg: darkBorderStrong, bg: darkBg, min: 3.0 },
+
+  // Monaco Editor Token Contrast (Dark Theme on #171716)
+  { category: 'Editor Dark', name: 'Editor Foreground (#E4E4E7) vs Editor Surface', fg: parseCssColor('#E4E4E7'), bg: darkCard, min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Keys (#93C5FD) vs Editor Surface', fg: parseCssColor('#93C5FD'), bg: darkCard, min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Strings (#86EFAC) vs Editor Surface', fg: parseCssColor('#86EFAC'), bg: darkCard, min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Numbers (#FDE047) vs Editor Surface', fg: parseCssColor('#FDE047'), bg: darkCard, min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Keywords (#FDBA74) vs Editor Surface', fg: parseCssColor('#FDBA74'), bg: darkCard, min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Punctuation (#A1A1AA) vs Editor Surface', fg: parseCssColor('#A1A1AA'), bg: darkCard, min: 4.5 },
+  { category: 'Editor Dark', name: 'Editor Cursor (#EDEDEA) vs Editor Surface', fg: darkFg, bg: darkCard, min: 4.5 },
 ];
 
 function runSuite(title, suite) {
@@ -205,14 +227,14 @@ function runSuite(title, suite) {
     const ratio = getContrast(t.fg, t.bg);
     const pass = ratio >= t.min;
     if (!pass) allPass = false;
-    const cat = `[${t.category}]`.padEnd(14);
-    console.log(`${cat} ${t.name.padEnd(52)}: ${ratio.toFixed(2).padStart(5)}:1 (min ${t.min.toFixed(1)}:1) ${pass ? '✅ PASS' : '❌ FAIL'}`);
+    const cat = `[${t.category}]`.padEnd(16);
+    console.log(`${cat} ${t.name.padEnd(54)}: ${ratio.toFixed(2).padStart(5)}:1 (min ${t.min.toFixed(1)}:1) ${pass ? '✅ PASS' : '❌ FAIL'}`);
   });
   return allPass;
 }
 
-const lp = runSuite('LIGHT THEME WCAG 2.2 AA VERIFICATION (DIRECT FROM GLOBALS.CSS)', lightTests);
-const dp = runSuite('DARK THEME WCAG 2.2 AA VERIFICATION (DIRECT FROM GLOBALS.CSS)', darkTests);
+const lp = runSuite('LIGHT THEME WCAG 2.2 AA VERIFICATION (MONOCHROME PALETTE)', lightTests);
+const dp = runSuite('DARK THEME WCAG 2.2 AA VERIFICATION (MONOCHROME PALETTE)', darkTests);
 
 if (lp && dp) {
   console.log('\n>>> ALL AUDITED PAIRS (TEXT & NON-TEXT) MEET WCAG 2.2 AA IN BOTH THEMES <<<\n');

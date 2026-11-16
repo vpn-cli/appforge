@@ -31,7 +31,7 @@ export function Navbar() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="max-w-7xl mx-auto px-4 w-full flex items-center justify-between py-4 border-b border-border relative z-50 bg-background"
+      className="max-w-[1200px] mx-auto px-6 w-full flex items-center justify-between py-4 border-b border-border relative z-50 bg-background"
     >
       <Link 
         href="/" 
@@ -39,10 +39,10 @@ export function Navbar() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-         <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center text-text-inverse shadow-sm relative overflow-hidden">
-           <AppForgeLogo size={18} isHovered={isHovered} className="text-white drop-shadow-sm relative z-10" />
-         </div>
-        <div className="font-bold text-lg tracking-tight text-foreground group-hover:text-brand transition-colors">
+        <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center text-foreground relative overflow-hidden">
+          <AppForgeLogo size={18} isHovered={isHovered} className="text-foreground relative z-10" />
+        </div>
+        <div className="font-bold text-lg tracking-tight text-foreground transition-colors">
           AppForge
         </div>
       </Link>
@@ -61,7 +61,7 @@ export function Navbar() {
               className="relative text-muted-foreground text-sm font-medium hover:text-foreground transition-colors group px-1 py-2"
             >
               {text}
-              <span className="absolute left-0 bottom-0 w-full h-[2px] bg-brand scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out" />
+              <span className="absolute left-0 bottom-0 w-full h-[2px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out" />
             </Link>
           </motion.div>
         ))}
@@ -77,8 +77,8 @@ export function Navbar() {
         <SignedIn>
           <motion.div variants={item} className="flex gap-2 sm:gap-4 items-center">
             <ThemeToggle />
-            <OrganizationSwitcher appearance={{ elements: { organizationSwitcherTrigger: "border border-border/50 bg-muted/50 rounded-md py-1 px-3" } }} />
-            <UserButton appearance={{ elements: { avatarBox: "w-9 h-9 border-2 border-brand/20 shadow-md" } }} />
+            <OrganizationSwitcher appearance={{ elements: { organizationSwitcherTrigger: "border border-border bg-muted/50 rounded-md py-1.5 px-3 text-sm font-medium text-foreground" } }} />
+            <UserButton appearance={{ elements: { avatarBox: "w-8 h-8 border border-border" } }} />
           </motion.div>
         </SignedIn>
         
@@ -88,14 +88,14 @@ export function Navbar() {
           </motion.div>
           <motion.div variants={item} className="hidden sm:block">
             <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
-              <Button variant="ghost" className="text-sm font-medium hover:bg-muted">
+              <Button variant="ghost" className="text-sm font-medium hover:bg-muted h-9 px-3.5">
                 Log in
               </Button>
             </SignInButton>
           </motion.div>
           <motion.div variants={item} className="hidden sm:block" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-              <Button className="bg-brand hover:bg-brand-dark text-text-inverse font-medium text-xs h-8 px-3 shadow-sm transition-colors">
+              <Button className="bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground font-medium text-sm h-9 px-4 transition-colors">
                 Start for free
               </Button>
             </SignUpButton>
@@ -129,7 +129,7 @@ export function Navbar() {
                   key={text}
                   href={text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-foreground text-sm font-semibold p-3 hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border/50"
+                  className="text-foreground text-sm font-medium p-3 hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border/50"
                 >
                   {text}
                 </Link>
@@ -138,12 +138,12 @@ export function Navbar() {
               <SignedOut>
                 <div className="h-[1px] w-full bg-border/50 my-2" />
                 <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
-                  <Button variant="outline" className="w-full justify-center h-10 border-border">
+                  <Button variant="outline" className="w-full justify-center h-9 border-border text-sm">
                     Log in
                   </Button>
                 </SignInButton>
                 <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-                  <Button className="w-full justify-center h-10 bg-brand hover:bg-brand-dark text-text-inverse font-medium shadow-sm">
+                  <Button className="w-full justify-center h-9 bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground font-medium text-sm">
                     Start for free
                   </Button>
                 </SignUpButton>
@@ -155,4 +155,3 @@ export function Navbar() {
     </motion.header>
   );
 }
-

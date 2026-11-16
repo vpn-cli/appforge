@@ -4,7 +4,6 @@ import "./globals.css";
 import { SmoothScroller } from "@/components/layout/SmoothScroller";
 import { ThemeProvider } from "next-themes";
 import { ClerkProvider } from '@clerk/nextjs';
-import { dark } from '@clerk/themes';
 import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
@@ -20,21 +19,16 @@ export default function RootLayout({
   return (
     <ClerkProvider
       appearance={{
-        baseTheme: dark,
         variables: {
-          colorPrimary: "#6D28D9", // Unified AppForge brand violet
-          colorBackground: "#09090b", // Deep dark background
-          colorInputBackground: "#18181b", // Slightly elevated input bg
-          colorInputText: "#fafafa",
-          colorText: "#fafafa",
+          colorPrimary: "#111110",
           borderRadius: "0.5rem"
         },
         elements: {
-          card: "border border-border/50 shadow-2xl shadow-brand/20 bg-background/95 backdrop-blur-xl relative overflow-hidden before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-br before:from-brand/10 before:to-transparent before:opacity-50",
-          headerTitle: "font-bold text-2xl tracking-tight",
+          card: "border border-border bg-card text-foreground shadow-lg relative overflow-hidden",
+          headerTitle: "font-bold text-2xl tracking-tight text-foreground",
           headerSubtitle: "text-muted-foreground",
-          socialButtonsBlockButton: "border-border/50 hover:bg-muted/80 transition-colors",
-          formButtonPrimary: "font-medium shadow-lg shadow-brand/20 transition-all hover:scale-[1.02] active:scale-95 bg-brand hover:bg-brand-dark text-white rounded-md",
+          socialButtonsBlockButton: "border-border hover:bg-muted transition-colors text-foreground",
+          formButtonPrimary: "font-medium shadow-xs bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground rounded-md",
           modalBackdrop: "live-clerk-gradient backdrop-blur-[2px]",
         }
       }}
@@ -47,7 +41,7 @@ export default function RootLayout({
         <body className="min-h-full flex flex-col font-sans">
           <a
             href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-4 focus:left-4 focus:bg-brand focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-4 focus:left-4 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Skip to Main Content
           </a>
@@ -62,4 +56,3 @@ export default function RootLayout({
     </ClerkProvider>
   );
 }
-

@@ -100,21 +100,21 @@ export function LivePreview({
     >
       {/* Framed Browser Viewport Container */}
       <div
-        className={`${viewportWidthClass} h-full flex flex-col bg-card rounded-xl border border-border shadow-sm overflow-hidden transition-all duration-300 ease-out`}
+        className={`${viewportWidthClass} h-full flex flex-col bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 ease-out`}
       >
         {/* Browser Window Chrome Toolbar */}
         {showInnerToolbar && (
-          <div className="h-9 px-3.5 bg-muted/30 border-b border-border flex items-center justify-between shrink-0 select-none">
-            {/* Window Traffic Lights */}
+          <div className="h-9 px-3.5 bg-muted/40 border-b border-border flex items-center justify-between shrink-0 select-none">
+            {/* Window Monochrome Dots */}
             <div className="flex items-center gap-1.5 w-16">
-              <span className="w-2.5 h-2.5 rounded-full bg-border hover:bg-red-500/80 transition-colors" />
-              <span className="w-2.5 h-2.5 rounded-full bg-border hover:bg-amber-500/80 transition-colors" />
-              <span className="w-2.5 h-2.5 rounded-full bg-border hover:bg-emerald-500/80 transition-colors" />
+              <span className="w-2.5 h-2.5 rounded-full bg-border hover:bg-muted-foreground/60 transition-colors" />
+              <span className="w-2.5 h-2.5 rounded-full bg-border hover:bg-muted-foreground/60 transition-colors" />
+              <span className="w-2.5 h-2.5 rounded-full bg-border hover:bg-muted-foreground/60 transition-colors" />
             </div>
 
             {/* Address Bar Pill */}
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-background/80 border border-border/80 rounded-md text-[11px] text-muted-foreground font-mono max-w-[280px] w-full justify-center">
-              <Lock className="w-2.5 h-2.5 text-muted-foreground/70" />
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-background border border-border rounded-md text-[13px] text-muted-foreground font-mono max-w-[280px] w-full justify-center">
+              <Lock className="w-3 h-3 text-muted-foreground/70" />
               <span className="truncate">localhost:3000/apps/{appId}</span>
             </div>
 
@@ -137,7 +137,7 @@ export function LivePreview({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-warning-text text-xs flex flex-col gap-2 items-center justify-center h-full font-mono p-6 bg-warning-light/20 border border-warning-border/50 rounded-lg max-w-sm mx-auto text-center"
+                className="text-warning-text text-[13px] flex flex-col gap-2 items-center justify-center h-full font-mono p-6 bg-warning-light border border-warning-border rounded-lg max-w-sm mx-auto text-center"
               >
                 <span className="text-xl">⚠️</span>
                 <span className="font-semibold">
@@ -146,7 +146,7 @@ export function LivePreview({
                     ? ` (line ${errorPosition.line}, col ${errorPosition.column})`
                     : ""}
                 </span>
-                <span className="text-[11px] text-muted-foreground font-sans">
+                <span className="text-[13px] text-muted-foreground font-sans">
                   Fix syntax errors in the left code editor to restore live preview.
                 </span>
               </motion.div>
@@ -165,7 +165,7 @@ export function LivePreview({
                 ) || (
                   <div className="flex flex-col items-center justify-center text-muted-foreground py-20 border border-dashed border-border rounded-xl bg-muted/10 text-center">
                     <span className="text-lg mb-2 opacity-50">📭</span>
-                    <span className="text-xs">
+                    <span className="text-sm">
                       No components defined in configuration yet
                     </span>
                   </div>

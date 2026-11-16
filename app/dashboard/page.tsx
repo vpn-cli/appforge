@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
@@ -12,13 +12,17 @@ type AppWithConfig = AppData & {
 };
 
 async function DashboardContent() {
-  let { userId } = await auth();
+  let userId: string | null = null;
 
-  if (!userId && process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === "development") {
     // DEV BYPASS for local preview
     userId = "dev-test-user-123";
-  } else if (!userId) {
-    redirect("/login");
+  } else {
+    const authResult = await auth();
+    userId = authResult.userId;
+    if (!userId) {
+      redirect("/login");
+    }
   }
 
   const apps = (await getUserApps()) as AppWithConfig[];

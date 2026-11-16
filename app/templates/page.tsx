@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { createAppFromTemplate } from "@/actions/apps";
-import { ArrowRight, LayoutTemplate, Database, Sparkles } from "lucide-react";
+import { ArrowRight, LayoutTemplate, Database, FileCode2 } from "lucide-react";
 
 export default async function TemplatesPage() {
   const supabase = await createInsforgeServer();
@@ -29,7 +29,7 @@ export default async function TemplatesPage() {
       title: "Blank Canvas",
       description: "Start from a clean slate and build with JSON or the Gemini Copilot.",
       tag: "Scratch",
-      icon: Sparkles,
+      icon: FileCode2,
     },
   ];
 

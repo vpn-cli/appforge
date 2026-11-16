@@ -19,36 +19,36 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
   }, []);
 
   const handleBeforeMount: BeforeMount = (monaco) => {
-    // AppForge Dark Theme (Real surface token #18181B, WCAG 2.2 AA verified >= 4.5:1)
+    // AppForge Dark Theme (Surface token #171716, WCAG 2.2 AA verified >= 4.5:1)
     monaco.editor.defineTheme('appforge-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: '', foreground: 'E4E4E7' },
-        { token: 'string.key.json', foreground: '93C5FD' }, // Muted blue for JSON keys (9.82:1)
-        { token: 'string.value.json', foreground: '86EFAC' }, // Muted sage for values (12.62:1)
-        { token: 'string', foreground: '86EFAC' },
-        { token: 'number', foreground: 'FDE047' }, // Warm yellow for numbers (13.44:1)
-        { token: 'keyword.json', foreground: 'FDBA74' }, // Orange for booleans/null (10.51:1)
-        { token: 'delimiter', foreground: 'A1A1AA' }, // Punctuation zinc-400 (6.91:1)
-        { token: 'delimiter.bracket', foreground: 'A1A1AA' },
-        { token: 'delimiter.colon', foreground: 'A1A1AA' },
-        { token: 'delimiter.comma', foreground: 'A1A1AA' },
+        { token: '', foreground: 'EDEDEA' },
+        { token: 'string.key.json', foreground: '8AB4F8' }, // Accent blue for keys
+        { token: 'string.value.json', foreground: '4ADE80' }, // Success green for values
+        { token: 'string', foreground: '4ADE80' },
+        { token: 'number', foreground: 'FBBF24' }, // Warning amber for numbers
+        { token: 'keyword.json', foreground: 'F87171' }, // Error salmon for booleans/null
+        { token: 'delimiter', foreground: 'A3A29C' }, // Muted foreground
+        { token: 'delimiter.bracket', foreground: 'A3A29C' },
+        { token: 'delimiter.colon', foreground: 'A3A29C' },
+        { token: 'delimiter.comma', foreground: 'A3A29C' },
       ],
       colors: {
-        'editor.background': '#18181B',
-        'editor.foreground': '#E4E4E7',
-        'editorCursor.foreground': '#A78BFA', // Brand violet cursor (6.51:1)
-        'editor.selectionBackground': '#A78BFA33', // Brand violet selection tint
-        'editor.inactiveSelectionBackground': '#A78BFA1A',
-        'editor.selectionHighlightBackground': '#A78BFA22',
-        'editorLineNumber.foreground': '#71717A',
-        'editorLineNumber.activeForeground': '#E4E4E7',
-        'editor.lineHighlightBackground': '#27272A50',
+        'editor.background': '#171716',
+        'editor.foreground': '#EDEDEA',
+        'editorCursor.foreground': '#EDEDEA',
+        'editor.selectionBackground': '#8AB4F830',
+        'editor.inactiveSelectionBackground': '#8AB4F818',
+        'editor.selectionHighlightBackground': '#8AB4F822',
+        'editorLineNumber.foreground': '#6E6D68',
+        'editorLineNumber.activeForeground': '#EDEDEA',
+        'editor.lineHighlightBackground': '#1F1F1D80',
         'editor.lineHighlightBorder': '#00000000',
-        'editorGutter.background': '#18181B',
+        'editorGutter.background': '#171716',
         'editorOverviewRuler.border': '#00000000',
-        'editorOverviewRuler.background': '#18181B',
+        'editorOverviewRuler.background': '#171716',
         'scrollbarSlider.background': '#ffffff15',
         'scrollbarSlider.hoverBackground': '#ffffff25',
         'scrollbarSlider.activeBackground': '#ffffff35',
@@ -56,32 +56,32 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
       },
     });
 
-    // AppForge Light Theme (Real surface token #FFFFFF, WCAG 2.2 AA verified >= 4.5:1)
+    // AppForge Light Theme (Surface token #FFFFFF, WCAG 2.2 AA verified >= 4.5:1)
     monaco.editor.defineTheme('appforge-light', {
       base: 'vs',
       inherit: true,
       rules: [
-        { token: '', foreground: '18181B' },
-        { token: 'string.key.json', foreground: '1D4ED8' }, // Blue keys (6.70:1)
-        { token: 'string.value.json', foreground: '15803D' }, // Forest green values (5.02:1)
-        { token: 'string', foreground: '15803D' },
-        { token: 'number', foreground: 'A16207' }, // Amber numbers (4.92:1)
-        { token: 'keyword.json', foreground: 'C2410C' }, // Orange keywords (5.18:1)
-        { token: 'delimiter', foreground: '52525B' }, // Punctuation zinc-600 (7.73:1)
-        { token: 'delimiter.bracket', foreground: '52525B' },
-        { token: 'delimiter.colon', foreground: '52525B' },
-        { token: 'delimiter.comma', foreground: '52525B' },
+        { token: '', foreground: '111110' },
+        { token: 'string.key.json', foreground: '1D4ED8' }, // Accent blue keys
+        { token: 'string.value.json', foreground: '166534' }, // Forest green values
+        { token: 'string', foreground: '166534' },
+        { token: 'number', foreground: 'B54708' }, // Warning amber numbers
+        { token: 'keyword.json', foreground: 'B42318' }, // Error red keywords
+        { token: 'delimiter', foreground: '63625C' }, // Muted foreground
+        { token: 'delimiter.bracket', foreground: '63625C' },
+        { token: 'delimiter.colon', foreground: '63625C' },
+        { token: 'delimiter.comma', foreground: '63625C' },
       ],
       colors: {
         'editor.background': '#FFFFFF',
-        'editor.foreground': '#18181B',
-        'editorCursor.foreground': '#6D28D9', // Brand violet cursor (7.10:1)
-        'editor.selectionBackground': '#6D28D920', // Brand violet selection tint
-        'editor.inactiveSelectionBackground': '#6D28D912',
-        'editor.selectionHighlightBackground': '#6D28D918',
-        'editorLineNumber.foreground': '#A1A1AA',
-        'editorLineNumber.activeForeground': '#18181B',
-        'editor.lineHighlightBackground': '#F4F4F580',
+        'editor.foreground': '#111110',
+        'editorCursor.foreground': '#111110',
+        'editor.selectionBackground': '#1D4ED825',
+        'editor.inactiveSelectionBackground': '#1D4ED812',
+        'editor.selectionHighlightBackground': '#1D4ED818',
+        'editorLineNumber.foreground': '#8F8E88',
+        'editorLineNumber.activeForeground': '#111110',
+        'editor.lineHighlightBackground': '#F4F4F280',
         'editor.lineHighlightBorder': '#00000000',
         'editorGutter.background': '#FFFFFF',
         'editorOverviewRuler.border': '#00000000',

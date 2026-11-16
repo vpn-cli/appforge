@@ -562,16 +562,16 @@ export default function BuilderPage() {
             >
               {appName}
             </span>
-            <span className="hidden sm:inline-flex items-center gap-1.5 ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="hidden sm:inline-flex items-center gap-1.5 ml-1.5 px-2 py-0.5 rounded-full text-[13px] font-medium bg-muted text-muted-foreground border border-border">
+              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60" />
               {isGuestRoute ? "Sandbox" : "Draft"}
             </span>
           </div>
         </div>
 
         {/* Center: File indicator */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-muted/40 rounded-md border border-border text-[11px] font-mono text-muted-foreground">
-          <FileCode className="w-3.5 h-3.5 text-brand" />
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-muted/40 rounded-md border border-border text-[13px] font-mono text-muted-foreground">
+          <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
           <span>config.json</span>
         </div>
 

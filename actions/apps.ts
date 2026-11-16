@@ -11,6 +11,10 @@ import { EventPublisher } from "@/lib/event-queue";
  * If none exists, checks for a secure ADMIN bypass cookie.
  */
 async function getAuthOrBypass() {
+  if (process.env.NODE_ENV === "development") {
+    return { userId: "dev-bypass-user", isBypass: true };
+  }
+
   const { userId } = await auth();
   if (userId) return { userId, isBypass: false };
 
@@ -20,15 +24,10 @@ async function getAuthOrBypass() {
     return { userId: "admin-bypass-user", isBypass: true };
   }
   
-  if (process.env.NODE_ENV === "development") {
-    return { userId: "dev-bypass-user", isBypass: true };
-  }
-  
   return { userId: null, isBypass: false };
 }
 
 export async function getUserApps() {
-  const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
   if (isBypass) {
@@ -129,6 +128,7 @@ export async function getUserApps() {
 
   if (!userId) throw new Error("Unauthorized");
 
+  const supabase = await createInsforgeServer();
   const { data, error } = await supabase
     .from("apps")
     .select("id, name, updated_at, published_config, config")

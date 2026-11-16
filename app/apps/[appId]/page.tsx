@@ -44,8 +44,8 @@ export default async function LiveAppPage({ params }: { params: Promise<{ appId:
       <Navbar />
       
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-10 flex flex-col gap-8">
-         <div className="bg-[#27C93F]/10 border border-[#27C93F]/30 text-[#27C93F] text-xs font-mono py-1.5 px-3 rounded-full self-start flex items-center mb-4 shadow-sm shadow-[#27C93F]/5">
-           <span className="w-1.5 h-1.5 bg-[#27C93F] rounded-full mr-2 shadow-[0_0_8px_rgba(39,201,63,0.8)] animate-pulse" />
+         <div className="bg-success-light border border-success-border text-success-text text-xs font-mono py-1.5 px-3 rounded-full self-start flex items-center mb-4">
+           <span className="w-1.5 h-1.5 bg-success-text rounded-full mr-2" />
            Live Environment
          </div>
          

@@ -65,9 +65,9 @@ export function Statistic({ label, value, trend, trendValue }: StatisticProps) {
   // Color does NOT follow the sign. It defaults to neutral (muted text) when absent!
   let colorClass = "text-muted-foreground";
   if (sentiment === "positive") {
-    colorClass = "text-emerald-500";
+    colorClass = "text-success-text";
   } else if (sentiment === "negative") {
-    colorClass = "text-rose-500";
+    colorClass = "text-error-text";
   }
 
   const containerClasses = isInCard

@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { AppThumbnail } from "@/components/dashboard/AppThumbnail";
 import { Button } from "@/components/ui/button";
 import { createAppFromTemplate } from "@/actions/apps";
-import { ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
 const starterTemplates = [
   {
@@ -157,11 +157,10 @@ export function EmptyStateTemplates() {
     <div className="flex flex-col gap-5 pt-2">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-brand" />
-            <span>Starter templates</span>
+          <h2 className="text-[18px] font-semibold text-foreground">
+            Starter templates
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-[13px] text-muted-foreground mt-0.5">
             No applications yet. Select a starter layout or generate one with a prompt above.
           </p>
         </div>
@@ -171,16 +170,16 @@ export function EmptyStateTemplates() {
         {starterTemplates.map((tpl) => (
           <div
             key={tpl.id}
-            className="group bg-card border border-border hover:border-foreground/30 rounded-lg overflow-hidden flex flex-col justify-between transition-colors shadow-xs"
+            className="group bg-card border border-border hover:border-border-strong rounded-lg overflow-hidden flex flex-col justify-between transition-colors"
           >
             <div>
               <AppThumbnail config={tpl.config} />
 
               <div className="p-4">
-                <h3 className="text-sm font-semibold text-foreground group-hover:text-brand transition-colors">
+                <h3 className="text-[16px] font-semibold text-foreground transition-colors">
                   {tpl.name}
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                <p className="text-[13px] text-muted-foreground mt-1 line-clamp-2">
                   {tpl.description}
                 </p>
               </div>
@@ -191,7 +190,7 @@ export function EmptyStateTemplates() {
                 onClick={() => handleUseTemplate(tpl.id)}
                 disabled={isPending}
                 variant="outline"
-                className="w-full text-xs font-medium h-8 border-border hover:bg-muted justify-between"
+                className="w-full text-sm font-medium h-9 border-border hover:bg-muted justify-between"
               >
                 <span>{isPending ? "Creating app..." : "Use template"}</span>
                 {isPending ? (
