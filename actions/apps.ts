@@ -33,8 +33,97 @@ export async function getUserApps() {
 
   if (isBypass) {
     return [
-      { id: "mock-1", name: "Internal CRM (Admin Mock)", updated_at: new Date().toISOString(), status: "Published" },
-      { id: "mock-2", name: "Inventory Tracker (Admin Mock)", updated_at: new Date(Date.now() - 3600000).toISOString(), status: "Draft" },
+      {
+        id: "mock-1",
+        name: "Customer Success Portal",
+        updated_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+        status: "Published",
+        config: {
+          app: "Customer Success Portal",
+          pages: [
+            {
+              components: [
+                {
+                  type: "Header",
+                  title: "Customer Success & Operations",
+                  subtitle: "Active enterprise accounts, health scores, and critical churn alerts.",
+                  size: "lg",
+                },
+                {
+                  type: "Grid",
+                  columns: 3,
+                  gap: 4,
+                  items: [
+                    { type: "Statistic", label: "Net Retention", value: "114%", trend: "up", trendValue: "+3.2%" },
+                    { type: "Statistic", label: "Accounts at Risk", value: "2", trend: "down", trendValue: "-1" },
+                    { type: "Statistic", label: "Expansion ARR", value: "$42,800" },
+                  ],
+                },
+                {
+                  type: "DataTable",
+                  entity: "accounts",
+                  columns: [
+                    { key: "company", label: "Account Name", type: "text" },
+                    { key: "mrr", label: "ARR ($)", type: "number" },
+                    { key: "health", label: "Health", type: "badge" },
+                  ],
+                  data: [
+                    { id: "1", company: "Acme Logistics", mrr: 18200, health: "Good" },
+                    { id: "2", company: "Vanguard Tech", mrr: 29500, health: "Review" },
+                    { id: "3", company: "Helix Biotech", mrr: 12400, health: "Good" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        id: "mock-2",
+        name: "Global Fleet Logistics",
+        updated_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+        status: "Draft",
+        config: {
+          app: "Global Fleet Logistics",
+          pages: [
+            {
+              components: [
+                {
+                  type: "Header",
+                  title: "Fleet Operations Telemetry",
+                  subtitle: "Real-time dispatch, route schedules, and equipment alerts.",
+                  size: "lg",
+                },
+                {
+                  type: "Grid",
+                  columns: 3,
+                  gap: 4,
+                  items: [
+                    {
+                      type: "Card",
+                      title: "Western Depot",
+                      subtitle: "24 vehicles online · 0 critical alerts",
+                      footer: [{ type: "ButtonAction", label: "Inspect depot", variant: "outline" }],
+                    },
+                    {
+                      type: "Card",
+                      title: "Eastern Corridor",
+                      subtitle: "18 vehicles online · 1 scheduled repair",
+                      footer: [{ type: "ButtonAction", label: "Inspect corridor", variant: "outline" }],
+                    },
+                    {
+                      type: "Card",
+                      title: "Central Hub",
+                      subtitle: "42 vehicles online · nominal status",
+                      footer: [{ type: "ButtonAction", label: "Inspect hub", variant: "outline" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
     ];
   }
 
@@ -42,7 +131,7 @@ export async function getUserApps() {
 
   const { data, error } = await supabase
     .from("apps")
-    .select("id, name, updated_at, published_config")
+    .select("id, name, updated_at, published_config, config")
     .eq("user_id", userId)
     .order("updated_at", { ascending: false });
 
@@ -57,25 +146,29 @@ export async function getUserApps() {
   }));
 }
 
-export async function createApp() {
+export async function createApp(prompt?: string) {
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
+  const querySuffix = prompt ? `?prompt=${encodeURIComponent(prompt)}` : "";
+
   if (isBypass) {
-    redirect("/builder/mock-new-id");
+    redirect(`/builder/mock-new-id${querySuffix}`);
   }
 
   // Gracefully bounce unauthenticated 'Create New App' clicks to the sandbox
   if (!userId) {
-    redirect("/builder/template-blank");
+    redirect(`/builder/template-blank${querySuffix}`);
   }
+
+  const appName = prompt ? prompt.trim().slice(0, 36) : "Untitled App";
 
   const { data, error } = await supabase
     .from("apps")
     .insert({
       user_id: userId,
-      name: "Untitled App",
-      config: { app: "Untitled App", pages: [] },
+      name: appName,
+      config: { app: appName, pages: [] },
     })
     .select("id")
     .single();
@@ -85,7 +178,7 @@ export async function createApp() {
     throw new Error("Failed to create app");
   }
 
-  redirect(`/builder/${data.id}`);
+  redirect(`/builder/${data.id}${querySuffix}`);
 }
 
 export async function createAppFromTemplate(templateId: string) {
