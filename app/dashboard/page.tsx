@@ -2,94 +2,40 @@
 import { auth } from "@clerk/nextjs/server";
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { StatsBar } from "@/components/dashboard/StatsBar";
-import { AppGrid } from "@/components/dashboard/AppGrid";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { FallbackEmpty } from "@/components/dashboard/FallbackEmpty";
-import { AppData } from "@/components/dashboard/AppGrid";
+import { DashboardView } from "@/components/dashboard/DashboardView";
 import { getUserApps } from "@/actions/apps";
+import type { AppData } from "@/components/dashboard/AppGrid";
+
+type AppWithConfig = AppData & {
+  config?: unknown;
+  published_config?: unknown;
+};
 
 async function DashboardContent() {
   let { userId } = await auth();
 
   if (!userId && process.env.NODE_ENV === "development") {
-    // DEV BYPASS: Supabase default SMTP rate limits magic links to 3/hour.
-    // We inject a dummy user so you can still view the Dashboard UI locally!
+    // DEV BYPASS for local preview
     userId = "dev-test-user-123";
   } else if (!userId) {
     redirect("/login");
   }
 
-  const apps = (await getUserApps()) as AppData[];
+  const apps = (await getUserApps()) as AppWithConfig[];
 
-  const counts = {
-    apps: apps.length,
-    components: 0,
-    drafts: apps.filter(a => a.status !== "Published").length,
-    published: apps.filter(a => a.status === "Published").length,
-  };
-
-  apps.forEach(app => {
-    interface PageSchema { components?: unknown[] }
-    interface ConfigSchema { pages?: PageSchema[] }
-    
-    // Dynamically calculate component usage structurally looking inside JSON configs
-    const appData = app as unknown as { published_config?: ConfigSchema, config?: ConfigSchema };
-    const config = appData.published_config || appData.config;
-    
-    if (config?.pages) {
-      config.pages.forEach(p => {
-        counts.components += p.components?.length || 0;
-      });
-    }
-  });
-
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-      
-      <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 pt-10 pb-24 sm:pb-10 flex flex-col gap-10">
-        
-        {/* Header section */}
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Creator Dashboard</h1>
-        </div>
-
-        {/* Stats Strip */}
-        <StatsBar counts={counts} />
-
-        {/* Main Layout Area */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 mb-10">
-          
-          <div className="col-span-1 xl:col-span-3 h-full">
-            <h2 className="text-lg font-bold text-foreground mb-5 uppercase tracking-wider text-xs">Your Apps</h2>
-            {apps.length === 0 ? <FallbackEmpty /> : <AppGrid initialApps={apps} />}
-          </div>
-
-          <div className="col-span-1 xl:col-span-1 border-t xl:border-t-0 pt-8 xl:pt-0">
-            <h2 className="text-lg font-bold text-foreground mb-5 uppercase tracking-wider text-xs xl:invisible hidden xl:block">Activity</h2>
-            <div className="sticky top-6">
-              <RecentActivity apps={apps} />
-            </div>
-          </div>
-          
-        </div>
-        
-      </main>
-
-      <Footer />
-    </div>
-  );
+  return <DashboardView initialApps={apps} />;
 }
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-black"><Loader2 className="w-8 h-8 text-neutral-500 animate-spin" /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+          <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+        </div>
+      }
+    >
       <DashboardContent />
     </Suspense>
   );
 }
-
-
