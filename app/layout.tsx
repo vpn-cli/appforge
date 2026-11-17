@@ -20,7 +20,12 @@ export default function RootLayout({
     <ClerkProvider
       appearance={{
         variables: {
-          colorPrimary: "#111110",
+          colorPrimary: "var(--primary)",
+          colorText: "var(--foreground)",
+          colorBackground: "var(--card)",
+          colorInputBackground: "var(--card)",
+          colorInputText: "var(--foreground)",
+          colorTextSecondary: "var(--muted-foreground)",
           borderRadius: "0.5rem"
         },
         elements: {
@@ -30,6 +35,10 @@ export default function RootLayout({
           socialButtonsBlockButton: "border-border hover:bg-muted transition-colors text-foreground",
           formButtonPrimary: "font-medium shadow-xs bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground rounded-md",
           modalBackdrop: "live-clerk-gradient backdrop-blur-[2px]",
+          organizationPreviewAvatarBox: "bg-muted text-foreground border border-border",
+          organizationPreviewAvatarImage: "hidden",
+          avatarBox: "bg-muted text-foreground border border-border",
+          avatarImageFallback: "bg-muted text-foreground",
         }
       }}
     >

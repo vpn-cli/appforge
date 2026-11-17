@@ -21,7 +21,7 @@ if (hasUpstashKeys) {
   
   ratelimit = new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(3, "60 s"),
+    limiter: Ratelimit.slidingWindow(20, "60 s"),
   });
 }
 
@@ -29,7 +29,7 @@ if (hasUpstashKeys) {
 const ipMap = new Map<string, { count: number; resetTime: number }>();
 
 export const rateLimit = {
-  limit: async (ip: string, maxRequests: number = 3, windowMs: number = 60000) => {
+  limit: async (ip: string, maxRequests: number = 20, windowMs: number = 60000) => {
     // Route 1: Official Vercel Edge implementation
     if (ratelimit) {
       return await ratelimit.limit(ip);

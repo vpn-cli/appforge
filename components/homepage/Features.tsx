@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRef } from "react";
 import gsap from "gsap";
@@ -69,8 +69,8 @@ export function Features() {
       ease: "linear"
     });
     gsap.to(".error-node", {
-      backgroundColor: "rgba(220,112,136,0.2)",
-      borderColor: "rgba(235,163,180,0.5)",
+      backgroundColor: "var(--theme-error-light)",
+      borderColor: "var(--theme-error-border)",
       scale: 0.95,
       duration: 0.5,
       yoyo: true,
@@ -89,7 +89,7 @@ export function Features() {
     });
     gsap.to(".canvas-card", {
       y: -5,
-      boxShadow: "0 10px 25px -5px rgba(156,135,218,0.3)",
+      boxShadow: "var(--shadow-md)",
       duration: 2,
       yoyo: true,
       repeat: -1,
@@ -137,7 +137,7 @@ export function Features() {
                  <div className="w-16 border-t-2 border-dashed border-brand/40 relative">
                    <div className="absolute w-4 h-4 bg-brand rounded-full -top-[9px] left-1/2 -translate-x-1/2 api-pulse" />
                  </div>
-                 <div className="db-node bg-brand/10 border border-brand/30 shadow-[0_0_30px_rgba(156,135,218,0.2)] rounded-2xl p-8 flex flex-col items-center justify-center text-brand">
+                 <div className="db-node bg-brand/10 border border-brand/30 shadow-md rounded-2xl p-8 flex flex-col items-center justify-center text-brand">
                     <Database size={40} className="mb-2" />
                     <span className="font-mono text-xs font-bold tracking-widest">LIVE DB</span>
                  </div>
@@ -228,7 +228,7 @@ export function Features() {
                      </div>
                    </div>
                    <div className="h-24 w-full bg-muted/50 rounded-xl" />
-                   <div className="h-8 w-full bg-brand text-[10px] font-bold text-white flex items-center justify-center rounded-lg shadow-sm">
+                   <div className="h-8 w-full bg-brand text-[10px] font-bold text-primary-foreground flex items-center justify-center rounded-lg shadow-sm">
                      Rendered Component
                    </div>
                  </div>

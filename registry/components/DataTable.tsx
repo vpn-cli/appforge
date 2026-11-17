@@ -15,7 +15,9 @@ export type DataTableColumn = string | ColumnSchema;
 export interface DataTableProps {
   columns?: DataTableColumn[];
   data?: Record<string, unknown>[];
+  rows?: Record<string, unknown>[];
   entity?: string;
+  variant?: "default" | "dark-panel";
   state?: "loading" | "loaded" | "empty" | "error" | "degraded";
   errorMessage?: string;
   degradedMessage?: string;
@@ -27,7 +29,9 @@ export interface DataTableProps {
 export function DataTable({
   columns = [],
   data = [],
+  rows,
   entity,
+  variant = "default",
   state = "loaded",
   errorMessage = "Unable to fetch live dataset. Verify entity connection.",
   degradedMessage = "Showing cached dataset · Live connection paused",
@@ -39,6 +43,8 @@ export function DataTable({
   const [isTableFocused, setIsTableFocused] = useState<boolean>(false);
   const tableRef = useRef<HTMLDivElement>(null);
 
+  const initialData = (rows && rows.length > 0) ? rows : (data && data.length > 0) ? data : undefined;
+
   const resolvedCols = columns.length > 0 
     ? columns 
     : entity === "workflows"
@@ -49,12 +55,12 @@ export function DataTable({
       ]
     : [];
 
-  const resolvedData = data.length > 0
-    ? data
+  const resolvedData = initialData
+    ? initialData
     : entity === "workflows"
     ? [
         { workflow: "User Sync", trigger: "cron:hourly", status: "Running" },
-        { workflow: "Invoice Gen", trigger: "webhook:tx", status: "Idle" },
+        { workflow: "Invoice Gen", trigger: "webhook:rx", status: "Idle" },
       ]
     : [];
 
@@ -105,24 +111,24 @@ export function DataTable({
   const effectiveState =
     state !== "loaded"
       ? state
-      : !data || data.length === 0
+      : !resolvedData || resolvedData.length === 0
       ? "empty"
       : "loaded";
 
   // Single tab stop keyboard navigation for interactive tables
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!isInteractive || data.length === 0) return;
+    if (!isInteractive || resolvedData.length === 0) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setFocusedIndex((prev) => Math.min(data.length - 1, prev + 1));
+      setFocusedIndex((prev) => Math.min(resolvedData.length - 1, prev + 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setFocusedIndex((prev) => Math.max(0, prev - 1));
     } else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      if (onRowClick && data[focusedIndex]) {
-        onRowClick(data[focusedIndex], focusedIndex);
+      if (onRowClick && resolvedData[focusedIndex]) {
+        onRowClick(resolvedData[focusedIndex], focusedIndex);
       }
     }
   };
@@ -142,7 +148,7 @@ export function DataTable({
 
     if (col.type === "id" || col.type === "code") {
       return (
-        <span className="font-mono text-[11px] text-muted-foreground select-all">
+        <span className={`font-mono text-[11px] select-all ${variant === "dark-panel" ? "text-slate-400" : "text-muted-foreground"}`}>
           {String(value)}
         </span>
       );
@@ -160,10 +166,10 @@ export function DataTable({
 
       return (
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-full bg-muted text-foreground border border-border flex items-center justify-center text-[10px] font-semibold select-none shrink-0">
+          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold select-none shrink-0 bg-muted text-foreground border border-border">
             {initials}
           </div>
-          <span className="font-sans text-foreground truncate max-w-[280px]" title={name}>
+          <span className="font-sans truncate max-w-[280px] font-medium text-foreground" title={name}>
             {name}
           </span>
         </div>
@@ -172,10 +178,28 @@ export function DataTable({
 
     if (col.type === "badge") {
       const valStr = String(value).toLowerCase();
-      let colorClass = "bg-muted text-muted-foreground border-border";
       const isRunning = valStr.includes("running");
       const isIdle = valStr.includes("idle");
 
+      if (isRunning) {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-success-light text-success-text border border-success-border">
+            <span className="w-1.5 h-1.5 rounded-full bg-success-text animate-pulse shrink-0" />
+            {String(value)}
+          </span>
+        );
+      }
+
+      if (isIdle) {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground border border-border">
+            <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground shrink-0" />
+            {String(value)}
+          </span>
+        );
+      }
+
+      let colorClass = "bg-muted text-muted-foreground border-border";
       if (
         valStr.includes("active") ||
         valStr.includes("success") ||
@@ -183,12 +207,9 @@ export function DataTable({
         valStr.includes("paid") ||
         valStr.includes("operational") ||
         valStr.includes("nominal") ||
-        valStr.includes("resolved") ||
-        isRunning
+        valStr.includes("resolved")
       ) {
         colorClass = "bg-success-light text-success-text border-success-border";
-      } else if (isIdle) {
-        colorClass = "bg-muted text-muted-foreground border-border";
       } else if (
         valStr.includes("pending") ||
         valStr.includes("warning") ||
@@ -213,9 +234,6 @@ export function DataTable({
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${colorClass}`}
         >
-          {isRunning && (
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
-          )}
           {String(value)}
         </span>
       );
@@ -223,7 +241,7 @@ export function DataTable({
 
     return (
       <span
-        className="font-sans text-foreground truncate max-w-[280px] inline-block align-middle"
+        className="font-sans truncate max-w-[280px] inline-block align-middle text-foreground"
         title={String(value)}
       >
         {String(value)}
@@ -261,14 +279,14 @@ export function DataTable({
         }`}
       >
         <table className="w-full text-xs text-left border-collapse">
-          {/* Header Row: Sentence-case, hairline divider */}
+          {/* Header Row */}
           <thead>
             <tr className="border-b border-border bg-muted/40">
               {normalizedCols.map((col, idx) => (
                 <th
                   key={idx}
                   scope="col"
-                  className={`px-3 py-2 font-medium select-none whitespace-nowrap text-xs text-muted-foreground ${
+                  className={`px-3.5 py-2.5 select-none whitespace-nowrap text-xs text-muted-foreground font-medium ${
                     col.align === "right"
                       ? "text-right"
                       : col.align === "center"
@@ -289,7 +307,7 @@ export function DataTable({
                 {[1, 2, 3, 4].map((rowIdx) => (
                   <tr key={rowIdx} className="border-b border-border/50 last:border-0">
                     {normalizedCols.map((col, colIdx) => (
-                      <td key={colIdx} className="px-3 py-2.5">
+                      <td key={colIdx} className="px-3.5 py-2.5">
                         <div
                           className={`h-3.5 rounded bg-muted animate-pulse ${
                             col.align === "right" ? "ml-auto" : ""
@@ -318,12 +336,12 @@ export function DataTable({
               </tr>
             )}
 
-            {/* 3. Empty State (Preserves Headers & Frame) */}
+            {/* 3. Empty State */}
             {effectiveState === "empty" && (
               <tr>
                 <td
                   colSpan={normalizedCols.length}
-                  className="py-12 text-center text-xs text-muted-foreground"
+                  className="py-10 text-center text-xs text-muted-foreground"
                 >
                   No records found in this view.
                 </td>
@@ -334,7 +352,9 @@ export function DataTable({
             {(effectiveState === "loaded" || effectiveState === "degraded") &&
               resolvedData.map((row, rowIdx) => {
                 const isRowFocused = isInteractive && isTableFocused && focusedIndex === rowIdx;
-                const rowBorderClass = "border-b border-border/60 last:border-0 hover:bg-muted/40";
+                const rowBorderClass = variant === "dark-panel"
+                  ? "border-b border-white/5 last:border-0 hover:bg-white/[0.04]"
+                  : "border-b border-border/60 last:border-0 hover:bg-muted/40";
                 return (
                   <tr
                     key={rowIdx}
@@ -350,7 +370,7 @@ export function DataTable({
                     {normalizedCols.map((col, colIdx) => (
                       <td
                         key={colIdx}
-                        className={`px-3 py-2.5 whitespace-nowrap text-xs ${
+                        className={`px-3.5 py-2.5 whitespace-nowrap text-xs ${
                           col.align === "right"
                             ? "text-right"
                             : col.align === "center"

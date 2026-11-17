@@ -55,12 +55,16 @@ export function CopilotPanel({
     setIsGenerating(true);
     let streamedText = "";
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+
     try {
       if (onStreamStart) onStreamStart();
       const res = await fetch("/api/copilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: currentPrompt }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -126,7 +130,15 @@ export function CopilotPanel({
       }
     } catch (err) {
       const e = err as Error;
-      if (
+      if (e.name === "AbortError") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            content: "Request timed out after 25s. The model was slow to respond; please try again.",
+          },
+        ]);
+      } else if (
         e.message &&
         (e.message.includes("exhausted") || e.message.includes("429"))
       ) {
@@ -145,6 +157,7 @@ export function CopilotPanel({
         ]);
       }
     } finally {
+      clearTimeout(timeoutId);
       setIsGenerating(false);
       if (onStreamEnd) onStreamEnd();
     }

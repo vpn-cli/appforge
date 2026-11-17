@@ -924,7 +924,7 @@ export default function BuilderPage() {
             <h2
               className={`text-lg font-bold mb-2 ${
                 notificationModal.type === "error"
-                  ? "text-red-500"
+                  ? "text-destructive"
                   : "text-foreground"
               }`}
             >

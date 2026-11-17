@@ -81,7 +81,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Initialize Multi-Provider Fallback (Groq Primary -> Gemini Backups)
+    // 4. Initialize Multi-Provider Fallback (Gemini Primary -> Backup Keys)
     const geminiKeys = [
       process.env.GEMINI_API_KEY,
       process.env.GEMINI_API_KEY_2,
@@ -90,12 +90,7 @@ export async function POST(req: Request) {
 
     const models: import("ai").LanguageModel[] = [];
     
-    // Attempt Groq first if key exists (Lightning Fast Free Tier)
-    if (process.env.GROQ_API_KEY) {
-      models.push(groq("llama-3.3-70b-versatile"));
-    }
-
-    // Append Gemini backups by explicitly building the provider with specific keys
+    // Append Gemini providers (gemini-2.5-flash is verified active & sub-second fast)
     for (const key of geminiKeys) {
       const googleProvider = createGoogleGenerativeAI({ apiKey: key });
       models.push(googleProvider("gemini-2.5-flash"));
@@ -109,6 +104,7 @@ export async function POST(req: Request) {
     const streamFallback = new ReadableStream({
       async start(controller) {
         let lastError = null;
+        const encoder = new TextEncoder();
 
         for (const activeModel of models) {
           try {
@@ -119,35 +115,11 @@ export async function POST(req: Request) {
               temperature: 0.1,
             });
 
-            // Extract the raw byte stream returned by the AI SDK
-            const reader = responseResult.toTextStreamResponse().body?.getReader();
-            if (!reader) {
-              lastError = new Error("Failed to extract reader from stream.");
-              continue;
-            }
-
-            // Await the first stream chunk! 
-            // Vercel AI SDK throws underlying API HTTP errors here (like 429 Quota Exceeded)
-            const firstChunk = await reader.read();
-            if (firstChunk.done) {
-               lastError = new Error("Stream closed instantly with no data.");
-               continue; 
-            }
-
-            // Connection is alive and generating data. Forward the first chunk!
-            controller.enqueue(firstChunk.value);
-            
             let streamTextAccumulator = "";
-            const decoder = new TextDecoder("utf-8");
-            streamTextAccumulator += decoder.decode(firstChunk.value, { stream: true });
-            
-            // Forward the rest of the stream transparently
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              
-              controller.enqueue(value);
-              streamTextAccumulator += decoder.decode(value, { stream: true });
+
+            for await (const textChunk of responseResult.textStream) {
+              controller.enqueue(encoder.encode(textChunk));
+              streamTextAccumulator += textChunk;
             }
 
             // Optionally push the finalized AST to the Redis cache

@@ -55,10 +55,14 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
                     organizationPreviewMainIdentifier: "text-sm font-medium text-foreground",
                     organizationPreviewSecondaryIdentifier: "text-[13px] text-muted-foreground",
                     organizationSwitcherTriggerIcon: "text-muted-foreground",
+                    organizationPreviewAvatarBox: "bg-muted text-foreground border border-border",
                   },
                 }}
                 fallback={
                   <div className="flex items-center gap-1.5 text-sm font-medium text-foreground px-2.5 py-1 rounded-md bg-muted border border-border h-9">
+                    <div className="w-5 h-5 rounded bg-muted border border-border flex items-center justify-center text-[10px] font-bold text-foreground">
+                      AC
+                    </div>
                     <span>Acme Corp</span>
                     <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                   </div>
@@ -66,6 +70,9 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
               />
             </div>
             <div className="sm:hidden flex items-center gap-1.5 text-sm font-medium text-foreground px-2 py-1 rounded bg-muted border border-border h-9">
+              <div className="w-5 h-5 rounded bg-muted border border-border flex items-center justify-center text-[10px] font-bold text-foreground">
+                AC
+              </div>
               <span>Acme Corp</span>
               <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
             </div>

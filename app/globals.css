@@ -3,7 +3,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   /* Fonts */
@@ -184,7 +184,7 @@
   --radius: 0.5rem;
 }
 
-.dark {
+.dark, :root.dark, [data-theme="dark"] {
   --background: #0F0F0E;
   --surface: #171716;
   --card: #171716;
@@ -307,4 +307,22 @@ body::after {
 
 .cl-organizationPreviewSecondaryIdentifier {
   color: var(--muted-foreground) !important;
+}
+
+/* Clerk Avatar & Neutral Org Avatar (--raised background, --foreground text) */
+.cl-avatarBox,
+.cl-organizationPreviewAvatarBox,
+.cl-organizationSwitcherTriggerAvatarBox {
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.cl-avatarBox *,
+.cl-organizationPreviewAvatarBox *,
+.cl-avatarImageFallback {
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+  fill: var(--foreground) !important;
 }

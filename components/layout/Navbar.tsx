@@ -77,8 +77,8 @@ export function Navbar() {
         <SignedIn>
           <motion.div variants={item} className="flex gap-2 sm:gap-4 items-center">
             <ThemeToggle />
-            <OrganizationSwitcher appearance={{ elements: { organizationSwitcherTrigger: "border border-border bg-muted/50 rounded-md py-1.5 px-3 text-sm font-medium text-foreground" } }} />
-            <UserButton appearance={{ elements: { avatarBox: "w-8 h-8 border border-border" } }} />
+            <OrganizationSwitcher appearance={{ elements: { organizationSwitcherTrigger: "border border-border bg-muted/50 rounded-md py-1.5 px-3 text-sm font-medium text-foreground", organizationPreviewAvatarBox: "bg-muted text-foreground border border-border" } }} />
+            <UserButton appearance={{ elements: { avatarBox: "w-8 h-8 border border-border bg-muted text-foreground" } }} />
           </motion.div>
         </SignedIn>
         
