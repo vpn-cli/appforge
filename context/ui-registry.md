@@ -91,6 +91,28 @@ Header: grid grid-cols-[1.5fr_1.2fr_1fr_28px] items-center px-4 py-1 text-[11px]
 Rows: flex flex-col gap-2.5, each row: glass-3 rounded-2xl h-[56px] px-4 grid grid-cols-[1.5fr_1.2fr_1fr_28px]
 ```
 
+**Restyled Feature Section ("Instant Architecture. Zero Friction.")**
+```text
+Section Header: 48px font-bold, tracking -0.03em, 128px above, muted subhead 17px/1.6
+Container: max-w-[1200px] mx-auto px-4 sm:px-6 w-full, 112px between alternating rows
+Text Column (5/12):
+  Icon Tile: 40px rounded-[12px] glass-2 with violet/indigo accent tint (text-indigo-600 dark:text-indigo-400)
+  Title: 28px font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-100
+  Body: 17px line-height 1.65 text-slate-600 dark:text-slate-400 max-w-[46ch]
+Visual Card (7/12):
+  Outer: glass-1 rounded-[28px] p-5 sm:p-10 w-full min-h-[380px] sm:min-h-[420px]
+  Inner tiles: glass-3 filling ~70% of card with unified accent tint (soft red isolated to error boundary)
+  Responsive: flex flex-col sm:flex-row stacking on mobile <sm, horizontal on >=sm
+```
+
+**Restyled Footer**
+```text
+Container: max-w-[1200px] mx-auto px-4 sm:px-6 w-full flex flex-col sm:flex-row items-center justify-between py-[48px] gap-4
+Border: border-t border-slate-200/60 dark:border-white/10
+Left: Logo mark + AppForge text-semibold + muted tagline 14px
+Right: Terms, Privacy links 14px text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white
+```
+
 ---
 
 ## Base Architecture Components

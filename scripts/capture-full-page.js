@@ -9,7 +9,7 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-async function captureFullPage({ url, file, width = 1440, height = 900, waitMs = 3000, theme = 'light' }) {
+async function captureFullPage({ url, file, width = 1440, height = 900, waitMs = 3500, theme = 'light' }) {
   const tmpDir = path.join(os.tmpdir(), 'chrome-full-' + Math.random().toString(36).slice(2));
   fs.mkdirSync(tmpDir, { recursive: true });
   const port = 9500 + Math.floor(Math.random() * 400);
@@ -108,25 +108,31 @@ async function captureFullPage({ url, file, width = 1440, height = 900, waitMs =
     await sleep(400);
   }
 
-  // Scroll down smoothly to trigger any scroll triggers / intersection observers
+  // Scroll down smoothly through the page to trigger all in-view animations
   await send(sessionId, 'Runtime.evaluate', {
     expression: `
-      window.scrollTo(0, document.body.scrollHeight / 2);
+      window.scrollTo(0, document.body.scrollHeight / 3);
     `,
   });
-  await sleep(500);
+  await sleep(600);
+  await send(sessionId, 'Runtime.evaluate', {
+    expression: `
+      window.scrollTo(0, (document.body.scrollHeight * 2) / 3);
+    `,
+  });
+  await sleep(600);
   await send(sessionId, 'Runtime.evaluate', {
     expression: `
       window.scrollTo(0, document.body.scrollHeight);
     `,
   });
-  await sleep(500);
+  await sleep(600);
   await send(sessionId, 'Runtime.evaluate', {
     expression: `
       window.scrollTo(0, 0);
     `,
   });
-  await sleep(400);
+  await sleep(600);
 
   // Capture full scrollable page
   const { data } = await send(sessionId, 'Page.captureScreenshot', {
@@ -150,16 +156,30 @@ async function captureFullPage({ url, file, width = 1440, height = 900, waitMs =
 const targets = [
   {
     url: 'http://localhost:3000/?theme=light',
-    file: path.resolve('.screenshots/restore-step1-light-1440.png'),
+    file: path.resolve('.screenshots/restyle-1440-light.png'),
     width: 1440,
     height: 900,
     theme: 'light',
   },
   {
     url: 'http://localhost:3000/?theme=dark',
-    file: path.resolve('.screenshots/restore-step1-dark-1440.png'),
+    file: path.resolve('.screenshots/restyle-1440-dark.png'),
     width: 1440,
     height: 900,
+    theme: 'dark',
+  },
+  {
+    url: 'http://localhost:3000/?theme=light',
+    file: path.resolve('.screenshots/restyle-390-light.png'),
+    width: 390,
+    height: 844,
+    theme: 'light',
+  },
+  {
+    url: 'http://localhost:3000/?theme=dark',
+    file: path.resolve('.screenshots/restyle-390-dark.png'),
+    width: 390,
+    height: 844,
     theme: 'dark',
   },
 ];

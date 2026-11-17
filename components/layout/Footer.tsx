@@ -1,22 +1,34 @@
 ﻿import Link from "next/link";
+import { AppForgeLogo } from "@/components/ui/appforge-logo";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border py-10 bg-card mt-auto">
-      <div className="max-w-7xl mx-auto px-4 w-full flex items-center justify-between">
-        <div className="flex flex-col gap-2">
-          <span className="font-semibold text-foreground">
-            AppForge
-          </span>
-          <span className="text-muted-foreground text-sm">
-            Metadata-driven application runtime.
-          </span>
+    <footer className="w-full border-t border-slate-200/60 dark:border-white/10 mt-auto">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full flex flex-col sm:flex-row items-center justify-between py-[48px] gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-slate-900 text-white dark:bg-white/10 dark:text-white flex items-center justify-center shadow-xs">
+            <AppForgeLogo size={15} className="text-white" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="font-semibold text-[14px] text-slate-900 dark:text-slate-100 tracking-tight">
+              AppForge
+            </span>
+            <span className="text-slate-500 dark:text-slate-400 text-[14px]">
+              — Metadata-driven application runtime.
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-6">
-          <Link href="/terms" className="text-muted-foreground text-sm hover:text-foreground">
+          <Link
+            href="/terms"
+            className="text-slate-600 dark:text-slate-400 text-[14px] hover:text-slate-900 dark:hover:text-white transition-colors"
+          >
             Terms
           </Link>
-          <Link href="/privacy" className="text-muted-foreground text-sm hover:text-foreground">
+          <Link
+            href="/privacy"
+            className="text-slate-600 dark:text-slate-400 text-[14px] hover:text-slate-900 dark:hover:text-white transition-colors"
+          >
             Privacy
           </Link>
         </div>
@@ -24,4 +36,3 @@ export function Footer() {
     </footer>
   );
 }
-
