@@ -102,12 +102,27 @@ Respects prefers-reduced-motion.
 **Glass Material Utilities (3 Levels)**
 ```text
 glass-1 (Floating Frosted Top Bar Pill & Demo Panels):
-  Light: linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,255,255,.76)), blur(24px) saturate(180%), border: 1px solid rgba(255,255,255,.90), specular top: inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.30), shadow: 0 20px 50px -20px rgba(70,60,170,.16), ::before specular sheen
-  Dark: linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,.025)), blur(24px) saturate(180%), border: 1px solid rgba(255,255,255,.08), specular: inset 0 1px 0 rgba(255,255,255,.08), shadow: 0 24px 60px -24px rgba(0,0,0,.70)
+  Light: linear-gradient(135deg, rgba(255,255,255,.94), rgba(255,255,255,.84)), blur(24px) saturate(180%), border: 1px solid rgba(255,255,255,.95), specular top: inset 0 1px 0 #FFFFFF, inset 0 -1px 0 rgba(255,255,255,.40), two-layer shadow: 0 4px 12px -2px rgba(35,25,90,.08) contact + 0 24px 64px -16px rgba(45,35,130,.22) ambient, ::before specular sheen
+  Dark: rgba(20,20,26,.82), blur(28px) saturate(140%), border: 1px solid rgba(255,255,255,.09), specular: inset 0 1px 0 rgba(255,255,255,.08), two-layer shadow: 0 4px 16px -2px rgba(0,0,0,.60) + 0 32px 80px -20px rgba(0,0,0,.92)
 
 glass-2 (Standalone Secondary Buttons, e.g. View Templates):
   Light: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.40)), blur(16px) saturate(180%), border: 1px solid rgba(255,255,255,.80), inset 0 1px 0 rgba(255,255,255,.95), isolate, overflow:hidden
   Dark: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), blur(16px) saturate(180%), border: 1px solid rgba(255,255,255,.12), shadow: 0 8px 24px -6px rgba(0,0,0,.5)
+```
+
+**Hero Scripted Live Edit & Specular Cursor Sheen (`components/home/HeroScriptedEditContext.tsx`)**
+```text
+Loop timing: 12.0s loop cycle
+  Phase 1 (1.8s-3.6s): Types ', "live": true' into line 6 with blinking cursor; line 6 gains soft highlight bg-indigo-500/12
+  Phase 2 (3.6s-4.8s): Synchronous reactive updates:
+    a) "Invoice Gen" status pill crossfades Idle -> Running
+    b) Metric counts up 1,244 -> 1,251 with tabular-nums
+    c) "Slack Alerts" row slides down into table
+  Phase 3 (4.8s-10.2s): Live hold (~5.4s)
+  Phase 4 (10.2s-11.8s): Smooth reset fade
+Controls: Pauses when off-screen (IntersectionObserver), pauses on hover; prefers-reduced-motion shows static final state
+Glass Specular Sheen: Radial gradient circle at pointer coords with 8% opacity: radial-gradient(350px circle at Xpx Ypx, rgba(255,255,255,.08), transparent 70%)
+Scroll Parallax: Volumetric glass ribbon parallaxes subtly (0 -> 48px) along Y on scroll
 
 glass-2-nested (File Tab, Copy Button, Chips inside Glass Panels — NO backdrop-filter):
   Light: rgba(255,255,255,.65), border: 1px solid rgba(255,255,255,.80), inset 0 1px 0 rgba(255,255,255,.90)
@@ -164,25 +179,48 @@ Right: Terms, Privacy links 14px text-slate-600 dark:text-slate-400 hover:text-s
 
 ## Base Architecture Components
 
-### AppCard & Live Thumbnail
-*Main dashboard application card displaying a scaled-down 16:10 live registry preview and metadata.*
+### Phase 7j Apps Dashboard (Linear / Vercel Caliber Real Tool)
+
+**Page Title Row & Inline Stat Chips (`components/dashboard/DashboardView.tsx`)**
 ```text
-Container: group cursor-pointer bg-card border border-border hover:border-border-strong rounded-lg overflow-hidden transition-colors duration-150 flex flex-col relative select-none
-Thumbnail Frame: aspect-[16/10] w-full overflow-hidden bg-background border-b border-border select-none pointer-events-none
-Card Body: p-3.5 sm:p-4 flex flex-col justify-between flex-1 gap-2
-Title: text-[16px] font-semibold text-foreground truncate
-Metadata / Time: text-[13px] text-muted-foreground mt-0.5
-Status Badge: inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[13px] font-medium shrink-0 whitespace-nowrap
+Title: text-[32px] font-semibold tracking-[-0.02em] leading-tight text-foreground
+Stat Chips: inline-flex items-center gap-1.5 flex-wrap
+  Total Chip: px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-slate-200/60 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 text-foreground
+  Published Chip: px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 with 6px emerald dot
+  Draft Chip: px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-slate-200/50 dark:bg-white/5 text-muted-foreground border border-slate-300/40 dark:border-white/10 with 6px neutral dot
+New App Button: variant="primary" size="md" (+ New app), aligned directly to the h1 baseline
 ```
 
-### PromptBox (Command Bar & Generation)
-*Top-level prompt input with example chips and template link.*
+**Composer (`components/dashboard/PromptBox.tsx`)**
 ```text
-Container: bg-card border border-border rounded-lg p-4 transition-colors
-Input: h-12 px-2 text-base text-foreground placeholder:text-muted-foreground bg-transparent focus:outline-none
-Submit Button: h-9 px-4 text-sm font-medium rounded-md bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground (disabled: bg-muted text-muted-foreground)
-Example Chips: text-sm font-medium text-muted-foreground hover:text-foreground bg-muted hover:bg-muted/80 px-2.5 py-1 rounded border-0
-Shown Condition: while input is focused or with fewer than 3 apps
+Container: rounded-[20px] glass-1 border border-white/80 dark:border-white/10 shadow-lg overflow-hidden
+Top Row: h-16 (64px) px-4 sm:px-5 flex items-center gap-3
+Input: text-[15px] sm:text-[16px] text-foreground placeholder:text-muted-foreground outline-none
+Generate Button: variant="primary" size="md" h-10 px-4 with inline ↵ kbd shortcut. Enabled-on-type (disabled/muted only when strictly empty)
+Bottom Row: px-4 sm:px-5 py-2.5 border-t border-black/5 dark:border-white/5 bg-black/[0.015] dark:bg-white/[0.01] flex items-center justify-between
+Example Pills: h-6 sm:h-7 px-2.5 sm:px-3 rounded-full text-[12px] font-medium bg-slate-200/50 hover:bg-slate-300/60 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-300/40 dark:border-white/10
+Template Link: ml-auto inline-flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground hover:text-foreground
+```
+
+**App Card (`components/dashboard/AppCard.tsx`)**
+```text
+Container: group cursor-pointer rounded-2xl bg-card dark:bg-[#14141A] border border-border dark:border-white/10 hover:border-slate-400/50 dark:hover:border-white/20 overflow-hidden transition-all duration-200 flex flex-col relative select-none hover:-translate-y-0.5 hover:shadow-lg
+Live Thumbnail: 0.75x cropped to top-left (w-[540px] origin-top-left scale-[0.75]) ensuring all text >= 9px effective; bottom gradient mask (black 50% -> transparent 100%); zero half-empty cards
+Title Row: text-[16px] sm:text-[17px] font-semibold text-foreground truncate with StatusPill on the SAME row
+Slug: font-mono text-[12px] text-muted-foreground/80 tracking-tight truncate select-all (/apps/{slug})
+Hover Kebab: opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity (opacity-100 on touch/mobile)
+Footer Row: flex items-center justify-between pt-3 border-t border-border/40 dark:border-white/5 text-[12px]
+  Counts: font-mono text-[12px] text-muted-foreground ({pages} pages · {entities} entities)
+  Edited By: 16px avatar circle (initial V) + relative time text
+```
+
+**Recent Activity Timeline (`components/dashboard/RecentActivity.tsx`)**
+```text
+Container: rounded-2xl bg-card dark:bg-[#14141A] border border-border dark:border-white/10 p-5 shadow-xs h-full flex flex-col
+Grid Alignment: items-stretch matching the top and height of the main card grid
+Timeline Nodes: 20px avatar circles (initials V, A) along vertical 1px hairline border connector
+Activity Text: text-[13px] text-foreground leading-snug with action verbs in BOLD (<strong>Published</strong> / <strong>Saved draft for</strong>)
+Relative Times: text-[12px] text-muted-foreground block mt-0.5
 ```
 
 ### Container-Aware Core Renderers (Tailwind v4 Container Queries)
