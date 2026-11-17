@@ -2,24 +2,27 @@
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
-import { CopilotPanel } from "@/components/builder/CopilotPanel";
+import { CopilotFloatingPill } from "@/components/builder/CopilotFloatingPill";
 import { LivePreview } from "@/components/builder/LivePreview";
 import { ValidationPanel } from "@/components/builder/ValidationPanel";
 import { validateConfig } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { StatusPill } from "@/components/ui/status-pill";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { Kbd } from "@/components/ui/kbd";
 import {
   ArrowLeft,
   Save,
   Play,
   Loader2,
-  Sun,
-  Moon,
   FileCode,
   Layout,
   Monitor,
   Tablet,
   Smartphone,
   PanelLeftClose,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -27,12 +30,10 @@ import { useAuth, SignInButton } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import { getAppConfig, saveAppConfig, publishAppConfig } from "@/actions/apps";
 
-const DEFAULT_COPILOT_WIDTH = 360;
-const DEFAULT_EDITOR_WIDTH = 420;
-const MIN_COPILOT_WIDTH = 300;
-const MIN_EDITOR_WIDTH = 320;
-const MIN_PREVIEW_WIDTH = 400;
-const RAIL_WIDTH = 38;
+const DEFAULT_EDITOR_WIDTH = 460;
+const MIN_EDITOR_WIDTH = 340;
+const MIN_PREVIEW_WIDTH = 420;
+const RAIL_WIDTH = 40;
 
 const defaultMockConfig = JSON.stringify(
   {
@@ -133,18 +134,13 @@ export default function BuilderPage() {
   const [mounted, setMounted] = useState(false);
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
 
-  const copilotInputRef = useRef<HTMLTextAreaElement>(null);
+  const copilotInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Remember collapsed / open states per browser wrapped in try/catch (default open)
-  const [isCopilotCollapsed, setIsCopilotCollapsed] = useState<boolean>(() => {
-    if (copilotQuery === "closed") return true;
-    if (copilotQuery === "open" || initialPrompt) return false;
-    try {
-      const saved = localStorage.getItem("appforge_copilot_collapsed");
-      if (saved !== null) return saved === "true";
-    } catch {}
-    return false; // Open by default
+  // Floating Copilot Pill open / collapsed state (closed by default unless prompt passed)
+  const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(() => {
+    if (copilotQuery === "open" || initialPrompt) return true;
+    return false;
   });
 
   useEffect(() => {
@@ -155,9 +151,9 @@ export default function BuilderPage() {
 
   useEffect(() => {
     if (copilotQuery === "closed") {
-      setIsCopilotCollapsed(true);
+      setIsCopilotOpen(false);
     } else if (copilotQuery === "open") {
-      setIsCopilotCollapsed(false);
+      setIsCopilotOpen(true);
     }
   }, [copilotQuery]);
 
@@ -167,18 +163,6 @@ export default function BuilderPage() {
       if (saved !== null) return saved === "true";
     } catch {}
     return false;
-  });
-
-  // Remember pane widths in localStorage
-  const [copilotWidth, setCopilotWidth] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem("appforge_copilot_width");
-      if (saved) {
-        const parsed = parseInt(saved, 10);
-        if (!isNaN(parsed) && parsed >= MIN_COPILOT_WIDTH) return parsed;
-      }
-    } catch {}
-    return DEFAULT_COPILOT_WIDTH;
   });
 
   const [editorWidth, setEditorWidth] = useState<number>(() => {
@@ -192,26 +176,14 @@ export default function BuilderPage() {
     return DEFAULT_EDITOR_WIDTH;
   });
 
-  // Dragging active state
-  const [activeDrag, setActiveDrag] = useState<"copilot" | "editor" | null>(null);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("appforge_copilot_collapsed", String(isCopilotCollapsed));
-    } catch {}
-  }, [isCopilotCollapsed]);
+  // Dragging active state for editor/preview divider
+  const [activeDrag, setActiveDrag] = useState<"editor" | null>(null);
 
   useEffect(() => {
     try {
       localStorage.setItem("appforge_editor_collapsed", String(isEditorCollapsed));
     } catch {}
   }, [isEditorCollapsed]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("appforge_copilot_width", String(copilotWidth));
-    } catch {}
-  }, [copilotWidth]);
 
   useEffect(() => {
     try {
@@ -314,7 +286,7 @@ export default function BuilderPage() {
     }
   }, [appId, isGuestRoute, isSignedIn]);
 
-  // ⌘K / Ctrl+K keyboard shortcut toggles/focuses Copilot
+  // ⌘K / Ctrl+K keyboard shortcut toggles/focuses floating Copilot
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -325,8 +297,13 @@ export default function BuilderPage() {
         }
 
         e.preventDefault();
-        setIsCopilotCollapsed(false);
-        setTimeout(() => copilotInputRef.current?.focus(), 60);
+        setIsCopilotOpen((prev) => {
+          const next = !prev;
+          if (next) {
+            setTimeout(() => copilotInputRef.current?.focus(), 80);
+          }
+          return next;
+        });
       }
     };
 
@@ -335,16 +312,16 @@ export default function BuilderPage() {
   }, []);
 
   const handleToggleCopilot = useCallback(() => {
-    setIsCopilotCollapsed((prev) => {
+    setIsCopilotOpen((prev) => {
       const next = !prev;
-      if (!next) {
-        setTimeout(() => copilotInputRef.current?.focus(), 60);
+      if (next) {
+        setTimeout(() => copilotInputRef.current?.focus(), 80);
       }
       return next;
     });
   }, []);
 
-  // Window mousemove / mouseup handlers for divider dragging
+  // Window mousemove / mouseup handlers for divider dragging (Editor vs Preview)
   useEffect(() => {
     if (!activeDrag) return;
 
@@ -353,22 +330,12 @@ export default function BuilderPage() {
       const rect = containerRef.current.getBoundingClientRect();
       const containerWidth = rect.width;
 
-      if (activeDrag === "copilot") {
+      if (activeDrag === "editor") {
         const relativeX = e.clientX - rect.left;
-        const editorOccupied = isEditorCollapsed ? RAIL_WIDTH : editorWidth;
-        const maxCopilot = containerWidth - editorOccupied - MIN_PREVIEW_WIDTH - 12;
-        const boundedWidth = Math.max(
-          MIN_COPILOT_WIDTH,
-          Math.min(Math.max(MIN_COPILOT_WIDTH, maxCopilot), relativeX),
-        );
-        setCopilotWidth(Math.round(boundedWidth));
-      } else if (activeDrag === "editor") {
-        const copilotOccupied = isCopilotCollapsed ? RAIL_WIDTH : copilotWidth;
-        const editorTarget = e.clientX - rect.left - copilotOccupied - 6;
-        const maxEditor = containerWidth - copilotOccupied - MIN_PREVIEW_WIDTH - 12;
+        const maxEditor = containerWidth - MIN_PREVIEW_WIDTH - 12;
         const boundedWidth = Math.max(
           MIN_EDITOR_WIDTH,
-          Math.min(Math.max(MIN_EDITOR_WIDTH, maxEditor), editorTarget),
+          Math.min(maxEditor, relativeX),
         );
         setEditorWidth(Math.round(boundedWidth));
       }
@@ -391,7 +358,7 @@ export default function BuilderPage() {
       document.body.style.removeProperty("cursor");
       document.body.style.removeProperty("user-select");
     };
-  }, [activeDrag, copilotWidth, editorWidth, isCopilotCollapsed, isEditorCollapsed]);
+  }, [activeDrag, editorWidth]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -535,25 +502,24 @@ export default function BuilderPage() {
   return (
     <div className="flex flex-col h-screen w-full bg-background overflow-hidden text-foreground antialiased select-none">
       {/* =========================================================================
-          TOP APPLICATION TOOLBAR (h-11, 44px)
-          Sans breadcrumb with App Name, Copilot ⌘K toggle, Save, Publish
+          TOP APPLICATION TOOLBAR (h-14, 56px) - Glass top bar
+          Sans breadcrumb with App Name, Copilot ⌘K toggle, Save Draft, Publish
           ========================================================================= */}
-      <header className="h-11 border-b border-border bg-card shrink-0 flex items-center justify-between px-3 sm:px-4 z-20">
-        {/* Left: Navigation & Sans Breadcrumb with App Name */}
+      <header className="h-14 border-b border-border/60 dark:border-white/8 bg-card/80 dark:bg-[#14141A]/90 backdrop-blur-md shrink-0 flex items-center justify-between px-4 sm:px-6 z-20 transition-colors">
+        {/* Left: Navigation & Breadcrumb with App Name */}
         <div className="flex items-center gap-3">
-          <Link href="/dashboard">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted/70 rounded-md transition-colors"
-              aria-label="Back to dashboard"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
+          <IconButton
+            variant="ghost"
+            size="sm"
+            render={<Link href="/dashboard" />}
+            aria-label="Back to dashboard"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </IconButton>
 
           {/* Breadcrumb shows app's name, not UUID */}
-          <div className="flex items-center gap-2 font-sans text-xs">
+          <div className="flex items-center gap-2 font-sans text-[13px]">
             <span className="font-medium text-foreground">AppForge</span>
             <span className="text-muted-foreground/40 font-normal">/</span>
             <span
@@ -562,62 +528,41 @@ export default function BuilderPage() {
             >
               {appName}
             </span>
-            <span className="hidden sm:inline-flex items-center gap-1.5 ml-1.5 px-2 py-0.5 rounded-full text-[13px] font-medium bg-muted text-muted-foreground border border-border">
-              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60" />
+            <StatusPill variant="neutral" className="hidden sm:inline-flex ml-1">
               {isGuestRoute ? "Sandbox" : "Draft"}
-            </span>
+            </StatusPill>
           </div>
         </div>
 
-        {/* Center: File indicator */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-muted/40 rounded-md border border-border text-[13px] font-mono text-muted-foreground">
+        {/* Center: File indicator in glass pill */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full glass-2-nested text-[13px] font-mono text-muted-foreground">
           <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
           <span>config.json</span>
         </div>
 
-        {/* Right Toolbar Actions */}
+        {/* Right Toolbar Actions: ThemeToggle, Copilot ⌘K, Save Draft, Publish */}
         <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Theme Toggle (Light / Dark) */}
-          {mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() =>
-                setTheme(resolvedTheme === "dark" ? "light" : "dark")
-              }
-              className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/70 rounded-md transition-colors"
-              aria-label="Toggle theme"
-            >
-              {resolvedTheme === "dark" ? (
-                <Sun className="h-3.5 w-3.5" />
-              ) : (
-                <Moon className="h-3.5 w-3.5" />
-              )}
-            </Button>
-          )}
+          {/* Neutral Glass Circle Theme Toggle */}
+          <ThemeToggle />
 
           {/* Header "Copilot ⌘K" toggle button */}
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={handleToggleCopilot}
-            className={`h-8 px-2.5 border-border hover:bg-muted text-foreground font-medium text-xs gap-1.5 transition-colors shadow-xs ${
-              !isCopilotCollapsed ? "bg-muted font-semibold" : "bg-card"
-            }`}
-            aria-label="Toggle Copilot panel"
-            aria-expanded={!isCopilotCollapsed}
+            className="gap-1.5"
+            aria-label="Toggle Copilot pill"
+            aria-expanded={isCopilotOpen}
           >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
             <span>Copilot</span>
-            <kbd className="px-1 py-0.2 text-[9px] font-mono bg-muted-foreground/10 text-muted-foreground rounded border border-border">
-              ⌘K
-            </kbd>
+            <Kbd>⌘K</Kbd>
           </Button>
 
-          {/* Save Draft Button */}
+          {/* Save Draft Button (secondary frosted pill) */}
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
-            className="h-8 bg-card border-border hover:bg-muted hover:text-foreground text-foreground font-medium text-xs transition-colors shadow-xs"
             onClick={handleSave}
             disabled={isSaving}
           >
@@ -629,12 +574,12 @@ export default function BuilderPage() {
             Save Draft
           </Button>
 
-          {/* Publish CTA: Solid fill, clearly enabled, AA label contrast */}
+          {/* Publish CTA: Primary pill button */}
           <Button
             onClick={handlePublish}
             disabled={isPublishing}
+            variant="primary"
             size="sm"
-            className="h-8 bg-brand hover:bg-brand-dark text-text-inverse font-medium text-xs shadow-xs transition-colors disabled:bg-muted disabled:text-muted-foreground/50 disabled:border disabled:border-border"
           >
             {isPublishing ? (
               <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
@@ -648,86 +593,35 @@ export default function BuilderPage() {
 
       {/* =========================================================================
           WORKSPACE WORK AREA
-          Three resizable panes: Copilot (left) | Config editor | Preview (right)
+          Two resizable panes taking full width: Config editor (left) | Preview (right)
+          Copilot floating chat pill anchored at bottom center
           ========================================================================= */}
       <main
         ref={containerRef}
         className="flex-1 flex flex-col md:flex-row overflow-hidden relative"
       >
-        {/* PANE 1: COPILOT (LEFT) - primary entry point, open by default */}
-        <CopilotPanel
-          isCollapsed={isCopilotCollapsed}
-          onToggleCollapse={() => setIsCopilotCollapsed((prev) => !prev)}
-          width={copilotWidth}
-          onApply={handleApplyCopilotComponents}
-          onStreamStart={handleStreamStart}
-          onStreamEnd={handleStreamEnd}
-          initialPrompt={initialPrompt}
-          inputRef={copilotInputRef}
-        />
-
-        {/* DIVIDER 1: Between Copilot and Editor */}
-        {!isCopilotCollapsed && (
-          <div
-            role="separator"
-            aria-orientation="vertical"
-            aria-valuenow={Math.round(copilotWidth)}
-            aria-valuemin={MIN_COPILOT_WIDTH}
-            aria-valuemax={800}
-            aria-label="Resize Copilot panel"
-            tabIndex={0}
-            onMouseDown={() => setActiveDrag("copilot")}
-            onDoubleClick={() => setCopilotWidth(DEFAULT_COPILOT_WIDTH)}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowLeft") {
-                e.preventDefault();
-                setCopilotWidth((w) => Math.max(MIN_COPILOT_WIDTH, w - 10));
-              } else if (e.key === "ArrowRight") {
-                e.preventDefault();
-                setCopilotWidth((w) => w + 10);
-              } else if (e.key === "Home" || e.key === "Enter") {
-                e.preventDefault();
-                setCopilotWidth(DEFAULT_COPILOT_WIDTH);
-              }
-            }}
-            className={`relative w-[6px] -mx-[3px] h-full cursor-col-resize z-30 shrink-0 group outline-none select-none transition-colors ${
-              activeDrag === "copilot"
-                ? "bg-brand/30"
-                : "hover:bg-brand/20 focus-visible:bg-brand/30"
-            }`}
-            title="Drag to resize, double-click to reset, arrow keys to adjust"
-          >
-            <div
-              className={`absolute inset-y-0 left-1/2 -translate-x-1/2 transition-all duration-150 ${
-                activeDrag === "copilot"
-                  ? "bg-brand w-[3px]"
-                  : "bg-transparent group-hover:bg-brand/70 group-focus-visible:bg-brand w-[2px]"
-              }`}
-            />
-          </div>
-        )}
-
-        {/* PANE 2: CONFIG EDITOR (MIDDLE) */}
+        {/* PANE 1: CONFIG EDITOR (LEFT) */}
         {isEditorCollapsed ? (
           <aside
             style={{ width: `${RAIL_WIDTH}px` }}
-            className="h-full border-r border-border bg-card flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
+            className="h-full border-r border-border dark:border-white/8 bg-card dark:bg-[#14141A] flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
             onClick={() => setIsEditorCollapsed(false)}
             title="Expand Config Editor"
             role="region"
             aria-label="Config editor rail"
           >
-            <button
-              type="button"
+            <IconButton
+              variant="ghost"
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsEditorCollapsed(false);
               }}
-              className="p-1 rounded-md text-muted-foreground group-hover:text-foreground hover:bg-muted transition-colors mb-3"
+              className="mb-3 text-muted-foreground group-hover:text-foreground"
               aria-label="Expand Config Editor"
             >
               <FileCode className="w-4 h-4" />
-            </button>
+            </IconButton>
             <div className="flex-1 flex items-center justify-center">
               <span className="[writing-mode:vertical-lr] rotate-180 text-[11px] font-medium text-muted-foreground group-hover:text-foreground tracking-wider select-none">
                 Config
@@ -738,30 +632,31 @@ export default function BuilderPage() {
           <section
             style={{ width: `${editorWidth}px` }}
             aria-label="Code Editor and Validation Panel"
-            className="h-full flex flex-col border-r border-border bg-card shrink-0 min-w-[320px] overflow-hidden"
+            className="h-full flex flex-col border-r border-border dark:border-white/8 bg-card dark:bg-[#14141A] shrink-0 min-w-[320px] overflow-hidden"
             role="region"
           >
-            {/* Editor Panel Header: 36px (h-9) */}
-            <div className="h-9 px-3.5 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
+            {/* Editor Panel Header: 36px (h-9) consistent with Preview header */}
+            <div className="h-9 px-4 border-b border-border dark:border-white/8 bg-card dark:bg-[#14141A] flex items-center justify-between shrink-0 select-none">
               <div className="flex items-center gap-2">
                 <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">
+                <span className="text-[13px] font-medium text-foreground">
                   Config
                 </span>
               </div>
-              <button
-                type="button"
+              <IconButton
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsEditorCollapsed(true)}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
+                className="text-muted-foreground hover:text-foreground"
                 aria-label="Collapse Config Editor to slim rail"
                 title="Collapse to slim rail"
               >
                 <PanelLeftClose className="w-3.5 h-3.5" />
-              </button>
+              </IconButton>
             </div>
 
-            {/* Monaco Editor (automaticLayout: true) */}
-            <div className="flex-1 min-h-0 relative bg-card overflow-hidden">
+            {/* Monaco Editor (automaticLayout: true) with bottom padding for floating pill */}
+            <div className="flex-1 min-h-0 relative bg-card dark:bg-[#14141A] overflow-hidden pb-20">
               <ConfigEditor
                 value={configStr}
                 onChange={(val) => setConfigStr(val || "")}
@@ -777,7 +672,7 @@ export default function BuilderPage() {
           </section>
         )}
 
-        {/* DIVIDER 2: Between Editor and Preview */}
+        {/* DIVIDER: Between Editor and Preview */}
         {!isEditorCollapsed && (
           <div
             role="separator"
@@ -818,29 +713,29 @@ export default function BuilderPage() {
           </div>
         )}
 
-        {/* PANE 3: PREVIEW (RIGHT) - fills remaining space, min 400px */}
+        {/* PANE 2: PREVIEW (RIGHT) - fills remaining space, sits on solid surface */}
         <section
           aria-label="Application Live Preview Canvas"
-          className="flex-1 min-w-[400px] flex flex-col h-full bg-background overflow-hidden"
+          className="flex-1 min-w-[400px] flex flex-col h-full bg-[#F4F4F2] dark:bg-[#09090B] overflow-hidden"
           role="region"
         >
-          {/* Preview Panel Header: 36px (h-9) with device viewport toggles */}
-          <div className="h-9 px-3.5 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
+          {/* Preview Panel Header: 36px (h-9) consistent with Editor header */}
+          <div className="h-9 px-4 border-b border-border dark:border-white/8 bg-card dark:bg-[#14141A] flex items-center justify-between shrink-0 select-none">
             <div className="flex items-center gap-2">
               <Layout className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-xs font-medium text-foreground">
+              <span className="text-[13px] font-medium text-foreground">
                 Preview
               </span>
             </div>
 
             {/* Viewport Width Controls in preview panel header */}
-            <div className="flex items-center gap-1 bg-muted/50 p-0.5 rounded border border-border">
+            <div className="flex items-center gap-1 bg-muted/50 p-0.5 rounded-full border border-border dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setViewport("desktop")}
-                className={`p-1 rounded transition-colors ${
+                className={`p-1 rounded-full transition-colors ${
                   viewport === "desktop"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
+                    ? "bg-card dark:bg-[#1E1E26] text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="Desktop"
@@ -851,9 +746,9 @@ export default function BuilderPage() {
               <button
                 type="button"
                 onClick={() => setViewport("tablet")}
-                className={`p-1 rounded transition-colors ${
+                className={`p-1 rounded-full transition-colors ${
                   viewport === "tablet"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
+                    ? "bg-card dark:bg-[#1E1E26] text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="Tablet"
@@ -864,9 +759,9 @@ export default function BuilderPage() {
               <button
                 type="button"
                 onClick={() => setViewport("mobile")}
-                className={`p-1 rounded transition-colors ${
+                className={`p-1 rounded-full transition-colors ${
                   viewport === "mobile"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
+                    ? "bg-card dark:bg-[#1E1E26] text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="Mobile"
@@ -877,8 +772,8 @@ export default function BuilderPage() {
             </div>
           </div>
 
-          {/* Framed Browser Viewport Container */}
-          <div className="flex-1 min-h-0 bg-background overflow-hidden relative">
+          {/* Framed Browser Viewport Container on solid surface with bottom padding for floating pill */}
+          <div className="flex-1 min-h-0 bg-[#F4F4F2] dark:bg-[#09090B] overflow-hidden relative pb-20">
             <LivePreview
               configStr={configStr}
               appId={appId}
@@ -888,27 +783,39 @@ export default function BuilderPage() {
             />
           </div>
         </section>
+
+        {/* Floating Copilot Chat Pill anchored at bottom-center of builder workspace */}
+        <CopilotFloatingPill
+          isOpen={isCopilotOpen}
+          onOpenChange={setIsCopilotOpen}
+          onApply={handleApplyCopilotComponents}
+          onStreamStart={handleStreamStart}
+          onStreamEnd={handleStreamEnd}
+          initialPrompt={initialPrompt}
+          externalInputRef={copilotInputRef}
+        />
       </main>
 
       {/* Auth Requirement Modal */}
       {authRequireMessage && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 text-center animate-in fade-in zoom-in duration-200">
-            <h2 className="text-xl font-bold text-foreground mb-2">
+          <div className="bg-card dark:bg-[#14141A] border border-border dark:border-white/10 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center animate-in fade-in zoom-in duration-200">
+            <h2 className="text-[17px] font-semibold text-foreground mb-2">
               Sign In Required
             </h2>
-            <p className="text-muted-foreground text-sm mb-6">
+            <p className="text-muted-foreground text-[13px] mb-6">
               {authRequireMessage}
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button
-                variant="outline"
+                variant="secondary"
+                size="md"
                 onClick={() => setAuthRequireMessage(null)}
               >
                 Cancel
               </Button>
               <SignInButton mode="modal">
-                <Button className="bg-brand hover:bg-brand-dark text-text-inverse">
+                <Button variant="primary" size="md">
                   Sign In
                 </Button>
               </SignInButton>
@@ -920,9 +827,9 @@ export default function BuilderPage() {
       {/* Notification Modal */}
       {notificationModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in duration-200">
+          <div className="bg-card dark:bg-[#14141A] border border-border dark:border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in duration-200">
             <h2
-              className={`text-lg font-bold mb-2 ${
+              className={`text-[17px] font-semibold mb-2 ${
                 notificationModal.type === "error"
                   ? "text-destructive"
                   : "text-foreground"
@@ -930,13 +837,15 @@ export default function BuilderPage() {
             >
               {notificationModal.title}
             </h2>
-            <p className="text-muted-foreground text-xs mb-6">
+            <p className="text-muted-foreground text-[13px] mb-6">
               {notificationModal.message}
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button
+                variant="primary"
+                size="md"
                 onClick={() => setNotificationModal(null)}
-                className="bg-brand hover:bg-brand-dark text-text-inverse min-w-[90px] h-8 text-xs font-medium"
+                className="min-w-[90px]"
               >
                 Okay
               </Button>
