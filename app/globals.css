@@ -114,6 +114,17 @@
     scrollbar-width: thin;
     scrollbar-color: var(--muted) transparent;
   }
+  :focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  button:focus:not(:focus-visible),
+  [role="button"]:focus:not(:focus-visible),
+  a:focus:not(:focus-visible),
+  input:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
   html {
     @apply font-sans;
   }
@@ -309,22 +320,31 @@ body::after {
   color: var(--muted-foreground) !important;
 }
 
-/* Clerk Avatar & Neutral Org Avatar (--raised background, --foreground text) */
+/* Clerk Avatar & Neutral Org Avatar */
 .cl-avatarBox,
 .cl-organizationPreviewAvatarBox,
 .cl-organizationSwitcherTriggerAvatarBox {
-  background-color: var(--muted) !important;
-  color: var(--foreground) !important;
+  background-color: #4F46E5 !important;
+  color: #FFFFFF !important;
   border: 1px solid var(--border) !important;
-  border-radius: var(--radius-md) !important;
+  border-radius: 9999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
 }
 
-.cl-avatarBox *,
-.cl-organizationPreviewAvatarBox *,
-.cl-avatarImageFallback {
-  background-color: var(--muted) !important;
-  color: var(--foreground) !important;
-  fill: var(--foreground) !important;
+.cl-avatarImageFallback,
+.cl-organizationPreviewAvatarBox:empty::after,
+.cl-organizationSwitcherTriggerAvatarBox:empty::after {
+  content: "V" !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  color: #FFFFFF !important;
 }
 
 /* ========================================================

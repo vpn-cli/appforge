@@ -29,6 +29,7 @@ export function ThemeToggle() {
   };
 
   const toggleTheme = (event: React.MouseEvent) => {
+    (event.currentTarget as HTMLElement)?.blur();
     const nextDark = !isDark;
 
     // Fallback if browser doesn't support View Transitions API natively

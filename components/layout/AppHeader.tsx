@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
-import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
+import { UserButton, useOrganization, useUser } from "@clerk/nextjs";
 import { Search, ChevronDown, Menu, X, LayoutGrid, FileCode2 } from "lucide-react";
 import { IconButton } from "@/components/ui/icon-button";
 import { Kbd } from "@/components/ui/kbd";
@@ -17,8 +17,15 @@ type Props = {
 
 export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
   const pathname = usePathname();
+  const { organization } = useOrganization();
+  const { user } = useUser();
   const [isHovered, setIsHovered] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const orgName =
+    organization?.name ||
+    (user?.fullName ? `${user.fullName}'s Workspace` : "Vipin's Workspace");
+  const orgInitial = (orgName?.[0] || "V").toUpperCase();
 
   const isAppsActive = pathname === "/dashboard" || pathname.startsWith("/apps");
   const isTemplatesActive = pathname === "/templates";
@@ -50,39 +57,23 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
 
           <span className="text-slate-400/40 dark:text-white/20 text-sm font-mono select-none">/</span>
 
-          {/* Org identifier in pill format */}
+          {/* Org identifier in pill format with initial (V) */}
           <div className="flex items-center">
             <div className="hidden sm:block">
-              <OrganizationSwitcher
-                hidePersonal={false}
-                appearance={{
-                  elements: {
-                    organizationSwitcherTrigger:
-                      "text-[13px] font-medium text-foreground hover:bg-black/5 dark:hover:bg-white/10 px-3 py-1 rounded-full border border-black/10 dark:border-white/10 transition-colors flex items-center gap-1.5 h-8",
-                    organizationPreviewTextContainer: "text-[13px] font-medium text-foreground",
-                    organizationPreviewMainIdentifier: "text-[13px] font-medium text-foreground",
-                    organizationPreviewSecondaryIdentifier: "text-[12px] text-muted-foreground",
-                    organizationSwitcherTriggerIcon: "text-muted-foreground",
-                    organizationPreviewAvatarBox: "bg-muted text-foreground border border-border w-5 h-5 rounded-full text-[10px]",
-                  },
-                }}
-                fallback={
-                  <div className="flex items-center gap-1.5 text-[13px] font-medium text-foreground px-3 py-1 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 h-8">
-                    <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
-                      A
-                    </div>
-                    <span>Acme Corp</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-                  </div>
-                }
-              />
-            </div>
-            <div className="sm:hidden flex items-center gap-1.5 text-[13px] font-medium text-foreground px-2.5 py-1 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 h-8">
-              <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
-                A
+              <div className="flex items-center gap-2 text-[13px] font-medium text-foreground px-2.5 py-1 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 h-8 hover:bg-slate-200/80 dark:hover:bg-white/10 transition-colors cursor-pointer select-none">
+                <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-semibold text-[11px] flex items-center justify-center shrink-0 shadow-xs">
+                  {orgInitial}
+                </span>
+                <span className="max-w-[140px] truncate">{orgName}</span>
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.75} />
               </div>
-              <span className="max-w-[80px] truncate">Acme</span>
-              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+            </div>
+            <div className="sm:hidden flex items-center gap-1.5 text-[13px] font-medium text-foreground px-2 py-1 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 h-8 select-none">
+              <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-semibold text-[11px] flex items-center justify-center shrink-0 shadow-xs">
+                {orgInitial}
+              </span>
+              <span className="max-w-[80px] truncate">{orgName}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.75} />
             </div>
           </div>
         </div>
