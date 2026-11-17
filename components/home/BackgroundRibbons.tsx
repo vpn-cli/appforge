@@ -24,19 +24,18 @@ export function BackgroundRibbons() {
           LIGHT MODE BACKGROUND
           ======================================================== */}
       {/* 1. Faint lavender radial wash in top-left to balance the right ribbon */}
-      <div className="dark:hidden absolute -top-24 -left-20 w-[640px] h-[640px] rounded-full bg-[radial-gradient(circle_at_center,rgba(215,220,250,0.50)_0%,rgba(246,246,251,0)_70%)] blur-[60px]" />
+      <div className="dark:hidden absolute -top-24 -left-20 w-[640px] h-[640px] rounded-full bg-[radial-gradient(circle_at_center,rgba(215,220,250,0.65)_0%,rgba(238,240,250,0)_70%)] blur-[60px]" />
 
-      {/* 2. Volumetric 3D liquid glass ribbon:
-             STRICTLY UNMOUNTED AND NOT RENDERED IN DARK MODE */}
+      {/* 2. Volumetric 3D liquid glass ribbon at full presence sweeping behind right side of hero */}
       {!isDark && (
-        <div className="dark:hidden absolute -top-16 -right-12 w-[820px] lg:w-[960px] xl:w-[1040px] pointer-events-none select-none">
+        <div className="dark:hidden absolute -top-12 -right-8 w-[880px] lg:w-[1020px] xl:w-[1140px] pointer-events-none select-none">
           <Image
             src="/hero-ribbon.webp"
             alt=""
             width={1400}
             height={780}
             priority
-            className="w-full h-auto object-contain select-none opacity-95"
+            className="w-full h-auto object-contain select-none opacity-100 drop-shadow-[0_20px_40px_rgba(110,120,220,0.22)]"
           />
         </div>
       )}

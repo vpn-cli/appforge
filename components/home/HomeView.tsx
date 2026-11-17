@@ -9,7 +9,7 @@ import { Footer } from "@/components/layout/Footer";
 
 export function HomeView() {
   return (
-    <div className="min-h-screen w-full flex flex-col bg-[#F6F6FB] dark:bg-[#0B0B10] text-slate-900 dark:text-slate-100 transition-colors relative overflow-x-hidden selection:bg-indigo-500/20 selection:text-indigo-900 dark:selection:text-indigo-200">
+    <div className="min-h-screen w-full flex flex-col bg-[#EEF0FA] dark:bg-[#0B0B10] text-slate-900 dark:text-slate-100 transition-colors relative overflow-x-hidden selection:bg-indigo-500/20 selection:text-indigo-900 dark:selection:text-indigo-200">
       {/* Background glass ribbon & atmospheric wash */}
       <BackgroundRibbons />
 

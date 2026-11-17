@@ -354,15 +354,15 @@ body::after {
 /* Level 1: Primary floating glass surfaces (Nav bar pill, Demo panels) */
 .glass-1 {
   position: relative;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.76));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.84));
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.30),
-    0 1px 2px rgba(30, 30, 80, 0.04),
-    0 20px 50px -20px rgba(70, 60, 170, 0.16);
+    inset 0 1px 0 #FFFFFF,
+    inset 0 -1px 0 rgba(255, 255, 255, 0.40),
+    0 4px 12px -2px rgba(35, 25, 90, 0.08),
+    0 24px 64px -16px rgba(45, 35, 130, 0.22);
 }
 
 .glass-1::before {
@@ -370,18 +370,19 @@ body::after {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 40%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.50) 0%, rgba(255, 255, 255, 0) 40%);
   pointer-events: none;
 }
 
 .dark .glass-1 {
-  background: rgba(20, 20, 26, 0.78);
+  background: rgba(20, 20, 26, 0.82);
   backdrop-filter: blur(28px) saturate(140%);
   -webkit-backdrop-filter: blur(28px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 30px 80px -30px rgba(0, 0, 0, 0.85);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 4px 16px -2px rgba(0, 0, 0, 0.60),
+    0 32px 80px -20px rgba(0, 0, 0, 0.92);
 }
 
 .dark .glass-1::before {
