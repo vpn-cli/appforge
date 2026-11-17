@@ -26,3 +26,4 @@ if __name__ == '__main__':
     ref = 'design/reference-home.png'
     shot = '.screenshots/home-round1-light-1024.png'
     compare_images(ref, shot, '.screenshots/diff-round1.png', '.screenshots/side-by-side-round1.png')
+

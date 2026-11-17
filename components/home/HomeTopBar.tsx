@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
-import { OrganizationSwitcher, useOrganization } from "@clerk/nextjs";
+import { useOrganization, useUser } from "@clerk/nextjs";
 
 export function HomeTopBar() {
   const pathname = usePathname();
   const { organization } = useOrganization();
+  const { user } = useUser();
 
-  const orgName = organization?.name || "Vipin's Organization";
+  const orgName = organization?.name || (user?.fullName ? `${user.fullName}'s Organization` : "Vipin's Organization");
   const orgInitial = (orgName?.[0] || "V").toUpperCase();
 
   const navSegments = [
@@ -47,7 +48,7 @@ export function HomeTopBar() {
         })}
       </nav>
 
-      {/* Right Controls: Theme Toggle | Org Switcher */}
+      {/* Right Controls: Theme Toggle | Single Org Switcher */}
       <div className="flex items-center gap-3">
         {/* Theme Toggle Button */}
         <ThemeToggle />
@@ -55,29 +56,13 @@ export function HomeTopBar() {
         {/* Thin vertical divider */}
         <div className="h-5 w-px bg-slate-300 dark:bg-slate-700" />
 
-        {/* Real Clerk Org Switcher with styled pill trigger */}
-        <div className="relative flex items-center">
-          <OrganizationSwitcher
-            appearance={{
-              elements: {
-                rootBox: "flex items-center",
-                organizationSwitcherTrigger:
-                  "flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200/80 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200 shadow-sm transition-all outline-none",
-                organizationPreviewAvatarBox:
-                  "w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center border-0",
-                organizationPreviewTextContainer: "text-xs font-medium text-slate-800 dark:text-slate-200",
-              },
-            }}
-          />
-
-          {/* Graceful Fallback if Clerk Org Switcher is not rendered */}
-          <div className="hidden [html:not(.cl-loaded)_&]:flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200/80 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200 shadow-sm">
-            <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">
-              {orgInitial}
-            </span>
-            <span className="truncate max-w-[130px]">{orgName}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" strokeWidth={1.75} />
-          </div>
+        {/* Only ONE Org Switcher: Indigo circle with org initial + org name + chevron */}
+        <div className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200/80 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200 shadow-sm cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors select-none">
+          <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+            {orgInitial}
+          </span>
+          <span className="truncate max-w-[140px] font-medium">{orgName}</span>
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" strokeWidth={1.75} />
         </div>
       </div>
     </header>

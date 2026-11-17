@@ -87,12 +87,12 @@ async function captureOne({ url, file, width, height, waitMs = 3000, theme = 'li
 
   if (theme === 'dark') {
     await send(sessionId, 'Runtime.evaluate', {
-      expression: 'document.documentElement.classList.add("dark");',
+      expression: 'document.documentElement.classList.add("dark"); document.documentElement.style.colorScheme = "dark"; localStorage.setItem("theme", "dark");',
     });
     await sleep(500);
   } else {
     await send(sessionId, 'Runtime.evaluate', {
-      expression: 'document.documentElement.classList.remove("dark");',
+      expression: 'document.documentElement.classList.remove("dark"); document.documentElement.style.colorScheme = "light"; localStorage.setItem("theme", "light");',
     });
     await sleep(500);
   }
@@ -118,7 +118,7 @@ async function main() {
 
   const targets = [
     {
-      url: 'http://localhost:3000/?preview=shell',
+      url: 'http://localhost:3000/?theme=light',
       file: path.join(outDir, `home-${round}-light-1440.png`),
       width: 1440,
       height: 810,
@@ -126,7 +126,7 @@ async function main() {
       theme: 'light',
     },
     {
-      url: 'http://localhost:3000/?preview=shell',
+      url: 'http://localhost:3000/?theme=dark',
       file: path.join(outDir, `home-${round}-dark-1440.png`),
       width: 1440,
       height: 810,
@@ -134,7 +134,7 @@ async function main() {
       theme: 'dark',
     },
     {
-      url: 'http://localhost:3000/?preview=shell',
+      url: 'http://localhost:3000/?theme=light',
       file: path.join(outDir, `home-${round}-light-1024.png`),
       width: 1024,
       height: 576,
@@ -142,7 +142,7 @@ async function main() {
       theme: 'light',
     },
     {
-      url: 'http://localhost:3000/',
+      url: 'http://localhost:3000/?theme=light',
       file: path.join(outDir, `home-${round}-public-1440.png`),
       width: 1440,
       height: 810,
@@ -160,3 +160,4 @@ main().catch(err => {
   console.error('Error:', err);
   process.exit(1);
 });
+
