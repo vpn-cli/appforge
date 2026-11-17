@@ -94,7 +94,7 @@ export function Features() {
                         <div className="text-[12px] font-mono font-semibold text-slate-800 dark:text-slate-200">
                           users
                         </div>
-                        <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                           4 fields · id, role
                         </div>
                       </div>
@@ -111,7 +111,7 @@ export function Features() {
                         <div className="text-[12px] font-mono font-semibold text-slate-800 dark:text-slate-200">
                           projects
                         </div>
-                        <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                           6 fields · org_id
                         </div>
                       </div>
@@ -128,7 +128,7 @@ export function Features() {
                         <div className="text-[12px] font-mono font-semibold text-slate-800 dark:text-slate-200">
                           workflows
                         </div>
-                        <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                           3 fields · trigger
                         </div>
                       </div>
@@ -176,7 +176,7 @@ export function Features() {
                     <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
                       PostgreSQL 16
                     </div>
-                    <div className="text-[10px] font-mono font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    <div className="text-[11px] font-mono font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
                       &lt; 2ms latency
                     </div>
                   </div>
@@ -209,7 +209,7 @@ export function Features() {
                     <span className="text-[11px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
                       Active Users
                     </span>
-                    <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
+                    <span className="flex items-center gap-1 text-[11px] sm:text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       LIVE
                     </span>
@@ -218,7 +218,7 @@ export function Features() {
                     <div className="text-[20px] sm:text-[24px] font-bold tracking-tight text-slate-900 dark:text-slate-100">
                       12,840
                     </div>
-                    <div className="text-[10px] sm:text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    <div className="text-[11px] sm:text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
                       +14% this week
                     </div>
                   </div>
@@ -233,15 +233,15 @@ export function Features() {
                         Boundary
                       </span>
                     </div>
-                    <span className="text-[8px] sm:text-[9px] font-mono font-bold px-1 sm:px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-500/20 shrink-0">
+                    <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-500/20 shrink-0">
                       ISOLATED
                     </span>
                   </div>
                   <div>
-                    <div className="text-[10px] sm:text-[11px] text-rose-600/90 dark:text-rose-300 font-mono leading-tight">
+                    <div className="text-[11px] sm:text-[11px] text-rose-600/90 dark:text-rose-300 font-mono leading-tight">
                       Render caught: Type mismatch at &apos;metrics&apos;
                     </div>
-                    <div className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 mt-1 truncate">
+                    <div className="text-[11px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">
                       Page remains interactive
                     </div>
                   </div>
@@ -253,7 +253,7 @@ export function Features() {
                     <span className="text-[11px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
                       Data Table
                     </span>
-                    <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
+                    <span className="flex items-center gap-1 text-[11px] sm:text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       LIVE
                     </span>
@@ -263,7 +263,7 @@ export function Features() {
                     <div className="h-1.5 sm:h-2 w-3/4 rounded bg-slate-300/40 dark:bg-white/5" />
                     <div className="h-1.5 sm:h-2 w-5/6 rounded bg-slate-300/40 dark:bg-white/5" />
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                  <div className="text-[11px] sm:text-[11px] font-mono text-slate-500 dark:text-slate-400">
                     3 records rendered
                   </div>
                 </div>
@@ -274,20 +274,20 @@ export function Features() {
                     <span className="text-[11px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
                       API Gateway
                     </span>
-                    <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
+                    <span className="flex items-center gap-1 text-[11px] sm:text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       LIVE
                     </span>
                   </div>
                   <div>
-                    <div className="text-[10px] sm:text-[11px] font-mono font-medium text-slate-800 dark:text-slate-200">
+                    <div className="text-[11px] sm:text-[11px] font-mono font-medium text-slate-800 dark:text-slate-200">
                       200 OK
                     </div>
-                    <div className="text-[9px] sm:text-[10px] font-mono text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                    <div className="text-[11px] sm:text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                       GET /api/proxy · 14ms
                     </div>
                   </div>
-                  <div className="text-[9px] sm:text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                  <div className="text-[11px] sm:text-[11px] font-mono text-slate-500 dark:text-slate-400">
                     Status: operational
                   </div>
                 </div>
@@ -366,7 +366,7 @@ export function Features() {
                       <Code className="w-3.5 h-3.5 text-indigo-500" />
                       <span className="text-[11px] font-medium">app.config</span>
                     </div>
-                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono font-semibold">
+                    <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-mono font-semibold">
                       &lt;5ms
                     </span>
                   </div>
@@ -408,7 +408,7 @@ export function Features() {
                         Revenue
                       </span>
                     </div>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                       +18%
                     </span>
                   </div>
@@ -417,7 +417,7 @@ export function Features() {
                     <div className="text-[20px] sm:text-[24px] font-bold tracking-tight text-slate-900 dark:text-slate-100">
                       $48,200
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
                       Synced from Postgres
                     </div>
                   </div>

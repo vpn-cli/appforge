@@ -67,13 +67,13 @@ export function ThemeToggle() {
     });
   };
 
-  // Prevent hydration mismatch on the icon
-  if (!mounted) return <div className="h-10 w-10" />;
+  // Prevent hydration mismatch on the icon (36px x 36px)
+  if (!mounted) return <div className="h-9 w-9" />;
 
   return (
     <button
       onClick={toggleTheme}
-      className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-accent outline-none"
+      className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-200/60 dark:bg-white/10 text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-300/60 dark:hover:bg-white/15 outline-none cursor-pointer"
       aria-label="Toggle theme"
     >
       <AnimatePresence mode="wait" initial={false}>
@@ -84,9 +84,9 @@ export function ThemeToggle() {
             animate={{ opacity: 1, rotate: 0, scale: 1 }}
             exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
             transition={{ duration: 0.3, ease: "backOut" }}
-            className="absolute"
+            className="absolute flex items-center justify-center"
           >
-            <Moon className="h-5 w-5" />
+            <Moon className="h-4 w-4" />
           </motion.div>
         ) : (
           <motion.div
@@ -95,13 +95,12 @@ export function ThemeToggle() {
             animate={{ opacity: 1, rotate: 0, scale: 1 }}
             exit={{ opacity: 0, rotate: -90, scale: 0.5 }}
             transition={{ duration: 0.3, ease: "backOut" }}
-            className="absolute"
+            className="absolute flex items-center justify-center"
           >
-            <Sun className="h-5 w-5" />
+            <Sun className="h-4 w-4" />
           </motion.div>
         )}
       </AnimatePresence>
     </button>
   );
 }
-

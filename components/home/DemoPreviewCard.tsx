@@ -70,123 +70,124 @@ export function DemoPreviewCard() {
 
       {/* Content Body: Metric Card + Floating Rows Table */}
       <div className="my-5 flex flex-col gap-5 flex-1 justify-center min-w-0">
-        {/* Metric Card: Desaturated translucent periwinkle gradient (#8B93E8 -> #B9B4F0 at 85% opacity),
-            large soft wave shape inside, chart icon in a glass circle on the right, tabular-nums white, soft green glass delta chip */}
-        <div className="rounded-2xl bg-gradient-to-r from-[#8B93E8]/90 via-[#9BA3EC]/85 to-[#B9B4F0]/85 dark:from-[#4338CA]/50 dark:via-[#4F46E5]/40 dark:to-[#7C3AED]/35 border border-white/70 dark:border-white/15 text-white p-5 relative overflow-hidden shadow-[0_8px_24px_-4px_rgba(139,147,232,0.30)] dark:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.5)] select-none">
-          {/* Large soft flowing wave shape inside */}
+        {/* Metric Card: Deepened gradient (#5B60C8 -> #8A82E3) ensuring >= 4.5:1 text contrast with white,
+            chart confined to right 45% of card below the icon without crossing text, chip or icon */}
+        <div className="rounded-2xl bg-gradient-to-r from-[#5B60C8] via-[#6B71D4] to-[#8A82E3] dark:from-[#3730A3]/90 dark:via-[#4338CA]/90 dark:to-[#4F46E5]/80 border border-white/60 dark:border-white/15 text-white p-5 relative overflow-hidden shadow-[0_8px_24px_-4px_rgba(91,96,200,0.30)] dark:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.5)] select-none">
+          {/* Confined chart to the right 45% of the card, strictly below the icon */}
           <div
-            className="absolute -right-6 -bottom-4 w-[280px] h-[120px] pointer-events-none opacity-40 dark:opacity-25"
+            className="absolute right-0 bottom-0 w-[45%] h-[56px] pointer-events-none opacity-40 dark:opacity-30"
             aria-hidden="true"
           >
             <svg
-              viewBox="0 0 280 120"
+              viewBox="0 0 200 60"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className="w-full h-full"
+              preserveAspectRatio="none"
             >
               <defs>
-                <linearGradient id="softWaveGrad" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.6" />
-                  <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.2" />
+                <linearGradient id="metricChartGrad" x1="0" y1="0" x2="0" y2="60" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
                   <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
               <path
-                d="M0 90 C 60 70, 110 30, 170 45 C 220 58, 250 20, 280 10 L 280 120 L 0 120 Z"
-                fill="url(#softWaveGrad)"
+                d="M0 45 C 40 40, 80 18, 130 25 C 165 30, 185 10, 200 5 L 200 60 L 0 60 Z"
+                fill="url(#metricChartGrad)"
               />
               <path
-                d="M0 90 C 60 70, 110 30, 170 45 C 220 58, 250 20, 280 10"
+                d="M0 45 C 40 40, 80 18, 130 25 C 165 30, 185 10, 200 5"
                 stroke="#FFFFFF"
                 strokeWidth="2.5"
                 strokeLinecap="round"
-                opacity="0.8"
+                opacity="0.9"
               />
             </svg>
           </div>
 
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-white/90">
+          <div className="relative z-10 flex items-start justify-between">
+            {/* Left 55%: Text and chip - never touched by the chart */}
+            <div className="flex flex-col gap-1.5 max-w-[55%]">
+              <span className="text-[13px] font-medium text-white/95">
                 Active Workflows
               </span>
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-baseline gap-2.5">
                 <span className="text-[36px] sm:text-[40px] font-bold font-sans tracking-tight tabular-nums text-white leading-none">
                   1,244
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/25 border border-emerald-300/40 text-emerald-100 dark:text-emerald-200 text-[12px] font-medium leading-none shadow-2xs">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/25 border border-emerald-300/40 text-emerald-100 dark:text-emerald-200 text-[12px] font-medium leading-none shadow-2xs">
                   <ArrowUpRight className="w-3 h-3" strokeWidth={2.5} />
                   <span>+12%</span>
                 </span>
               </div>
             </div>
 
-            {/* Chart icon in a glass circle on the right */}
-            <div className="w-11 h-11 rounded-full bg-white/20 dark:bg-white/10 border border-white/40 dark:border-white/20 flex items-center justify-center text-white shadow-2xs shrink-0">
+            {/* Top-Right: Chart icon in glass circle */}
+            <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-white/10 border border-white/40 dark:border-white/20 flex items-center justify-center text-white shadow-2xs shrink-0">
               <BarChart3 className="w-5 h-5" strokeWidth={2} />
             </div>
           </div>
         </div>
 
-        {/* Table: NO bordered container. Header labels sit outside in small caps.
-            Each row is its own rounded floating glass-3 row with ~56px height, 16-17px text, 40px icon tiles */}
+        {/* Table: Header and rows share ONE CSS grid: grid-template-columns: 1.5fr 1fr 1fr 32px
+            Header labels: 11px uppercase tracking .08em, aligned exactly to column starts */}
         <div className="flex flex-col">
-          {/* Header labels outside the rows in small caps */}
-          <div className="grid grid-cols-[1.5fr_1.2fr_1fr_28px] items-center px-4 py-1 text-[11px] font-bold tracking-wider uppercase text-slate-700 dark:text-slate-300 select-none mb-1.5">
-            <span>Workflow</span>
-            <span>Trigger</span>
-            <span>Status</span>
+          {/* Header row */}
+          <div className="grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 py-1 text-[11px] font-semibold tracking-[0.08em] uppercase text-slate-500 dark:text-slate-400 select-none mb-2">
+            <span className="text-left">Workflow</span>
+            <span className="text-left">Trigger</span>
+            <span className="text-left">Status</span>
             <span />
           </div>
 
-          {/* Floating rows stack with small gap */}
+          {/* Floating rows stack with 16px min between columns, kebab menu restored */}
           <div className="flex flex-col gap-2.5">
             {TABLE_ROWS.map((row) => {
               const Icon = row.icon;
               return (
                 <div
                   key={row.id}
-                  className="group grid grid-cols-[1.5fr_1.2fr_1fr_28px] items-center px-4 h-[56px] rounded-2xl glass-3 hover:scale-[1.005] transition-all"
+                  className="grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 h-[56px] rounded-2xl glass-3 hover:scale-[1.005] transition-all"
                 >
-                  {/* Workflow: 40px circle icon tile + 16px row title */}
-                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                  {/* Workflow: 40px circle icon tile + 15px weight 500 row title */}
+                  <div className="flex items-center gap-3 min-w-0 pr-1">
                     <div
                       className={`w-10 h-10 rounded-full glass-3-tile ${row.iconColor} flex items-center justify-center shrink-0`}
                     >
                       <Icon className="w-4 h-4" strokeWidth={2} />
                     </div>
-                    <span className="text-[16px] font-semibold text-slate-900 dark:text-slate-100 truncate">
+                    <span className="text-[15px] font-medium text-slate-900 dark:text-slate-100 truncate">
                       {row.name}
                     </span>
                   </div>
 
-                  {/* Trigger: mono trigger text */}
-                  <div className="min-w-0 pr-2">
-                    <span className="font-mono text-[13px] font-medium text-slate-700 dark:text-slate-300">
+                  {/* Trigger: 13px mono, muted */}
+                  <div className="min-w-0 pr-1">
+                    <span className="font-mono text-[13px] text-slate-500 dark:text-slate-400 truncate block">
                       {row.trigger}
                     </span>
                   </div>
 
                   {/* Status pill with dot */}
-                  <div>
+                  <div className="min-w-0">
                     {row.status === "Running" ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold bg-emerald-500/15 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-300 border border-emerald-500/40 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium bg-emerald-500/15 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-300 border border-emerald-500/35 whitespace-nowrap">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                         <span>Running</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold bg-indigo-500/15 dark:bg-indigo-950/70 text-indigo-950 dark:text-indigo-200 border border-indigo-500/40 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium bg-indigo-500/15 dark:bg-indigo-950/70 text-indigo-950 dark:text-indigo-200 border border-indigo-500/35 whitespace-nowrap">
                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
                         <span>Idle</span>
                       </span>
                     )}
                   </div>
 
-                  {/* Row kebab that appears on hover */}
-                  <div className="flex items-center justify-end">
+                  {/* Restored kebab menu in the last column (32px) */}
+                  <div className="flex items-center justify-center">
                     <button
                       type="button"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                       aria-label="Row actions"
                     >
                       <MoreHorizontal className="w-4 h-4" strokeWidth={2} />
