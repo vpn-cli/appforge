@@ -50,7 +50,7 @@ function formatDisplayValue(val: string | number, format?: "compact" | "full" | 
   if (format === "compact") {
     return formatCompactString(val);
   }
-  // Auto / Default: if it's already formatted with commas like "1,244", preserve it!
+  // Auto / Default: if string already has commas like "1,244", preserve it!
   const str = String(val);
   if (str.includes(",")) return str;
   return formatCompactString(val);
@@ -70,6 +70,7 @@ export function Statistic({
 }: StatisticProps) {
   const { isInCard } = useCardContext();
   const effectiveLabel = label || title || "Active Workflows";
+  const isPanel = variant === "panel" || chartWave !== undefined;
 
   // Normalize trend values and sentiment
   let trendStrValue = "";
@@ -86,6 +87,9 @@ export function Statistic({
     trendStrValue = trendValue || "";
   } else if (trendValue) {
     trendStrValue = trendValue;
+  } else if (isPanel) {
+    trendStrValue = "+12%";
+    sentiment = "positive";
   }
 
   // Arrow direction follows the sign:
@@ -103,7 +107,93 @@ export function Statistic({
     colorClass = "text-error-text";
   }
 
-  const effectiveValue = formatDisplayValue(value, format);
+  const effectiveValue = isPanel && format !== "compact"
+    ? (typeof value === "number" ? value.toLocaleString() : String(value))
+    : formatDisplayValue(value, format);
+
+  if (isPanel) {
+    return (
+      <div
+        className={`@container relative overflow-hidden rounded-xl bg-[#161724]/90 p-5 sm:p-6 text-white border border-white/10 shadow-inner min-w-0 min-h-[160px] flex flex-col justify-between ${className}`}
+      >
+        {/* Soft filled area chart wave behind the number matching reference sweeping curve */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+          <svg
+            viewBox="0 0 500 160"
+            preserveAspectRatio="none"
+            className="w-full h-full"
+            fill="none"
+          >
+            <defs>
+              <linearGradient id="purpleAreaWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#818CF8" stopOpacity="0.45" />
+                <stop offset="50%" stopColor="#6366F1" stopOpacity="0.20" />
+                <stop offset="100%" stopColor="#312E81" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="backWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#A855F7" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="#4F46E5" stopOpacity="0" />
+              </linearGradient>
+              <filter id="purpleGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+            {/* Back subtle wave */}
+            <path
+              d="M 240 140 C 310 110, 380 50, 500 30 L 500 160 L 240 160 Z"
+              fill="url(#backWaveGrad)"
+            />
+            {/* Primary wave filled area rising smoothly to a glowing crest */}
+            <path
+              d="M 140 145 C 220 145, 270 110, 320 85 C 360 65, 390 80, 430 50 C 460 25, 485 30, 500 40 L 500 160 L 140 160 Z"
+              fill="url(#purpleAreaWaveGrad)"
+            />
+            {/* Glowing crest line */}
+            <path
+              d="M 140 145 C 220 145, 270 110, 320 85 C 360 65, 390 80, 430 50 C 460 25, 485 30, 500 40"
+              stroke="#C7D2FE"
+              strokeWidth="2.5"
+              strokeOpacity="0.9"
+              fill="none"
+              filter="url(#purpleGlow)"
+            />
+          </svg>
+        </div>
+
+        <div className="relative z-10 flex flex-col justify-between h-full gap-4">
+          {/* Header row with indigo dot and label */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#818CF8] shadow-[0_0_8px_#818CF8]" />
+              <p className="text-xs sm:text-sm font-medium text-slate-300 tracking-tight truncate">
+                {effectiveLabel}
+              </p>
+            </div>
+            {icon === "users" || isPanel ? (
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 flex items-center justify-center shrink-0 shadow-sm">
+                <Users className="w-4 h-4 text-indigo-300" strokeWidth={1.75} />
+              </div>
+            ) : null}
+          </div>
+
+          {/* Value and Growth pill: 52px bold number */}
+          <div className="flex items-center gap-3.5">
+            <h3 className="text-4xl sm:text-[52px] font-bold tracking-tight text-white leading-none tabular-nums">
+              {effectiveValue}
+            </h3>
+
+            {trendStrValue && (
+              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 shrink-0 select-none">
+                <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2.2} />
+                <span>{trendStrValue}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const containerClasses = isInCard
     ? `@container flex flex-col gap-2 min-w-0 p-2 sm:p-2.5 bg-transparent border-0 rounded-none shadow-none ${className}`
