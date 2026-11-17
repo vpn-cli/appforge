@@ -80,7 +80,7 @@ const cssPath = path.resolve('app/globals.css');
 const cssContent = fs.readFileSync(cssPath, 'utf8');
 
 function extractScope(content, selector) {
-  const regex = new RegExp(`${selector}\\s*\\{([\\s\\S]*?)\\}`, 'm');
+  const regex = new RegExp(`(?:^|\\n)\\s*${selector}[^{]*\\{([\\s\\S]*?)\\}`, 'm');
   const match = content.match(regex);
   if (!match) throw new Error(`Scope ${selector} not found in globals.css`);
   const lines = match[1].split('\n');
