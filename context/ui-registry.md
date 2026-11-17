@@ -237,3 +237,28 @@ Statistic (Inside Card): @container bg-transparent border-0 rounded-none shadow-
 Statistic Typography: font-sans tabular-nums font-bold text-foreground clamp(1.125rem, 5cqi + 0.5rem, 1.875rem)
 Trend Arrow & Color: Arrow follows sign (+ up, - down). Color defaults to neutral (text-muted-foreground) unless explicit sentiment ("positive" -> text-success-text | "negative" -> text-error-text) is passed.
 ```
+
+### Builder Workspace & Corner-Anchored Copilot Pill
+```text
+Builder Top Bar: h-14 border-b border-border/80 dark:border-white/10 glass-1 shrink-0 flex items-center justify-between px-4 sm:px-6 z-20
+  Breadcrumb: Sans text-[13px] font-medium with App Name and StatusPill variant="neutral"
+  Center Indicator: glass-2-nested rounded-full px-3 py-1 font-mono text-[13px] text-muted-foreground (config.json)
+  Controls: ThemeToggle (neutral glass circle), Copilot toggle (secondary frosted pill with ⌘K), Save Draft (secondary), Publish (primary)
+Pane Headers: Consistent h-9 (36px) px-4 border-b border-border bg-card flex items-center justify-between select-none
+  Config Header: FileCode 14px icon + text-[13px] font-medium + IconButton collapse to 40px rail
+  Preview Header: Layout 14px icon + text-[13px] font-medium + rounded-full pill viewport switchers (desktop/tablet/mobile)
+Monaco Editor Pane:
+  Theme: appforge-light and appforge-dark (inherit: true)
+  Tokens: string.key.json (#2B6CB0 / #8FA8FF), string.value.json (#8A7A1F / #D9C27A), number (#B45309 / #FCD34D), keyword.json (#059669 / #34D399), delimiter (#475569 / #94A3B8)
+  Surfaces: editor.background (#FFFFFF / #14141A) matching surface token
+  Line Numbers: 35% foreground opacity (#11111059 / #EDEDEA59), activeForeground at 70% (#111110B3 / #EDEDEAB3)
+  Gutter & Guides: Bracket colorization OFF, guides.bracketPairs OFF, indent guides subtle 5%/12%, lineHighlightBackground #0000000A / #FFFFFF08
+  Padding: { top: 16, bottom: 72 } so lines scroll smoothly above the floating pill
+Copilot Floating Pill (components/builder/CopilotFloatingPill.tsx):
+  Anchoring: absolute bottom-4 right-4 inside Monaco editor container (16px inset from bottom-right corner)
+  Collapsed State: w-[220px] h-10 px-3.5 rounded-full flex items-center justify-between border border-black/10 dark:border-white/15 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl shadow-lg
+    Sparkles icon + 'Ask Copilot' + Kbd '⌘K'
+  Expanded State: width: min(520px, pane width - 32px), height: min(560px, pane height - 32px), scales from bottom-right (originX: 1, originY: 1)
+    Surface: bg-white/96 dark:bg-[#121218]/96 backdrop-blur-2xl (>=92% opaque smoked glass)
+    Dismissal: Esc key, click outside, collapse chevron button, or ⌘K shortcut
+```
