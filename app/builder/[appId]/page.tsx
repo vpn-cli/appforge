@@ -290,13 +290,8 @@ export default function BuilderPage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        const activeEl = document.activeElement;
-        // Keep editor-focus exception if user is actively typing inside Monaco
-        if (activeEl?.closest(".monaco-editor")) {
-          return;
-        }
-
         e.preventDefault();
+        setIsEditorCollapsed(false);
         setIsCopilotOpen((prev) => {
           const next = !prev;
           if (next) {
@@ -315,6 +310,7 @@ export default function BuilderPage() {
     setIsCopilotOpen((prev) => {
       const next = !prev;
       if (next) {
+        setIsEditorCollapsed(false);
         setTimeout(() => copilotInputRef.current?.focus(), 80);
       }
       return next;
@@ -505,7 +501,7 @@ export default function BuilderPage() {
           TOP APPLICATION TOOLBAR (h-14, 56px) - Glass top bar
           Sans breadcrumb with App Name, Copilot ⌘K toggle, Save Draft, Publish
           ========================================================================= */}
-      <header className="h-14 border-b border-border/60 dark:border-white/8 bg-card/80 dark:bg-[#14141A]/90 backdrop-blur-md shrink-0 flex items-center justify-between px-4 sm:px-6 z-20 transition-colors">
+      <header className="h-14 border-b border-border/80 dark:border-white/10 glass-1 shrink-0 flex items-center justify-between px-4 sm:px-6 z-20 transition-all">
         {/* Left: Navigation & Breadcrumb with App Name */}
         <div className="flex items-center gap-3">
           <IconButton
@@ -553,6 +549,7 @@ export default function BuilderPage() {
             className="gap-1.5"
             aria-label="Toggle Copilot pill"
             aria-expanded={isCopilotOpen}
+            data-copilot-toggle
           >
             <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
             <span>Copilot</span>
@@ -594,7 +591,7 @@ export default function BuilderPage() {
       {/* =========================================================================
           WORKSPACE WORK AREA
           Two resizable panes taking full width: Config editor (left) | Preview (right)
-          Copilot floating chat pill anchored at bottom center
+          Copilot floating chat pill anchored at bottom-right corner of Monaco pane
           ========================================================================= */}
       <main
         ref={containerRef}
@@ -604,7 +601,7 @@ export default function BuilderPage() {
         {isEditorCollapsed ? (
           <aside
             style={{ width: `${RAIL_WIDTH}px` }}
-            className="h-full border-r border-border dark:border-white/8 bg-card dark:bg-[#14141A] flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
+            className="h-full border-r border-border bg-card flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
             onClick={() => setIsEditorCollapsed(false)}
             title="Expand Config Editor"
             role="region"
@@ -632,11 +629,11 @@ export default function BuilderPage() {
           <section
             style={{ width: `${editorWidth}px` }}
             aria-label="Code Editor and Validation Panel"
-            className="h-full flex flex-col border-r border-border dark:border-white/8 bg-card dark:bg-[#14141A] shrink-0 min-w-[320px] overflow-hidden"
+            className="h-full flex flex-col border-r border-border bg-card shrink-0 min-w-[320px] overflow-hidden"
             role="region"
           >
             {/* Editor Panel Header: 36px (h-9) consistent with Preview header */}
-            <div className="h-9 px-4 border-b border-border dark:border-white/8 bg-card dark:bg-[#14141A] flex items-center justify-between shrink-0 select-none">
+            <div className="h-9 px-4 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
               <div className="flex items-center gap-2">
                 <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="text-[13px] font-medium text-foreground">
@@ -655,11 +652,21 @@ export default function BuilderPage() {
               </IconButton>
             </div>
 
-            {/* Monaco Editor (automaticLayout: true) with bottom padding for floating pill */}
-            <div className="flex-1 min-h-0 relative bg-card dark:bg-[#14141A] overflow-hidden pb-20">
+            {/* Monaco Editor (automaticLayout: true) */}
+            <div className="flex-1 min-h-0 relative bg-card overflow-hidden">
               <ConfigEditor
                 value={configStr}
                 onChange={(val) => setConfigStr(val || "")}
+              />
+              {/* Floating Copilot Chat Pill anchored at bottom-right corner of Monaco editor pane */}
+              <CopilotFloatingPill
+                isOpen={isCopilotOpen}
+                onOpenChange={setIsCopilotOpen}
+                onApply={handleApplyCopilotComponents}
+                onStreamStart={handleStreamStart}
+                onStreamEnd={handleStreamEnd}
+                initialPrompt={initialPrompt}
+                externalInputRef={copilotInputRef}
               />
             </div>
 
@@ -716,11 +723,11 @@ export default function BuilderPage() {
         {/* PANE 2: PREVIEW (RIGHT) - fills remaining space, sits on solid surface */}
         <section
           aria-label="Application Live Preview Canvas"
-          className="flex-1 min-w-[400px] flex flex-col h-full bg-[#F4F4F2] dark:bg-[#09090B] overflow-hidden"
+          className="flex-1 min-w-[400px] flex flex-col h-full bg-background overflow-hidden"
           role="region"
         >
           {/* Preview Panel Header: 36px (h-9) consistent with Editor header */}
-          <div className="h-9 px-4 border-b border-border dark:border-white/8 bg-card dark:bg-[#14141A] flex items-center justify-between shrink-0 select-none">
+          <div className="h-9 px-4 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
             <div className="flex items-center gap-2">
               <Layout className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-[13px] font-medium text-foreground">
@@ -729,13 +736,13 @@ export default function BuilderPage() {
             </div>
 
             {/* Viewport Width Controls in preview panel header */}
-            <div className="flex items-center gap-1 bg-muted/50 p-0.5 rounded-full border border-border dark:border-white/10">
+            <div className="flex items-center gap-1 bg-muted/50 p-0.5 rounded-full border border-border">
               <button
                 type="button"
                 onClick={() => setViewport("desktop")}
                 className={`p-1 rounded-full transition-colors ${
                   viewport === "desktop"
-                    ? "bg-card dark:bg-[#1E1E26] text-foreground shadow-xs font-semibold"
+                    ? "bg-card text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="Desktop"
@@ -748,7 +755,7 @@ export default function BuilderPage() {
                 onClick={() => setViewport("tablet")}
                 className={`p-1 rounded-full transition-colors ${
                   viewport === "tablet"
-                    ? "bg-card dark:bg-[#1E1E26] text-foreground shadow-xs font-semibold"
+                    ? "bg-card text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="Tablet"
@@ -761,7 +768,7 @@ export default function BuilderPage() {
                 onClick={() => setViewport("mobile")}
                 className={`p-1 rounded-full transition-colors ${
                   viewport === "mobile"
-                    ? "bg-card dark:bg-[#1E1E26] text-foreground shadow-xs font-semibold"
+                    ? "bg-card text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="Mobile"
@@ -772,8 +779,8 @@ export default function BuilderPage() {
             </div>
           </div>
 
-          {/* Framed Browser Viewport Container on solid surface with bottom padding for floating pill */}
-          <div className="flex-1 min-h-0 bg-[#F4F4F2] dark:bg-[#09090B] overflow-hidden relative pb-20">
+          {/* Framed Browser Viewport Container on solid surface */}
+          <div className="flex-1 min-h-0 bg-background overflow-hidden relative">
             <LivePreview
               configStr={configStr}
               appId={appId}
@@ -783,23 +790,12 @@ export default function BuilderPage() {
             />
           </div>
         </section>
-
-        {/* Floating Copilot Chat Pill anchored at bottom-center of builder workspace */}
-        <CopilotFloatingPill
-          isOpen={isCopilotOpen}
-          onOpenChange={setIsCopilotOpen}
-          onApply={handleApplyCopilotComponents}
-          onStreamStart={handleStreamStart}
-          onStreamEnd={handleStreamEnd}
-          initialPrompt={initialPrompt}
-          externalInputRef={copilotInputRef}
-        />
       </main>
 
       {/* Auth Requirement Modal */}
       {authRequireMessage && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-card dark:bg-[#14141A] border border-border dark:border-white/10 rounded-2xl shadow-2xl max-w-md w-full p-6 text-center animate-in fade-in zoom-in duration-200">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-md w-full p-6 text-center animate-in fade-in zoom-in duration-200">
             <h2 className="text-[17px] font-semibold text-foreground mb-2">
               Sign In Required
             </h2>
@@ -827,7 +823,7 @@ export default function BuilderPage() {
       {/* Notification Modal */}
       {notificationModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-card dark:bg-[#14141A] border border-border dark:border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in duration-200">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in duration-200">
             <h2
               className={`text-[17px] font-semibold mb-2 ${
                 notificationModal.type === "error"

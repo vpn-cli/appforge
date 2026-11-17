@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { Sparkles, ArrowUp, Loader2, X, ChevronDown, Bot, CornerDownLeft } from "lucide-react";
+import { Sparkles, ArrowUp, Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Kbd } from "@/components/ui/kbd";
@@ -54,9 +54,11 @@ export function CopilotFloatingPill({
   // Handle outside clicks to collapse
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
       if (
         containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
+        !containerRef.current.contains(target) &&
+        !target?.closest?.("[data-copilot-toggle]")
       ) {
         onOpenChange(false);
       }
@@ -212,151 +214,179 @@ export function CopilotFloatingPill({
 
   const hasText = prompt.trim().length > 0;
 
-  // Spring animation transition: ~250ms, springy but subtle
+  // Spring animation transition: ~220ms, snappy and elegant
   const springTransition = shouldReduceMotion
     ? { duration: 0 }
-    : { type: "spring" as const, stiffness: 360, damping: 28, mass: 0.8 };
+    : { type: "spring" as const, stiffness: 380, damping: 30, mass: 0.8 };
 
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[94vw] max-w-[560px] pointer-events-auto select-none"
+      className="absolute bottom-4 right-4 z-40 pointer-events-auto select-none"
+      style={{
+        width: isOpen ? "min(520px, calc(100% - 32px))" : "220px",
+        height: isOpen ? "min(560px, calc(100% - 32px))" : "40px",
+      }}
     >
-      <motion.div
-        layout
-        transition={springTransition}
-        className={cn(
-          "w-full glass-1 border border-white/80 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] dark:shadow-[0_24px_70px_-20px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden transition-colors",
-          isOpen ? "h-[520px] max-h-[80vh] rounded-[24px]" : "h-[52px] rounded-full"
-        )}
-      >
-        {/* Expanded Content: Header + Messages */}
-        <AnimatePresence initial={false}>
-          {isOpen && (
-            <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
-              transition={springTransition}
-              className="flex-1 flex flex-col min-h-0 overflow-hidden"
-            >
-              {/* Header */}
-              <div className="h-12 px-4 border-b border-border/40 dark:border-white/8 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-indigo-500/15 dark:bg-indigo-400/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                    <Sparkles className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[14px] font-semibold text-foreground">
-                    AppForge Copilot
-                  </span>
-                  <span className="text-[12px] text-muted-foreground hidden sm:inline">
-                    · AI UI Generator
-                  </span>
+      <AnimatePresence mode="wait" initial={false}>
+        {!isOpen ? (
+          /* =====================================================================
+             COLLAPSED STATE: Compact glass pill (sparkle + "Ask Copilot" + ⌘K), ~220px
+             ===================================================================== */
+          <motion.button
+            key="collapsed-pill"
+            type="button"
+            onClick={() => {
+              onOpenChange(true);
+              setTimeout(() => internalInputRef.current?.focus(), 80);
+            }}
+            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
+            transition={springTransition}
+            className="w-full h-10 px-3.5 rounded-full flex items-center justify-between gap-2 border border-black/10 dark:border-white/15 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group"
+            aria-label="Open Copilot chat"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 group-hover:rotate-12 transition-transform" />
+              <span className="text-[13px] font-medium text-foreground truncate">
+                Ask Copilot
+              </span>
+            </div>
+            <Kbd className="text-[11px] px-1.5 py-0.5 bg-black/5 dark:bg-white/10 text-muted-foreground border-transparent">
+              ⌘K
+            </Kbd>
+          </motion.button>
+        ) : (
+          /* =====================================================================
+             EXPANDED STATE: Grows up and to the left from bottom-right corner.
+             Surface at least 92% opaque (smoked glass).
+             Stays inside the editor pane bounds.
+             ===================================================================== */
+          <motion.div
+            key="expanded-panel"
+            initial={
+              shouldReduceMotion
+                ? false
+                : { opacity: 0, scale: 0.95, originX: 1, originY: 1 }
+            }
+            animate={{ opacity: 1, scale: 1, originX: 1, originY: 1 }}
+            exit={
+              shouldReduceMotion
+                ? undefined
+                : { opacity: 0, scale: 0.95, originX: 1, originY: 1 }
+            }
+            transition={springTransition}
+            className="w-full h-full rounded-[22px] border border-black/10 dark:border-white/15 bg-white/96 dark:bg-[#121218]/96 backdrop-blur-2xl shadow-[0_24px_70px_-20px_rgba(0,0,0,0.45)] dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden"
+          >
+            {/* Header: Title + Esc/Collapse buttons */}
+            <div className="h-11 px-4 border-b border-border/40 dark:border-white/8 flex items-center justify-between shrink-0 bg-transparent">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-indigo-500/15 dark:bg-indigo-400/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                  <Sparkles className="w-3.5 h-3.5" />
                 </div>
-
-                <div className="flex items-center gap-1.5">
-                  <Kbd>Esc</Kbd>
-                  <IconButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onOpenChange(false)}
-                    aria-label="Collapse Copilot"
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                  </IconButton>
-                </div>
+                <span className="text-[13px] font-semibold text-foreground">
+                  AppForge Copilot
+                </span>
+                <span className="text-[11px] text-muted-foreground hidden sm:inline">
+                  · AI UI Generator
+                </span>
               </div>
 
-              {/* Message History */}
-              <div
-                data-lenis-prevent
-                className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 text-[13px] leading-relaxed"
-              >
-                {messages.map((m, i) => (
+              <div className="flex items-center gap-1.5">
+                <Kbd className="text-[11px]">Esc</Kbd>
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onOpenChange(false)}
+                  aria-label="Collapse Copilot"
+                  className="w-7 h-7 text-muted-foreground hover:text-foreground"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </IconButton>
+              </div>
+            </div>
+
+            {/* Message History */}
+            <div
+              data-lenis-prevent
+              className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 text-[13px] leading-relaxed select-text"
+            >
+              {messages.map((m, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "flex w-full",
+                    m.role === "user" ? "justify-end" : "justify-start"
+                  )}
+                >
                   <div
-                    key={i}
                     className={cn(
-                      "flex w-full",
-                      m.role === "user" ? "justify-end" : "justify-start"
+                      "p-3 max-w-[85%] rounded-2xl text-[13px]",
+                      m.role === "user"
+                        ? "bg-slate-900 text-white dark:bg-white dark:text-[#0B0B10] font-medium shadow-xs"
+                        : "bg-black/5 dark:bg-white/5 text-foreground border border-black/5 dark:border-white/5"
                     )}
                   >
-                    <div
-                      className={cn(
-                        "p-3 max-w-[85%] rounded-2xl",
-                        m.role === "user"
-                          ? "bg-slate-900 text-white dark:bg-white dark:text-[#0B0B10] font-medium shadow-xs"
-                          : "glass-2-nested text-foreground border border-black/5 dark:border-white/5"
-                      )}
-                    >
-                      <p className="whitespace-pre-wrap">{m.content}</p>
-                    </div>
+                    <p className="whitespace-pre-wrap">{m.content}</p>
                   </div>
-                ))}
+                </div>
+              ))}
 
-                {isGenerating && (
-                  <div className="flex w-full justify-start">
-                    <div className="glass-2-nested text-foreground rounded-2xl p-3 inline-flex items-center gap-2 text-[13px]">
-                      <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
-                      <span>Synthesizing components from prompt...</span>
-                    </div>
+              {isGenerating && (
+                <div className="flex w-full justify-start">
+                  <div className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl p-3 inline-flex items-center gap-2 text-[13px]">
+                    <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                    <span>Synthesizing components from prompt...</span>
                   </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Input Docked at Bottom (Always Visible, 52px) */}
-        <form
-          onSubmit={handleGenerate}
-          className="h-[52px] px-3.5 flex items-center gap-2.5 shrink-0 bg-transparent border-t border-transparent"
-        >
-          <div className="text-indigo-600 dark:text-indigo-400 shrink-0">
-            <Sparkles className="w-4 h-4" />
-          </div>
-
-          <input
-            ref={(node) => {
-              internalInputRef.current = node;
-              if (externalInputRef && "current" in externalInputRef) {
-                (externalInputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
-              }
-            }}
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onFocus={() => {
-              if (!isOpen) onOpenChange(true);
-            }}
-            placeholder="Ask Copilot to generate or modify components…"
-            disabled={isGenerating}
-            className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0"
-          />
-
-          {!isOpen && (
-            <div className="hidden sm:flex items-center shrink-0">
-              <Kbd>⌘K</Kbd>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
-          )}
 
-          {/* Circular send button */}
-          <Button
-            type="submit"
-            disabled={isGenerating || !hasText}
-            variant="primary"
-            size="icon"
-            className="w-8 h-8 rounded-full shrink-0"
-            aria-label="Send prompt"
-          >
-            {isGenerating ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <ArrowUp className="w-4 h-4" />
-            )}
-          </Button>
-        </form>
-      </motion.div>
+            {/* Input Form Docked at Bottom */}
+            <form
+              onSubmit={handleGenerate}
+              className="h-[52px] px-3.5 border-t border-border/40 dark:border-white/8 flex items-center gap-2.5 shrink-0 bg-black/[0.02] dark:bg-white/[0.02]"
+            >
+              <div className="text-indigo-600 dark:text-indigo-400 shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
+
+              <input
+                ref={(node) => {
+                  internalInputRef.current = node;
+                  if (externalInputRef && "current" in externalInputRef) {
+                    (externalInputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
+                  }
+                }}
+                type="text"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Ask Copilot to generate or modify components…"
+                disabled={isGenerating}
+                className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0"
+              />
+
+              {/* Circular send button */}
+              <Button
+                type="submit"
+                disabled={isGenerating || !hasText}
+                variant="primary"
+                size="icon"
+                className="w-7 h-7 rounded-full shrink-0"
+                aria-label="Send prompt"
+              >
+                {isGenerating ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <ArrowUp className="w-3.5 h-3.5" />
+                )}
+              </Button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
