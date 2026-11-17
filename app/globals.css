@@ -326,3 +326,132 @@ body::after {
   color: var(--foreground) !important;
   fill: var(--foreground) !important;
 }
+
+/* ========================================================
+   Apple Liquid Glass Material System
+   ======================================================== */
+
+/* Level 1: Primary floating glass surfaces (Nav bar pill, Demo panels) */
+.glass-1 {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.32));
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.70);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.25),
+    0 1px 2px rgba(30, 30, 80, 0.05),
+    0 20px 50px -20px rgba(70, 60, 170, 0.22);
+}
+
+.glass-1::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
+}
+
+.dark .glass-1 {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 24px 60px -24px rgba(0, 0, 0, 0.6);
+}
+
+.dark .glass-1::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 40%);
+}
+
+/* Level 2: Standalone controls & buttons over canvas (View Templates CTA) */
+.glass-2 {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.40));
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.80);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.20),
+    0 2px 8px -1px rgba(70, 60, 170, 0.10);
+}
+
+.glass-2::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 40%);
+  pointer-events: none;
+}
+
+.dark .glass-2 {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 8px 24px -6px rgba(0, 0, 0, 0.5);
+}
+
+.dark .glass-2::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 40%);
+}
+
+/* Level 2 Nested: Inside glass-1 panels (File Tab, Copy button, Chips) - Solid tinted fill, NO backdrop-filter */
+.glass-2-nested {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.80);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.90),
+    0 1px 3px rgba(30, 30, 80, 0.04);
+}
+
+.dark .glass-2-nested {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Level 3: Nested floating rows and icon tiles inside glass panels - NO backdrop-filter */
+.glass-3 {
+  background: rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 8px -2px rgba(30, 30, 80, 0.05);
+}
+
+.dark .glass-3 {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 4px 12px -2px rgba(0, 0, 0, 0.35);
+}
+
+/* Icon tile: 40px circle */
+.glass-3-tile {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    inset 0 1px 0 #FFFFFF,
+    0 2px 6px -1px rgba(30, 30, 80, 0.08);
+}
+
+.dark .glass-3-tile {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 2px 8px -1px rgba(0, 0, 0, 0.4);
+}

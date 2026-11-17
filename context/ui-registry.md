@@ -50,31 +50,45 @@ Published (Success): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text
 Draft (Neutral): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[13px] font-medium bg-muted text-muted-foreground border border-border
 ```
 
-### Home Landing Overhaul Layout (Frosted Single Surfaces & Lavender Field)
+### Home Landing Overhaul Layout (Apple Liquid Glass Material System)
 
-**Floating Frosted Top Bar Pill**
+**Glass Material Utilities (3 Levels)**
 ```text
-h-16 px-4 sm:px-5 w-full flex items-center justify-between rounded-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_16px_32px_-8px_rgba(99,102,241,0.06)]
-```
+glass-1 (Floating Frosted Top Bar Pill & Demo Panels):
+  Light: linear-gradient(135deg, rgba(255,255,255,.65), rgba(255,255,255,.32)), blur(24px) saturate(180%), border: 1px solid rgba(255,255,255,.70), specular top: inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.25), shadow: 0 20px 50px -20px rgba(70,60,170,.22), ::before specular sheen
+  Dark: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.03)), blur(24px) saturate(180%), border: 1px solid rgba(255,255,255,.10), specular: inset 0 1px 0 rgba(255,255,255,.10), shadow: 0 24px 60px -24px rgba(0,0,0,.60)
 
-**Frosted Demo Panel (Single Surface, Zero Dark Inners)**
-```text
-bg-white/75 dark:bg-slate-900/70 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[20px] p-5 sm:p-6 shadow-[0_2px_6px_-1px_rgba(15,23,42,0.04),0_20px_48px_-12px_rgba(99,102,241,0.08)] flex flex-col justify-between h-full
+glass-2 (Standalone Secondary Buttons, e.g. View Templates):
+  Light: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.40)), blur(16px) saturate(180%), border: 1px solid rgba(255,255,255,.80), inset 0 1px 0 rgba(255,255,255,.95), isolate, overflow:hidden
+  Dark: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), blur(16px) saturate(180%), border: 1px solid rgba(255,255,255,.12), shadow: 0 8px 24px -6px rgba(0,0,0,.5)
+
+glass-2-nested (File Tab, Copy Button, Chips inside Glass Panels — NO backdrop-filter):
+  Light: rgba(255,255,255,.65), border: 1px solid rgba(255,255,255,.80), inset 0 1px 0 rgba(255,255,255,.90)
+  Dark: rgba(255,255,255,.05), border: 1px solid rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.08)
+
+glass-3 (Floating Table Rows & Icon Tiles — NO backdrop-filter):
+  Light: rgba(255,255,255,.70), border: 1px solid rgba(255,255,255,.85), inset 0 1px 0 rgba(255,255,255,.95), 0 2px 8px -2px rgba(30,30,80,.05)
+  Dark: rgba(255,255,255,.04), border: 1px solid rgba(255,255,255,.08), inset 0 1px 0 rgba(255,255,255,.08), 0 4px 12px -2px rgba(0,0,0,.35)
+
+glass-3-tile (40px Circle Icon Tiles):
+  Light: 40px circle, rgba(255,255,255,.92), border rgba(255,255,255,.95), inset 0 1px 0 #FFF
+  Dark: 40px circle, rgba(255,255,255,.08), border rgba(255,255,255,.12)
 ```
 
 **Restrained Headline Gradient (Applied Only to 'driven Apps')**
 ```text
-bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-500 dark:from-violet-400 dark:via-indigo-400 dark:to-indigo-300 bg-clip-text text-transparent
+bg-gradient-to-r from-[#5B21B6] via-[#4338CA] to-[#3730A3] dark:from-[#A78BFA] dark:via-[#818CF8] dark:to-[#6366F1] bg-clip-text text-transparent
 ```
 
-**Metric Card (Indigo->Violet Gradient with Faint Sparkline)**
+**Desaturated Metric Card (Translucent Periwinkle with Soft Wave)**
 ```text
-rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 text-white p-4 sm:p-5 relative overflow-hidden shadow-sm
+rounded-2xl bg-gradient-to-r from-[#8B93E8]/90 via-[#9BA3EC]/85 to-[#B9B4F0]/85 dark:from-[#4338CA]/50 dark:via-[#4F46E5]/40 dark:to-[#7C3AED]/35 border border-white/70 dark:border-white/15 text-white p-5 relative overflow-hidden
 ```
 
-**Table Container (Light Rows, Tinted Circle Lucide Icons, Status Pills, Row Kebab on Hover)**
+**Floating Table Rows (No Bordered Container, 56px Rows, 40px Icon Tiles, Outside Headers)**
 ```text
-rounded-xl border border-slate-200/70 dark:border-white/10 overflow-hidden bg-white/50 dark:bg-white/[0.02] backdrop-blur-sm shadow-xs
+Header: grid grid-cols-[1.5fr_1.2fr_1fr_28px] items-center px-4 py-1 text-[11px] font-bold uppercase text-slate-700 dark:text-slate-300
+Rows: flex flex-col gap-2.5, each row: glass-3 rounded-2xl h-[56px] px-4 grid grid-cols-[1.5fr_1.2fr_1fr_28px]
 ```
 
 ---

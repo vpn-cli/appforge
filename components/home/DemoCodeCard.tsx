@@ -24,73 +24,95 @@ interface CodeLine {
   parts: LinePart[];
 }
 
+const keyStyle = "text-[#2B6CB0] dark:text-[#8FA8FF] font-medium";
+const strStyle = "text-[#8A7A1F] dark:text-[#D9C27A]";
+const punctStyle = "text-slate-600 dark:text-slate-400";
+const bracketStyle = "text-violet-700 dark:text-violet-300 font-medium";
+
 const CODE_LINES: CodeLine[] = [
   {
     num: 1,
-    parts: [{ text: "{", className: "text-slate-500 dark:text-slate-400" }],
+    parts: [{ text: "{", className: bracketStyle }],
   },
   {
     num: 2,
     parts: [
-      { text: '  "app"', className: "text-indigo-600 dark:text-indigo-400 font-medium" },
-      { text: ": ", className: "text-slate-500 dark:text-slate-400" },
-      { text: '"ops_dashboard"', className: "text-amber-700 dark:text-amber-300" },
-      { text: ",", className: "text-slate-500 dark:text-slate-400" },
+      { text: '  "app"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: '"ops_dashboard"', className: strStyle },
+      { text: ",", className: punctStyle },
     ],
   },
   {
     num: 3,
     parts: [
-      { text: '  "pages"', className: "text-indigo-600 dark:text-indigo-400 font-medium" },
-      { text: ": [{", className: "text-slate-500 dark:text-slate-400" },
+      { text: '  "pages"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: "[", className: bracketStyle },
+      { text: "{", className: bracketStyle },
     ],
   },
   {
     num: 4,
     parts: [
-      { text: '    "components"', className: "text-indigo-600 dark:text-indigo-400 font-medium" },
-      { text: ": [", className: "text-slate-500 dark:text-slate-400" },
+      { text: '    "components"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: "[", className: bracketStyle },
     ],
   },
   {
     num: 5,
     parts: [
-      { text: "      { ", className: "text-slate-500 dark:text-slate-400" },
-      { text: '"type"', className: "text-indigo-600 dark:text-indigo-400 font-medium" },
-      { text: ": ", className: "text-slate-500 dark:text-slate-400" },
-      { text: '"Metric"', className: "text-amber-700 dark:text-amber-300" },
-      { text: ", ", className: "text-slate-500 dark:text-slate-400" },
-      { text: '"title"', className: "text-indigo-600 dark:text-indigo-400 font-medium" },
-      { text: ": ", className: "text-slate-500 dark:text-slate-400" },
-      { text: '"Active Workflows"', className: "text-amber-700 dark:text-amber-300" },
-      { text: " },", className: "text-slate-500 dark:text-slate-400" },
+      { text: "      ", className: punctStyle },
+      { text: "{", className: bracketStyle },
+      { text: " ", className: punctStyle },
+      { text: '"type"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: '"Metric"', className: strStyle },
+      { text: ", ", className: punctStyle },
+      { text: '"title"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: '"Active Workflows"', className: strStyle },
+      { text: " ", className: punctStyle },
+      { text: "}", className: bracketStyle },
+      { text: ",", className: punctStyle },
     ],
   },
   {
     num: 6,
     parts: [
-      { text: "      { ", className: "text-slate-500 dark:text-slate-400" },
-      { text: '"type"', className: "text-indigo-600 dark:text-indigo-400 font-medium" },
-      { text: ": ", className: "text-slate-500 dark:text-slate-400" },
-      { text: '"DataTable"', className: "text-amber-700 dark:text-amber-300" },
-      { text: ", ", className: "text-slate-500 dark:text-slate-400" },
-      { text: '"entity"', className: "text-indigo-600 dark:text-indigo-400 font-medium" },
-      { text: ": ", className: "text-slate-500 dark:text-slate-400" },
-      { text: '"workflows"', className: "text-amber-700 dark:text-amber-300" },
-      { text: " }", className: "text-slate-500 dark:text-slate-400" },
+      { text: "      ", className: punctStyle },
+      { text: "{", className: bracketStyle },
+      { text: " ", className: punctStyle },
+      { text: '"type"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: '"DataTable"', className: strStyle },
+      { text: ", ", className: punctStyle },
+      { text: '"entity"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: '"workflows"', className: strStyle },
+      { text: " ", className: punctStyle },
+      { text: "}", className: bracketStyle },
     ],
   },
   {
     num: 7,
-    parts: [{ text: "    ]", className: "text-slate-500 dark:text-slate-400" }],
+    parts: [
+      { text: "    ", className: punctStyle },
+      { text: "]", className: bracketStyle },
+    ],
   },
   {
     num: 8,
-    parts: [{ text: "  }]", className: "text-slate-500 dark:text-slate-400" }],
+    parts: [
+      { text: "  ", className: punctStyle },
+      { text: "}", className: bracketStyle },
+      { text: "]", className: bracketStyle },
+    ],
   },
   {
     num: 9,
-    parts: [{ text: "}", className: "text-slate-500 dark:text-slate-400" }],
+    parts: [{ text: "}", className: bracketStyle }],
   },
 ];
 
@@ -107,22 +129,22 @@ export function DemoCodeCard() {
   };
 
   return (
-    <div className="bg-white/75 dark:bg-slate-900/70 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[20px] p-5 sm:p-6 shadow-[0_2px_6px_-1px_rgba(15,23,42,0.04),0_20px_48px_-12px_rgba(99,102,241,0.08)] flex flex-col justify-between h-full transition-all">
+    <div className="glass-1 rounded-[24px] p-5 sm:p-6 flex flex-col justify-between h-full transition-all">
       {/* Top Header Row */}
-      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/60 dark:border-white/10 shrink-0">
+      <div className="flex items-center justify-between pb-4 border-b border-white/60 dark:border-white/10 shrink-0">
         <div className="flex items-center gap-3">
           {/* Traffic lights */}
           <div className="flex items-center gap-1.5" aria-hidden="true">
-            <span className="w-3 h-3 rounded-full bg-[#EF4444]/90" />
-            <span className="w-3 h-3 rounded-full bg-[#F59E0B]/90" />
-            <span className="w-3 h-3 rounded-full bg-[#10B981]/90" />
+            <span className="w-3 h-3 rounded-full bg-[#EF4444]/90 shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-[#F59E0B]/90 shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-[#10B981]/90 shadow-xs" />
           </div>
 
-          {/* File tab: app.config.json with a chevron */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100/80 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-xs font-medium text-slate-700 dark:text-slate-300 select-none ml-1">
-            <FileCode className="w-3.5 h-3.5 text-slate-500" strokeWidth={1.75} />
+          {/* File tab: app.config.json with a chevron, 16px text */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg glass-2-nested text-[16px] font-medium text-slate-800 dark:text-slate-200 select-none ml-1">
+            <FileCode className="w-4 h-4 text-slate-500 dark:text-slate-400" strokeWidth={1.75} />
             <span>app.config.json</span>
-            <ChevronDown className="w-3 h-3 text-slate-400 ml-0.5" strokeWidth={2} />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5" strokeWidth={2} />
           </div>
         </div>
 
@@ -130,7 +152,7 @@ export function DemoCodeCard() {
         <button
           type="button"
           onClick={handleCopy}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-colors shadow-xs cursor-pointer outline-none active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium glass-2-nested text-slate-700 dark:text-slate-300 hover:opacity-90 transition-all cursor-pointer outline-none active:scale-95"
           aria-label="Copy JSON code"
         >
           {copied ? (
@@ -140,29 +162,29 @@ export function DemoCodeCard() {
             </>
           ) : (
             <>
-              <Copy className="w-3.5 h-3.5 text-slate-500" strokeWidth={1.75} />
+              <Copy className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" strokeWidth={1.75} />
               <span>Copy</span>
             </>
           )}
         </button>
       </div>
 
-      {/* Code Editor Body: Single frosted surface, light syntax theme, no dark nested box */}
-      <div className="my-4 font-mono text-[13px] sm:text-[14px] leading-[26px] select-text flex gap-4 flex-1 overflow-x-auto min-h-[250px] items-start pt-1">
-        {/* Line numbers in muted slate */}
+      {/* Code Editor Body: Single frosted surface, light syntax theme */}
+      <div className="my-5 font-mono text-[14px] sm:text-[15px] leading-[28px] select-text flex gap-4 flex-1 overflow-x-auto min-h-[260px] items-start pt-1">
+        {/* Line numbers in high-contrast slate */}
         <div
-          className="flex flex-col text-right text-slate-400 dark:text-slate-500 select-none font-mono pr-3 border-r border-slate-200/60 dark:border-white/10 shrink-0"
+          className="flex flex-col text-right text-slate-600 dark:text-slate-400 select-none font-mono pr-3 border-r border-slate-300/60 dark:border-white/10 shrink-0 font-medium"
           aria-hidden="true"
         >
           {CODE_LINES.map((line) => (
-            <span key={line.num} className="leading-[26px]">
+            <span key={line.num} className="leading-[28px]">
               {line.num}
             </span>
           ))}
         </div>
 
         {/* Staggered animated code lines */}
-        <div className="font-mono leading-[26px] whitespace-pre flex-1">
+        <div className="font-mono leading-[28px] whitespace-pre flex-1">
           {CODE_LINES.map((line, idx) => (
             <motion.div
               key={line.num}
@@ -182,15 +204,6 @@ export function DemoCodeCard() {
             </motion.div>
           ))}
         </div>
-      </div>
-
-      {/* Valid JSON status: quiet footer line with a small green dot */}
-      <div className="pt-3 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between text-xs text-slate-500 select-none shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
-          <span className="font-mono text-slate-600 dark:text-slate-400 font-medium">Valid JSON</span>
-        </div>
-        <span className="font-mono text-slate-400 text-[11px]">UTF-8</span>
       </div>
     </div>
   );

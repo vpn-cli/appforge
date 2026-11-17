@@ -27,15 +27,25 @@ export function HomeTopBar() {
 
   return (
     <header className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 relative z-30 shrink-0">
-      {/* Floating Frosted Pill: 64px tall, 16px inset from viewport */}
-      <div className="h-16 px-4 sm:px-5 w-full flex items-center justify-between rounded-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_16px_32px_-8px_rgba(99,102,241,0.06)] transition-all">
-        {/* Left: Logo mark + AppForge wordmark */}
+      {/* Hidden SVG displacement map filter for Chromium progressive enhancement refraction */}
+      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
+        <defs>
+          <filter id="glass-edge-refract" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="1" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* Floating Frosted Pill: 64px tall, 16px inset from viewport, glass-1 material */}
+      <div className="h-16 px-4 sm:px-5 w-full flex items-center justify-between rounded-full glass-1 transition-all">
+        {/* Left: Logo mark sits on a dark squircle tile (light mode) for an anchor */}
         <Link
           href="/"
           className="flex items-center gap-2.5 outline-none group select-none shrink-0"
         >
-          <div className="w-8 h-8 rounded-lg bg-indigo-600/10 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 transition-colors">
-            <AppForgeLogo size={20} className="text-indigo-600 dark:text-indigo-400" />
+          <div className="w-8 h-8 rounded-[10px] bg-slate-900 text-white dark:bg-white/10 dark:text-white flex items-center justify-center shadow-xs transition-colors">
+            <AppForgeLogo size={18} className="text-white" />
           </div>
           <span className="font-semibold text-[15px] sm:text-[16px] tracking-tight text-slate-900 dark:text-slate-100">
             AppForge
@@ -43,20 +53,21 @@ export function HomeTopBar() {
         </Link>
 
         {/* Center: Segmented control (Dashboard / Builder / Templates) - desktop */}
+        {/* Rules: Nested in glass-1 panel, so NO backdrop-filter; solid tinted fill */}
         <nav
           aria-label="Navigation"
-          className="hidden sm:flex items-center p-1 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 backdrop-blur-md"
+          className="hidden sm:flex items-center p-1 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-300/40 dark:border-white/10"
         >
           {navSegments.map((seg) => {
-            const isActive = pathname === seg.href;
+            const isActive = pathname === seg.href || (pathname === "/" && seg.label === "Dashboard");
             return (
               <Link
                 key={seg.label}
                 href={seg.href}
-                className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-full text-[15px] font-medium transition-all ${
                   isActive
-                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-[0_2px_6px_rgba(15,23,42,0.08)]"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                    ? "bg-white text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.08)] dark:bg-white/[0.12] dark:text-white dark:shadow-none"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 {seg.label}
@@ -71,7 +82,7 @@ export function HomeTopBar() {
           <ThemeToggle />
 
           {/* Org Switcher pill (avatar + name + chevron) */}
-          <div className="hidden md:flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-white/10 text-xs text-slate-800 dark:text-slate-200 select-none">
+          <div className="hidden md:flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full glass-2-nested text-xs text-slate-800 dark:text-slate-200 select-none">
             <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
               {orgInitial}
             </span>
@@ -101,11 +112,11 @@ export function HomeTopBar() {
             )}
           </div>
 
-          {/* Mobile Menu Toggle Button (visible < 640px) */}
+          {/* Mobile menu button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="sm:hidden p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="sm:hidden p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -113,22 +124,26 @@ export function HomeTopBar() {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile dropdown menu */}
       {mobileMenuOpen && (
-        <div className="sm:hidden mt-2 p-3 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_8px_24px_rgba(15,23,42,0.1)] flex flex-col gap-1">
-          {navSegments.map((seg) => (
-            <Link
-              key={seg.label}
-              href={seg.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              {seg.label}
-            </Link>
-          ))}
-          <div className="pt-2 mt-1 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between px-3 text-xs text-slate-500">
-            <span>{orgName}</span>
-          </div>
+        <div className="sm:hidden mt-2 p-3 rounded-2xl glass-1 border border-white/80 dark:border-white/10 flex flex-col gap-1 shadow-lg">
+          {navSegments.map((seg) => {
+            const isActive = pathname === seg.href || (pathname === "/" && seg.label === "Dashboard");
+            return (
+              <Link
+                key={seg.label}
+                href={seg.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`px-3 py-2 rounded-xl text-[15px] font-medium transition-colors ${
+                  isActive
+                    ? "bg-white text-slate-900 shadow-xs dark:bg-white/10 dark:text-white"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-white/5"
+                }`}
+              >
+                {seg.label}
+              </Link>
+            );
+          })}
         </div>
       )}
     </header>

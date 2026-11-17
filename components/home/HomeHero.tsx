@@ -11,7 +11,7 @@ export function HomeHero() {
 
   return (
     <section className="w-full text-center pt-6 sm:pt-8 pb-0 px-4 relative z-10 flex flex-col items-center shrink-0">
-      {/* Main Headline: "Live Config-" stays near-black; only "driven Apps" gets the violet->indigo gradient */}
+      {/* Main Headline: "Live Config-" stays solid; only "driven Apps" gets the violet->indigo gradient */}
       <motion.h1
         initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -19,7 +19,7 @@ export function HomeHero() {
         className="text-[38px] sm:text-[48px] lg:text-[64px] font-bold tracking-[-0.035em] leading-[1.04] text-slate-900 dark:text-slate-100 max-w-4xl mx-auto mb-3 sm:mb-4 select-none"
       >
         <span>Live Config-</span>
-        <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-500 dark:from-violet-400 dark:via-indigo-400 dark:to-indigo-300 bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-[#5B21B6] via-[#4338CA] to-[#3730A3] dark:from-[#A78BFA] dark:via-[#818CF8] dark:to-[#6366F1] bg-clip-text text-transparent">
           driven Apps
         </span>
       </motion.h1>
@@ -36,16 +36,18 @@ export function HomeHero() {
         APIs, and zero boilerplate.
       </motion.p>
 
-      {/* CTAs: Primary is solid near-black with nudging arrow; Secondary is frosted ghost button with no play icon */}
+      {/* CTAs:
+          - Primary: near-black with faint violet glow underneath (dark: near-white with dark label)
+          - Secondary: reusable glass-2 material (no parent transform stacking context leak) */}
       <motion.div
-        initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={shouldReduceMotion ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.35, delay: 0.14, ease: easeOut }}
         className="flex items-center justify-center gap-3.5 select-none mb-7 sm:mb-8"
       >
         <Link
           href="/builder/demo"
-          className="group h-11 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 font-medium text-[15px] inline-flex items-center gap-2 shadow-[0_2px_8px_rgba(15,23,42,0.12)] transition-all active:scale-[0.98]"
+          className="group h-11 px-6 rounded-xl bg-[#0A0A12] hover:bg-[#1A1A24] text-white shadow-[0_4px_20px_rgba(99,102,241,0.22)] dark:bg-[#F8FAFC] dark:hover:bg-white dark:text-[#0A0A12] dark:shadow-[0_4px_20px_rgba(255,255,255,0.12)] font-medium text-[15px] inline-flex items-center gap-2 transition-all active:scale-[0.98]"
         >
           <span>Start Building</span>
           <ArrowRight
@@ -56,7 +58,7 @@ export function HomeHero() {
 
         <Link
           href="/templates"
-          className="h-11 px-6 rounded-xl bg-white/70 hover:bg-white/90 text-slate-800 dark:bg-white/10 dark:hover:bg-white/15 dark:text-slate-200 border border-slate-300/50 dark:border-white/15 font-medium text-[15px] inline-flex items-center backdrop-blur-md shadow-xs transition-all active:scale-[0.98]"
+          className="h-11 px-6 rounded-xl glass-2 text-slate-800 dark:text-slate-100 font-medium text-[15px] inline-flex items-center transition-all active:scale-[0.98]"
         >
           <span>View Templates</span>
         </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Layers, MoreHorizontal, Users, FileText, ArrowUpRight } from "lucide-react";
+import { Layers, MoreHorizontal, Users, FileText, ArrowUpRight, BarChart3 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 interface TableRowData {
@@ -18,7 +18,7 @@ const TABLE_ROWS: TableRowData[] = [
     id: "1",
     name: "User Sync",
     icon: Users,
-    iconBg: "bg-indigo-100/80 dark:bg-indigo-950/60",
+    iconBg: "bg-indigo-600/10 dark:bg-indigo-500/20",
     iconColor: "text-indigo-600 dark:text-indigo-400",
     trigger: "cron:hourly",
     status: "Running",
@@ -27,7 +27,7 @@ const TABLE_ROWS: TableRowData[] = [
     id: "2",
     name: "Invoice Gen",
     icon: FileText,
-    iconBg: "bg-violet-100/80 dark:bg-violet-950/60",
+    iconBg: "bg-violet-600/10 dark:bg-violet-500/20",
     iconColor: "text-violet-600 dark:text-violet-400",
     trigger: "webhook:tx",
     status: "Idle",
@@ -46,112 +46,123 @@ export function DemoPreviewCard() {
         delay: shouldReduceMotion ? 0 : 0.28,
         ease: "easeOut",
       }}
-      className="bg-white/75 dark:bg-slate-900/70 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[20px] p-5 sm:p-6 shadow-[0_2px_6px_-1px_rgba(15,23,42,0.04),0_20px_48px_-12px_rgba(99,102,241,0.08)] flex flex-col justify-between h-full transition-all"
+      className="glass-1 rounded-[24px] p-5 sm:p-6 flex flex-col justify-between h-full transition-all"
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/60 dark:border-white/10 shrink-0">
+      <div className="flex items-center justify-between pb-4 border-b border-white/60 dark:border-white/10 shrink-0">
         <div className="flex items-center gap-2.5">
           {/* Icon tile */}
-          <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-            <Layers className="w-3.5 h-3.5" strokeWidth={2} />
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-2xs">
+            <Layers className="w-4 h-4" strokeWidth={2} />
           </div>
           {/* Small caps label */}
-          <span className="text-[12px] font-semibold tracking-wider uppercase text-slate-700 dark:text-slate-300 font-sans">
+          <span className="text-[12px] font-bold tracking-wider uppercase text-slate-900 dark:text-slate-100 font-sans">
             Rendered Application
           </span>
         </div>
 
         {/* Live pill whose green dot pulses gently */}
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-800/50 text-[12px] font-medium text-emerald-700 dark:text-emerald-400 shadow-xs select-none">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full glass-2-nested text-[12px] font-semibold text-emerald-900 dark:text-emerald-300 bg-emerald-500/20 dark:bg-emerald-950/70 border-emerald-500/40 shadow-2xs select-none">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>Live</span>
         </div>
       </div>
 
-      {/* Content Body: Metric Card + Table */}
-      <div className="my-4 flex flex-col gap-4 flex-1 justify-between min-w-0">
-        {/* Metric Card: soft indigo->lavender gradient, white text, large tabular-nums 1,244, +12% delta chip, faint sparkline */}
-        <div className="rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 text-white p-4 sm:p-5 relative overflow-hidden shadow-sm select-none">
-          {/* Faint elegant sparkline wave in top-right (no overlapping icon) */}
+      {/* Content Body: Metric Card + Floating Rows Table */}
+      <div className="my-5 flex flex-col gap-5 flex-1 justify-center min-w-0">
+        {/* Metric Card: Desaturated translucent periwinkle gradient (#8B93E8 -> #B9B4F0 at 85% opacity),
+            large soft wave shape inside, chart icon in a glass circle on the right, tabular-nums white, soft green glass delta chip */}
+        <div className="rounded-2xl bg-gradient-to-r from-[#8B93E8]/90 via-[#9BA3EC]/85 to-[#B9B4F0]/85 dark:from-[#4338CA]/50 dark:via-[#4F46E5]/40 dark:to-[#7C3AED]/35 border border-white/70 dark:border-white/15 text-white p-5 relative overflow-hidden shadow-[0_8px_24px_-4px_rgba(139,147,232,0.30)] dark:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.5)] select-none">
+          {/* Large soft flowing wave shape inside */}
           <div
-            className="absolute top-0 right-0 w-[160px] h-[75px] pointer-events-none opacity-40"
+            className="absolute -right-6 -bottom-4 w-[280px] h-[120px] pointer-events-none opacity-40 dark:opacity-25"
             aria-hidden="true"
           >
             <svg
-              viewBox="0 0 160 75"
+              viewBox="0 0 280 120"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className="w-full h-full"
             >
               <defs>
-                <linearGradient id="sparklineGrad" x1="0" y1="0" x2="0" y2="75" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.4" />
+                <linearGradient id="softWaveGrad" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.6" />
+                  <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.2" />
                   <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
               <path
-                d="M0 65 Q 40 50, 70 55 T 120 30 T 160 15 L 160 75 L 0 75 Z"
-                fill="url(#sparklineGrad)"
+                d="M0 90 C 60 70, 110 30, 170 45 C 220 58, 250 20, 280 10 L 280 120 L 0 120 Z"
+                fill="url(#softWaveGrad)"
               />
               <path
-                d="M0 65 Q 40 50, 70 55 T 120 30 T 160 15"
+                d="M0 90 C 60 70, 110 30, 170 45 C 220 58, 250 20, 280 10"
                 stroke="#FFFFFF"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 strokeLinecap="round"
+                opacity="0.8"
               />
             </svg>
           </div>
 
-          <div className="relative z-10 flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-white/90">
-              Active Workflows
-            </span>
-            <div className="flex items-baseline gap-3">
-              <span className="text-[34px] sm:text-[38px] font-bold font-sans tracking-tight tabular-nums text-white leading-none">
-                1,244
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[13px] font-medium text-white/90">
+                Active Workflows
               </span>
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-[12px] font-medium leading-none">
-                <ArrowUpRight className="w-3 h-3" strokeWidth={2.5} />
-                <span>+12%</span>
-              </span>
+              <div className="flex items-baseline gap-3">
+                <span className="text-[36px] sm:text-[40px] font-bold font-sans tracking-tight tabular-nums text-white leading-none">
+                  1,244
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/25 border border-emerald-300/40 text-emerald-100 dark:text-emerald-200 text-[12px] font-medium leading-none shadow-2xs">
+                  <ArrowUpRight className="w-3 h-3" strokeWidth={2.5} />
+                  <span>+12%</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Chart icon in a glass circle on the right */}
+            <div className="w-11 h-11 rounded-full bg-white/20 dark:bg-white/10 border border-white/40 dark:border-white/20 flex items-center justify-center text-white shadow-2xs shrink-0">
+              <BarChart3 className="w-5 h-5" strokeWidth={2} />
             </div>
           </div>
         </div>
 
-        {/* Table: small-caps header, light rows with 1px dividers, Lucide icons in tinted circles, mono trigger, status pills with dots, row kebab on hover */}
-        <div className="rounded-xl border border-slate-200/70 dark:border-white/10 overflow-hidden bg-white/50 dark:bg-white/[0.02] backdrop-blur-sm shadow-xs">
-          {/* Small-caps header */}
-          <div className="grid grid-cols-[1.5fr_1.2fr_1fr_28px] items-center px-4 py-2.5 bg-slate-50/80 dark:bg-white/[0.04] border-b border-slate-200/60 dark:border-white/5 text-[11px] font-semibold tracking-wider uppercase text-slate-500 dark:text-slate-400 select-none">
+        {/* Table: NO bordered container. Header labels sit outside in small caps.
+            Each row is its own rounded floating glass-3 row with ~56px height, 16-17px text, 40px icon tiles */}
+        <div className="flex flex-col">
+          {/* Header labels outside the rows in small caps */}
+          <div className="grid grid-cols-[1.5fr_1.2fr_1fr_28px] items-center px-4 py-1 text-[11px] font-bold tracking-wider uppercase text-slate-700 dark:text-slate-300 select-none mb-1.5">
             <span>Workflow</span>
             <span>Trigger</span>
             <span>Status</span>
             <span />
           </div>
 
-          {/* Rows with 1px dividers */}
-          <div className="divide-y divide-slate-200/60 dark:divide-white/5">
+          {/* Floating rows stack with small gap */}
+          <div className="flex flex-col gap-2.5">
             {TABLE_ROWS.map((row) => {
               const Icon = row.icon;
               return (
                 <div
                   key={row.id}
-                  className="group grid grid-cols-[1.5fr_1.2fr_1fr_28px] items-center px-4 py-3 hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors"
+                  className="group grid grid-cols-[1.5fr_1.2fr_1fr_28px] items-center px-4 h-[56px] rounded-2xl glass-3 hover:scale-[1.005] transition-all"
                 >
-                  {/* Workflow: icon in tinted circle + name */}
-                  <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                  {/* Workflow: 40px circle icon tile + 16px row title */}
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
                     <div
-                      className={`w-7 h-7 rounded-full ${row.iconBg} ${row.iconColor} flex items-center justify-center shrink-0 border border-indigo-200/40 dark:border-indigo-800/30`}
+                      className={`w-10 h-10 rounded-full glass-3-tile ${row.iconColor} flex items-center justify-center shrink-0`}
                     >
-                      <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+                      <Icon className="w-4 h-4" strokeWidth={2} />
                     </div>
-                    <span className="text-[13px] font-medium text-slate-800 dark:text-slate-200 truncate">
+                    <span className="text-[16px] font-semibold text-slate-900 dark:text-slate-100 truncate">
                       {row.name}
                     </span>
                   </div>
 
                   {/* Trigger: mono trigger text */}
                   <div className="min-w-0 pr-2">
-                    <span className="font-mono text-[12px] text-slate-500 dark:text-slate-400">
+                    <span className="font-mono text-[13px] font-medium text-slate-700 dark:text-slate-300">
                       {row.trigger}
                     </span>
                   </div>
@@ -159,12 +170,12 @@ export function DemoPreviewCard() {
                   {/* Status pill with dot */}
                   <div>
                     {row.status === "Running" ? (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold bg-emerald-500/15 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-300 border border-emerald-500/40 whitespace-nowrap">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                         <span>Running</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/40 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold bg-indigo-500/15 dark:bg-indigo-950/70 text-indigo-950 dark:text-indigo-200 border border-indigo-500/40 whitespace-nowrap">
                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
                         <span>Idle</span>
                       </span>
@@ -175,10 +186,10 @@ export function DemoPreviewCard() {
                   <div className="flex items-center justify-end">
                     <button
                       type="button"
-                      className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity"
                       aria-label="Row actions"
                     >
-                      <MoreHorizontal className="w-4 h-4" strokeWidth={1.75} />
+                      <MoreHorizontal className="w-4 h-4" strokeWidth={2} />
                     </button>
                   </div>
                 </div>
@@ -186,12 +197,6 @@ export function DemoPreviewCard() {
             })}
           </div>
         </div>
-      </div>
-
-      {/* Quiet footer matching code panel height balance */}
-      <div className="pt-3 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between text-xs text-slate-500 select-none shrink-0">
-        <span className="text-[12px] text-slate-500 dark:text-slate-400">Auto-synced</span>
-        <span className="font-mono text-[11px] text-slate-400">2 entities</span>
       </div>
     </motion.div>
   );

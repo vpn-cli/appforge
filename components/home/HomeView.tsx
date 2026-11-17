@@ -7,7 +7,7 @@ import { BackgroundRibbons } from "./BackgroundRibbons";
 
 export function HomeView() {
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gradient-to-b from-[#EEF0FA] via-[#F5F6FD] to-[#EAEBF8] dark:from-[#0B0D17] dark:via-[#0E1122] dark:to-[#0A0C16] text-slate-900 dark:text-slate-100 transition-colors relative overflow-x-hidden selection:bg-indigo-500/20 selection:text-indigo-900 dark:selection:text-indigo-200">
+    <div className="min-h-screen w-full flex flex-col bg-gradient-to-b from-[#EEF0FA] via-[#F5F6FD] to-[#EAEBF8] dark:from-[#0A0A12] dark:via-[#0D0D18] dark:to-[#0A0A12] text-slate-900 dark:text-slate-100 transition-colors relative overflow-x-hidden selection:bg-indigo-500/20 selection:text-indigo-900 dark:selection:text-indigo-200">
       {/* Background glass ribbon & atmospheric wash */}
       <BackgroundRibbons />
 
