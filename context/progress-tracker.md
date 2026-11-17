@@ -61,6 +61,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [x] 19 Workflow Event Queue & Admin Analytics Backend (Upstash Kafka)
 - [x] 20 Observability (Sentry)
 - [x] 21 Enterprise Integrations & DevOps (Docker)
+- [x] 22 Security Hardening & Cross-Tenant Isolation (Removed ADMIN_BYPASS cookie backdoor, converted dev bypass to explicit opt-in DEV_AUTH_BYPASS=true guarded against production, added affected-rows validation on saveAppConfig/publishAppConfig/renameApp/deleteApp with 404 rejections, migrated LiveAppPage to Clerk auth, handled PostgREST PGRST205 schema cache missing table error, added 17 cross-tenant tests running real database queries with 29/29 tests passing)
 
 ---
 

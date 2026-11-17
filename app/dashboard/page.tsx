@@ -14,8 +14,8 @@ type AppWithConfig = AppData & {
 async function DashboardContent() {
   let userId: string | null = null;
 
-  if (process.env.NODE_ENV === "development") {
-    // DEV BYPASS for local preview
+  if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH_BYPASS === "true") {
+    // Explicit opt-in dev bypass for local preview
     userId = "dev-test-user-123";
   } else {
     const authResult = await auth();

@@ -8,8 +8,8 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
 
   // If there's no Clerk userId (e.g. guest mode)
   if (!userId) {
-    // DEV BYPASS FALLBACK (for dev mode only)
-    if (process.env.NODE_ENV === "development") {
+    // Explicit opt-in dev bypass (never active in production)
+    if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH_BYPASS === "true") {
       console.log("[DEV BYPASS] Mocking Schema Extraction for:", appId);
       return { success: true, message: "Mock schema generated successfully." };
     }

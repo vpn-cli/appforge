@@ -3,27 +3,24 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { cookies } from "next/headers";
 import { EventPublisher } from "@/lib/event-queue";
 
 /**
- * Checks Clerk for a real user session. 
- * If none exists, checks for a secure ADMIN bypass cookie.
+ * Resolves the authenticated user ID.
+ * The development bypass is strictly opt-in via DEV_AUTH_BYPASS=true and is hard-blocked in production.
  */
+function isDevAuthBypassEnabled(): boolean {
+  return process.env.NODE_ENV !== "production" && process.env.DEV_AUTH_BYPASS === "true";
+}
+
 async function getAuthOrBypass() {
-  if (process.env.NODE_ENV === "development") {
+  if (isDevAuthBypassEnabled()) {
     return { userId: "dev-bypass-user", isBypass: true };
   }
 
   const { userId } = await auth();
   if (userId) return { userId, isBypass: false };
 
-  const cookieStore = await cookies();
-  const adminCookie = cookieStore.get("APPFORGE_ADMIN_BYPASS")?.value;
-  if (adminCookie && process.env.ADMIN_BYPASS_KEY && adminCookie === process.env.ADMIN_BYPASS_KEY) {
-    return { userId: "admin-bypass-user", isBypass: true };
-  }
-  
   return { userId: null, isBypass: false };
 }
 
@@ -285,16 +282,25 @@ export async function saveAppConfig(appId: string, configStr: string) {
   }
 
   // Save the configuration to the apps table
-  const { error: saveError } = await supabase
+  const { data: updatedRows, error: saveError } = await supabase
     .from("apps")
     .update({ config: rawConfig, updated_at: new Date().toISOString() })
     .eq("id", appId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id");
 
   if (saveError) {
     return {
       success: false,
       error: `Failed to save config: ${saveError.message}`,
+    };
+  }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    return {
+      success: false,
+      error: "App not found or not owned by user",
+      status: 404,
     };
   }
 
@@ -335,14 +341,23 @@ export async function publishAppConfig(appId: string, configStr: string) {
     return { success: false, error: "Invalid json format." };
   }
 
-  const { error } = await supabase
+  const { data: updatedRows, error } = await supabase
     .from("apps")
     .update({ published_config: rawConfig, config: rawConfig })
     .eq("id", appId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id");
 
   if (error) {
     return { success: false, error: `Failed to publish app: ${error.message}` };
+  }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    return {
+      success: false,
+      error: "App not found or not owned by user",
+      status: 404,
+    };
   }
 
   // Asynchronously fire a Kafka event to our decoupled queue tracking 'app_published' events.
@@ -364,14 +379,21 @@ export async function deleteApp(appId: string) {
   if (isBypass) return { success: true };
   if (!userId) throw new Error("Unauthorized");
 
-  const { error } = await supabase
+  const { data: deletedRows, error } = await supabase
     .from("apps")
     .delete()
     .eq("id", appId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id");
 
   if (error) {
-    throw new Error("Failed to delete app.");
+    throw new Error(`Failed to delete app: ${error.message}`);
+  }
+
+  if (!deletedRows || deletedRows.length === 0) {
+    const err = new Error("App not found or not owned by user");
+    (err as unknown as { status: number }).status = 404;
+    throw err;
   }
   return { success: true };
 }
@@ -383,14 +405,21 @@ export async function renameApp(appId: string, newName: string) {
   if (isBypass) return { success: true };
   if (!userId) throw new Error("Unauthorized");
 
-  const { error } = await supabase
+  const { data: updatedRows, error } = await supabase
     .from("apps")
     .update({ name: newName })
     .eq("id", appId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id");
 
   if (error) {
-    throw new Error("Failed to rename app.");
+    throw new Error(`Failed to rename app: ${error.message}`);
+  }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    const err = new Error("App not found or not owned by user");
+    (err as unknown as { status: number }).status = 404;
+    throw err;
   }
   return { success: true };
 }

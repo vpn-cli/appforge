@@ -3,17 +3,17 @@ import { RenderNode } from "@/registry";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function LiveAppPage({ params }: { params: Promise<{ appId: string }> }) {
   const { appId } = await params;
-  const supabase = await createInsforgeServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { userId } = await auth();
 
   // Fetch the latest published configuration directly
   let rawConfig: unknown = null;
 
-  if (process.env.NODE_ENV === "development" && !user) {
-    // DEV BYPASS: Fake published state
+  if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH_BYPASS === "true" && !userId) {
+    // DEV BYPASS: Explicit opt-in fake published state for previewing without auth
     rawConfig = {
       app: "Published App Simulation",
       pages: [
@@ -27,6 +27,7 @@ export default async function LiveAppPage({ params }: { params: Promise<{ appId:
     };
   } else {
     // Secure Database Read
+    const supabase = await createInsforgeServer();
     const { data: appData, error } = await supabase
       .from("apps")
       .select("published_config")

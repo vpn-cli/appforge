@@ -28,7 +28,12 @@ export async function GET(request: Request, { params }: RouteParams) {
 
   if (error) {
     // If table doesn't exist yet in the database, return empty array gracefully
-    if (error.code === "42P01" || error.message?.includes("does not exist")) {
+    if (
+      error.code === "42P01" ||
+      error.code === "PGRST205" ||
+      error.message?.includes("does not exist") ||
+      error.message?.includes("schema cache")
+    ) {
       return NextResponse.json([]);
     }
     return NextResponse.json({ error: error.message }, { status: 400 });

@@ -17,7 +17,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH_BYPASS === "true") {
     return;
   }
 
