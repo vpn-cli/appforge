@@ -50,13 +50,13 @@ Published (Success): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text
 Draft (Neutral): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[13px] font-medium bg-muted text-muted-foreground border border-border
 ```
 
-### Home Landing Overhaul Layout (Apple Liquid Glass Material System)
+### Home Landing Overhaul Layout (Apple Liquid Glass Material System & Component Details)
 
 **Glass Material Utilities (3 Levels)**
 ```text
 glass-1 (Floating Frosted Top Bar Pill & Demo Panels):
-  Light: linear-gradient(135deg, rgba(255,255,255,.65), rgba(255,255,255,.32)), blur(24px) saturate(180%), border: 1px solid rgba(255,255,255,.70), specular top: inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.25), shadow: 0 20px 50px -20px rgba(70,60,170,.22), ::before specular sheen
-  Dark: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.03)), blur(24px) saturate(180%), border: 1px solid rgba(255,255,255,.10), specular: inset 0 1px 0 rgba(255,255,255,.10), shadow: 0 24px 60px -24px rgba(0,0,0,.60)
+  Light: linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,255,255,.76)), blur(24px) saturate(180%), border: 1px solid rgba(255,255,255,.90), specular top: inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.30), shadow: 0 20px 50px -20px rgba(70,60,170,.16), ::before specular sheen
+  Dark: linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,.025)), blur(24px) saturate(180%), border: 1px solid rgba(255,255,255,.08), specular: inset 0 1px 0 rgba(255,255,255,.08), shadow: 0 24px 60px -24px rgba(0,0,0,.70)
 
 glass-2 (Standalone Secondary Buttons, e.g. View Templates):
   Light: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.40)), blur(16px) saturate(180%), border: 1px solid rgba(255,255,255,.80), inset 0 1px 0 rgba(255,255,255,.95), isolate, overflow:hidden
@@ -75,20 +75,20 @@ glass-3-tile (40px Circle Icon Tiles):
   Dark: 40px circle, rgba(255,255,255,.08), border rgba(255,255,255,.12)
 ```
 
-**Restrained Headline Gradient (Applied Only to 'driven Apps')**
+**Brighter Headline Gradient (Applied Only to 'driven Apps')**
 ```text
-bg-gradient-to-r from-[#5B21B6] via-[#4338CA] to-[#3730A3] dark:from-[#A78BFA] dark:via-[#818CF8] dark:to-[#6366F1] bg-clip-text text-transparent
+bg-gradient-to-r from-[#7C5CFF] to-[#4F6BFF] dark:from-[#9D8CFF] dark:to-[#6B85FF] bg-clip-text text-transparent
 ```
 
-**Desaturated Metric Card (Translucent Periwinkle with Soft Wave)**
+**Deepened Metric Card (High-Contrast Periwinkle with Confined Chart)**
 ```text
-rounded-2xl bg-gradient-to-r from-[#8B93E8]/90 via-[#9BA3EC]/85 to-[#B9B4F0]/85 dark:from-[#4338CA]/50 dark:via-[#4F46E5]/40 dark:to-[#7C3AED]/35 border border-white/70 dark:border-white/15 text-white p-5 relative overflow-hidden
+rounded-2xl bg-gradient-to-r from-[#5B60C8] via-[#6B71D4] to-[#8A82E3] dark:from-[#3730A3]/90 dark:via-[#4338CA]/90 dark:to-[#4F46E5]/80 border border-white/60 dark:border-white/15 text-white p-5 relative overflow-hidden (Chart confined to bottom-right 45% below icon)
 ```
 
-**Floating Table Rows (No Bordered Container, 56px Rows, 40px Icon Tiles, Outside Headers)**
+**Floating Table Rows (One Shared CSS Grid, Restored Kebab, 16px Column Gap)**
 ```text
-Header: grid grid-cols-[1.5fr_1.2fr_1fr_28px] items-center px-4 py-1 text-[11px] font-bold uppercase text-slate-700 dark:text-slate-300
-Rows: flex flex-col gap-2.5, each row: glass-3 rounded-2xl h-[56px] px-4 grid grid-cols-[1.5fr_1.2fr_1fr_28px]
+Header: grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400
+Rows: flex flex-col gap-2.5, each row: glass-3 rounded-2xl h-[56px] px-4 grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 (15px weight 500 name, 13px mono trigger, 32px kebab button)
 ```
 
 **Restyled Feature Section ("Instant Architecture. Zero Friction.")**
