@@ -4,6 +4,8 @@ import { HomeTopBar } from "./HomeTopBar";
 import { HomeHero } from "./HomeHero";
 import { DemoRow } from "./DemoRow";
 import { BackgroundRibbons } from "./BackgroundRibbons";
+import { Features } from "@/components/homepage/Features";
+import { Footer } from "@/components/layout/Footer";
 
 export function HomeView() {
   return (
@@ -20,7 +22,11 @@ export function HomeView() {
           <HomeHero />
           <DemoRow />
         </div>
+        <Features />
       </main>
+
+      {/* Restored Footer */}
+      <Footer />
     </div>
   );
 }

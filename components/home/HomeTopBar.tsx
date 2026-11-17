@@ -6,13 +6,15 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
-import { useOrganization, useUser, UserButton } from "@clerk/nextjs";
+import { useOrganization, useUser, UserButton, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 
 export function HomeTopBar() {
   const pathname = usePathname();
   const { organization } = useOrganization();
-  const { user } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isUserSignedIn = isLoaded && isSignedIn;
 
   const orgName =
     organization?.name ||
@@ -76,41 +78,49 @@ export function HomeTopBar() {
           })}
         </nav>
 
-        {/* Right: Theme toggle, Org switcher, User avatar */}
+        {/* Right: Theme toggle, Auth controls (Log in + Start for free when logged out; Org switcher + Avatar when logged in) */}
         <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Theme toggle */}
           <ThemeToggle />
 
-          {/* Org Switcher pill (avatar + name + chevron) */}
-          <div className="hidden md:flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full glass-2-nested text-xs text-slate-800 dark:text-slate-200 select-none">
-            <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
-              {orgInitial}
-            </span>
-            <span className="truncate max-w-[120px] font-medium text-[12px] text-slate-700 dark:text-slate-300">
-              {orgName}
-            </span>
-            <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" strokeWidth={1.75} />
-          </div>
+          {isUserSignedIn ? (
+            <>
+              {/* Org Switcher pill (avatar + name + chevron) */}
+              <div className="hidden md:flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full glass-2-nested text-xs text-slate-800 dark:text-slate-200 select-none">
+                <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
+                  {orgInitial}
+                </span>
+                <span className="truncate max-w-[120px] font-medium text-[12px] text-slate-700 dark:text-slate-300">
+                  {orgName}
+                </span>
+                <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" strokeWidth={1.75} />
+              </div>
 
-          {/* User Avatar */}
-          <div className="flex items-center justify-center shrink-0">
-            {user ? (
-              <UserButton
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-7 h-7 rounded-full border border-slate-200 dark:border-white/10",
-                  },
-                }}
-              />
-            ) : (
-              <Link
-                href="/login"
-                className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[11px] font-medium text-slate-700 dark:text-slate-200 hover:opacity-85 transition-opacity"
-              >
-                VK
-              </Link>
-            )}
-          </div>
+              {/* User Avatar */}
+              <div className="flex items-center justify-center shrink-0">
+                <UserButton
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: "w-7 h-7 rounded-full border border-slate-200 dark:border-white/10",
+                    },
+                  }}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="hidden sm:flex items-center gap-2">
+              <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+                <Button variant="ghost" className="text-sm font-medium hover:bg-slate-200/50 dark:hover:bg-white/10 h-9 px-3.5 rounded-full text-slate-700 dark:text-slate-200">
+                  Log in
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
+                <Button className="bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground font-medium text-sm h-9 px-4 rounded-full transition-colors shadow-xs">
+                  Start for free
+                </Button>
+              </SignUpButton>
+            </div>
+          )}
 
           {/* Mobile menu button */}
           <button
@@ -144,6 +154,24 @@ export function HomeTopBar() {
               </Link>
             );
           })}
+
+          {!isUserSignedIn && (
+            <>
+              <div className="h-[1px] w-full bg-slate-200/60 dark:bg-white/10 my-1.5" />
+              <div className="flex flex-col gap-2 pt-1">
+                <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+                  <Button variant="outline" className="w-full justify-center h-9 text-sm rounded-xl">
+                    Log in
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
+                  <Button className="w-full justify-center h-9 bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground font-medium text-sm rounded-xl">
+                    Start for free
+                  </Button>
+                </SignUpButton>
+              </div>
+            </>
+          )}
         </div>
       )}
     </header>
