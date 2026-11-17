@@ -4,8 +4,9 @@ import { useState } from "react";
 import { FileCode, ChevronDown, Copy, Check } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useHeroScriptedEdit } from "./HeroScriptedEditContext";
 
-const CODE_RAW = `{
+const CODE_RAW_BASE = `{
   "app": "ops_dashboard",
   "pages": [{
     "components": [
@@ -15,109 +16,75 @@ const CODE_RAW = `{
   }]
 }`;
 
-interface LinePart {
-  text: string;
-  className: string;
-}
-
-interface CodeLine {
-  num: number;
-  parts: LinePart[];
-}
-
 const keyStyle = "text-[#2B6CB0] dark:text-[#8FA8FF] font-medium";
 const strStyle = "text-[#8A7A1F] dark:text-[#D9C27A]";
 const punctStyle = "text-slate-600 dark:text-slate-400";
 const bracketStyle = "text-violet-700 dark:text-violet-300 font-medium";
+const boolStyle = "text-emerald-600 dark:text-emerald-400 font-medium";
 
-const CODE_LINES: CodeLine[] = [
-  {
-    num: 1,
-    parts: [{ text: "{", className: bracketStyle }],
-  },
-  {
-    num: 2,
-    parts: [
-      { text: '  "app"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"ops_dashboard"', className: strStyle },
-      { text: ",", className: punctStyle },
-    ],
-  },
-  {
-    num: 3,
-    parts: [
-      { text: '  "pages"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: "[{", className: bracketStyle },
-    ],
-  },
-  {
-    num: 4,
-    parts: [
-      { text: '    "components"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: "[", className: bracketStyle },
-    ],
-  },
-  {
-    num: 5,
-    parts: [
-      { text: "      { ", className: bracketStyle },
-      { text: '"type"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"Metric"', className: strStyle },
-      { text: ", ", className: punctStyle },
-      { text: '"title"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"Active Workflows"', className: strStyle },
-      { text: " },", className: bracketStyle },
-    ],
-  },
-  {
-    num: 6,
-    parts: [
-      { text: "      { ", className: bracketStyle },
-      { text: '"type"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"DataTable"', className: strStyle },
-      { text: ", ", className: punctStyle },
-      { text: '"entity"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"workflows"', className: strStyle },
-      { text: " }", className: bracketStyle },
-    ],
-  },
-  {
-    num: 7,
-    parts: [{ text: "    ]", className: bracketStyle }],
-  },
-  {
-    num: 8,
-    parts: [{ text: "  }]", className: bracketStyle }],
-  },
-  {
-    num: 9,
-    parts: [{ text: "}", className: bracketStyle }],
-  },
-];
+function renderTypedTokens(text: string) {
+  if (!text) return null;
+
+  // Expected full string: ', "live": true'
+  const comma = text.slice(0, 2); // ', '
+  const key = text.slice(2, 8); // '"live"'
+  const colon = text.slice(8, 10); // ': '
+  const val = text.slice(10); // 'true'
+
+  return (
+    <>
+      {comma && <span className={punctStyle}>{comma}</span>}
+      {key && <span className={keyStyle}>{key}</span>}
+      {colon && <span className={punctStyle}>{colon}</span>}
+      {val && <span className={boolStyle}>{val}</span>}
+    </>
+  );
+}
 
 export function DemoCodeCard() {
   const [copied, setCopied] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+  const { typedText, showCursor, isLineHighlighted } = useHeroScriptedEdit();
+
+  // Pointer tracking for subtle 8% specular glass highlight
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isCardHovered, setIsCardHovered] = useState(false);
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(CODE_RAW);
+      const codeToCopy = typedText
+        ? CODE_RAW_BASE.replace('"workflows" }', `"workflows"${typedText} }`)
+        : CODE_RAW_BASE;
+      await navigator.clipboard.writeText(codeToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {}
   };
 
   return (
-    <div className="glass-1 rounded-[24px] p-5 flex flex-col justify-between h-[370px] max-h-[380px] transition-all overflow-hidden relative">
+    <div
+      onPointerMove={handlePointerMove}
+      onPointerEnter={() => setIsCardHovered(true)}
+      onPointerLeave={() => setIsCardHovered(false)}
+      className="glass-1 rounded-[24px] p-5 flex flex-col justify-between h-[370px] max-h-[380px] transition-all overflow-hidden relative"
+    >
+      {/* Specular highlight on glass panels follows cursor (radial gradient, 8% opacity) */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-[24px] transition-opacity duration-300 z-20"
+        style={{
+          opacity: isCardHovered ? 1 : 0,
+          background: `radial-gradient(350px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.08), transparent 70%)`,
+        }}
+        aria-hidden="true"
+      />
+
       {/* Top Header Row */}
-      <div className="flex items-center justify-between pb-3.5 border-b border-white/60 dark:border-white/10 shrink-0">
+      <div className="flex items-center justify-between pb-3.5 border-b border-white/60 dark:border-white/10 shrink-0 relative z-10">
         <div className="flex items-center gap-3">
           {/* Traffic lights */}
           <div className="flex items-center gap-1.5" aria-hidden="true">
@@ -157,40 +124,94 @@ export function DemoCodeCard() {
         </Button>
       </div>
 
-      {/* Code Editor Body: Compact 9-line version, line-height 1.65 */}
-      <div className="my-2.5 font-mono text-[14px] leading-[25px] select-text flex gap-3.5 flex-1 overflow-x-auto items-start pt-0.5">
+      {/* Code Editor Body: Compact 9-line version, line-height 25px */}
+      <div className="my-2.5 font-mono text-[14px] leading-[25px] select-text flex gap-3.5 flex-1 overflow-x-auto items-start pt-0.5 relative z-10">
         {/* Line numbers at 35% opacity */}
         <div
           className="flex flex-col text-right text-slate-900/35 dark:text-slate-100/35 select-none font-mono pr-3 border-r border-slate-300/40 dark:border-white/10 shrink-0 font-normal"
           aria-hidden="true"
         >
-          {CODE_LINES.map((line) => (
-            <span key={line.num} className="leading-[25px]">
-              {line.num}
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            <span key={num} className="leading-[25px]">
+              {num}
             </span>
           ))}
         </div>
 
         {/* Code lines */}
         <div className="font-mono leading-[25px] whitespace-pre flex-1">
-          {CODE_LINES.map((line, idx) => (
-            <motion.div
-              key={line.num}
-              initial={shouldReduceMotion ? false : { opacity: 0, x: -4 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                duration: 0.15,
-                delay: shouldReduceMotion ? 0 : idx * 0.02,
-                ease: "easeOut",
-              }}
-            >
-              {line.parts.map((part, pIdx) => (
-                <span key={pIdx} className={part.className}>
-                  {part.text}
-                </span>
-              ))}
-            </motion.div>
-          ))}
+          {/* Line 1 */}
+          <div className={bracketStyle}>{"{"}</div>
+
+          {/* Line 2 */}
+          <div>
+            <span className={keyStyle}>{'  "app"'}</span>
+            <span className={punctStyle}>{": "}</span>
+            <span className={strStyle}>{'"ops_dashboard"'}</span>
+            <span className={punctStyle}>{","}</span>
+          </div>
+
+          {/* Line 3 */}
+          <div>
+            <span className={keyStyle}>{'  "pages"'}</span>
+            <span className={punctStyle}>{": "}</span>
+            <span className={bracketStyle}>{"[{"}</span>
+          </div>
+
+          {/* Line 4 */}
+          <div>
+            <span className={keyStyle}>{'    "components"'}</span>
+            <span className={punctStyle}>{": "}</span>
+            <span className={bracketStyle}>{"["}</span>
+          </div>
+
+          {/* Line 5 */}
+          <div>
+            <span className={bracketStyle}>{"      { "}</span>
+            <span className={keyStyle}>{'"type"'}</span>
+            <span className={punctStyle}>{": "}</span>
+            <span className={strStyle}>{'"Metric"'}</span>
+            <span className={punctStyle}>{", "}</span>
+            <span className={keyStyle}>{'"title"'}</span>
+            <span className={punctStyle}>{": "}</span>
+            <span className={strStyle}>{'"Active Workflows"'}</span>
+            <span className={bracketStyle}>{" },"}</span>
+          </div>
+
+          {/* Line 6: Scripted live edit target with soft highlight */}
+          <div
+            className={`transition-colors duration-300 rounded-md px-1 -mx-1 inline-flex items-center ${
+              isLineHighlighted
+                ? "bg-indigo-500/12 dark:bg-indigo-400/18 shadow-[inset_0_0_0_1px_rgba(99,102,241,0.22)]"
+                : "bg-transparent"
+            }`}
+          >
+            <span className={bracketStyle}>{"      { "}</span>
+            <span className={keyStyle}>{'"type"'}</span>
+            <span className={punctStyle}>{": "}</span>
+            <span className={strStyle}>{'"DataTable"'}</span>
+            <span className={punctStyle}>{", "}</span>
+            <span className={keyStyle}>{'"entity"'}</span>
+            <span className={punctStyle}>{": "}</span>
+            <span className={strStyle}>{'"workflows"'}</span>
+            {renderTypedTokens(typedText)}
+            {showCursor && (
+              <span
+                className="inline-block w-1.5 h-3.5 ml-0.5 bg-indigo-600 dark:bg-indigo-400 animate-pulse align-middle"
+                aria-hidden="true"
+              />
+            )}
+            <span className={bracketStyle}>{" }"}</span>
+          </div>
+
+          {/* Line 7 */}
+          <div className={bracketStyle}>{"    ]"}</div>
+
+          {/* Line 8 */}
+          <div className={bracketStyle}>{"  }]"}</div>
+
+          {/* Line 9 */}
+          <div className={bracketStyle}>{"}"}</div>
         </div>
       </div>
     </div>

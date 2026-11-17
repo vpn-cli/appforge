@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 
 export function BackgroundRibbons() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+
+  // Restrained scroll parallax: translates slightly (0 -> 48px) as page scrolls down
+  const ribbonY = useTransform(scrollY, [0, 800], [0, 48]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -26,9 +32,12 @@ export function BackgroundRibbons() {
       {/* 1. Faint lavender radial wash in top-left to balance the right ribbon */}
       <div className="dark:hidden absolute -top-24 -left-20 w-[640px] h-[640px] rounded-full bg-[radial-gradient(circle_at_center,rgba(215,220,250,0.65)_0%,rgba(238,240,250,0)_70%)] blur-[60px]" />
 
-      {/* 2. Volumetric 3D liquid glass ribbon at full presence sweeping behind right side of hero */}
+      {/* 2. Volumetric 3D liquid glass ribbon at full presence with restrained scroll parallax */}
       {!isDark && (
-        <div className="dark:hidden absolute -top-12 -right-8 w-[880px] lg:w-[1020px] xl:w-[1140px] pointer-events-none select-none">
+        <motion.div
+          style={{ y: shouldReduceMotion ? 0 : ribbonY }}
+          className="dark:hidden absolute -top-12 -right-8 w-[880px] lg:w-[1020px] xl:w-[1140px] pointer-events-none select-none"
+        >
           <Image
             src="/hero-ribbon.webp"
             alt=""
@@ -37,7 +46,7 @@ export function BackgroundRibbons() {
             priority
             className="w-full h-auto object-contain select-none opacity-100 drop-shadow-[0_20px_40px_rgba(110,120,220,0.22)]"
           />
-        </div>
+        </motion.div>
       )}
 
       {/* ========================================================

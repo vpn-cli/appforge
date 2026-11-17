@@ -1,9 +1,19 @@
 "use client";
 
-import { Layers, MoreHorizontal, Users, FileText, ArrowUpRight, BarChart3 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useState } from "react";
+import {
+  Layers,
+  MoreHorizontal,
+  Users,
+  FileText,
+  Bell,
+  ArrowUpRight,
+  BarChart3,
+} from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { IconButton } from "@/components/ui/icon-button";
 import { StatusPill } from "@/components/ui/status-pill";
+import { useHeroScriptedEdit } from "./HeroScriptedEditContext";
 
 interface TableRowData {
   id: string;
@@ -38,6 +48,16 @@ const TABLE_ROWS: TableRowData[] = [
 
 export function DemoPreviewCard() {
   const shouldReduceMotion = useReducedMotion();
+  const { invoiceStatus, metricValue, isSlackAlertsVisible } = useHeroScriptedEdit();
+
+  // Pointer tracking for subtle 8% specular glass highlight
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isCardHovered, setIsCardHovered] = useState(false);
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
 
   return (
     <motion.div
@@ -48,10 +68,23 @@ export function DemoPreviewCard() {
         delay: shouldReduceMotion ? 0 : 0.28,
         ease: "easeOut",
       }}
+      onPointerMove={handlePointerMove}
+      onPointerEnter={() => setIsCardHovered(true)}
+      onPointerLeave={() => setIsCardHovered(false)}
       className="glass-1 rounded-[24px] p-5 flex flex-col h-[370px] max-h-[380px] transition-all overflow-hidden relative"
     >
+      {/* Specular highlight on glass panels follows cursor (radial gradient, 8% opacity) */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-[24px] transition-opacity duration-300 z-20"
+        style={{
+          opacity: isCardHovered ? 1 : 0,
+          background: `radial-gradient(350px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.08), transparent 70%)`,
+        }}
+        aria-hidden="true"
+      />
+
       {/* Header */}
-      <div className="flex items-center justify-between pb-3.5 border-b border-white/60 dark:border-white/10 shrink-0">
+      <div className="flex items-center justify-between pb-3.5 border-b border-white/60 dark:border-white/10 shrink-0 relative z-10">
         <div className="flex items-center gap-2.5">
           {/* Icon tile */}
           <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-2xs">
@@ -71,7 +104,7 @@ export function DemoPreviewCard() {
       </div>
 
       {/* Content Body: Metric Card + Floating Rows Table (No dead gap above metric card) */}
-      <div className="mt-3.5 flex flex-col gap-3 flex-1 justify-start min-w-0">
+      <div className="mt-3.5 flex flex-col gap-3 flex-1 justify-start min-w-0 relative z-10">
         {/* Metric Card: Deepened gradient ensuring >= 4.5:1 text contrast with white */}
         <div className="rounded-2xl bg-gradient-to-r from-[#5B60C8] via-[#6B71D4] to-[#8A82E3] dark:from-[#3B3A8C] dark:to-[#5B4FB8] border border-white/60 dark:border-white/15 text-white p-4 relative overflow-hidden shadow-[0_4px_16px_-4px_rgba(91,96,200,0.30)] dark:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.5)] select-none shrink-0">
           {/* Confined chart to the right 45% of the card, strictly below the icon */}
@@ -114,11 +147,11 @@ export function DemoPreviewCard() {
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="text-[32px] sm:text-[36px] font-bold font-sans tracking-tight tabular-nums text-white leading-none">
-                  1,244
+                  {metricValue.toLocaleString()}
                 </span>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/25 border border-emerald-300/40 text-emerald-100 dark:text-emerald-200 text-[11px] font-medium leading-none shadow-2xs">
                   <ArrowUpRight className="w-3 h-3" strokeWidth={2.5} />
-                  <span>+12%</span>
+                  <span>{metricValue >= 1250 ? "+14%" : "+12%"}</span>
                 </span>
               </div>
             </div>
@@ -144,6 +177,9 @@ export function DemoPreviewCard() {
           <div className="flex flex-col gap-2">
             {TABLE_ROWS.map((row) => {
               const Icon = row.icon;
+              const isInvoiceGen = row.name === "Invoice Gen";
+              const currentStatus = isInvoiceGen ? invoiceStatus : row.status;
+
               return (
                 <div
                   key={row.id}
@@ -168,11 +204,21 @@ export function DemoPreviewCard() {
                     </span>
                   </div>
 
-                  {/* Status pill with dot */}
-                  <div className="min-w-0">
-                    <StatusPill variant={row.status === "Running" ? "published" : "idle"}>
-                      {row.status}
-                    </StatusPill>
+                  {/* Status pill with crossfade */}
+                  <div className="min-w-0 relative h-6 flex items-center">
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.div
+                        key={currentStatus}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                      >
+                        <StatusPill variant={currentStatus === "Running" ? "published" : "idle"}>
+                          {currentStatus}
+                        </StatusPill>
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
 
                   {/* Restored kebab menu in the last column (32px) */}
@@ -189,6 +235,55 @@ export function DemoPreviewCard() {
                 </div>
               );
             })}
+
+            {/* Scripted new row: "Slack Alerts" slides into the table */}
+            <AnimatePresence>
+              {isSlackAlertsVisible && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, y: -6 }}
+                  animate={{ opacity: 1, height: 50, y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: -6 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 h-[50px] rounded-2xl glass-3 hover:scale-[1.005] transition-all">
+                    {/* Workflow: 36px circle icon tile + 14px weight 500 row title */}
+                    <div className="flex items-center gap-3 min-w-0 pr-1">
+                      <div className="w-9 h-9 rounded-full glass-3-tile text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <Bell className="w-4 h-4" strokeWidth={2} />
+                      </div>
+                      <span className="text-[14px] font-medium text-slate-900 dark:text-slate-100 truncate">
+                        Slack Alerts
+                      </span>
+                    </div>
+
+                    {/* Trigger: 12px mono, muted */}
+                    <div className="min-w-0 pr-1">
+                      <span className="font-mono text-[12px] text-slate-500 dark:text-slate-400 truncate block">
+                        webhook:alert
+                      </span>
+                    </div>
+
+                    {/* Status pill with dot */}
+                    <div className="min-w-0">
+                      <StatusPill variant="published">Running</StatusPill>
+                    </div>
+
+                    {/* Restored kebab menu */}
+                    <div className="flex items-center justify-center">
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Row actions"
+                        className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                      >
+                        <MoreHorizontal className="w-4 h-4" strokeWidth={2} />
+                      </IconButton>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
