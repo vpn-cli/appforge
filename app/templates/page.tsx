@@ -1,14 +1,10 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
-import { createInsforgeServer } from "@/lib/insforge-server";
 import { createAppFromTemplate } from "@/actions/apps";
 import { ArrowRight, LayoutTemplate, Database, FileCode2 } from "lucide-react";
 
 export default async function TemplatesPage() {
-  const supabase = await createInsforgeServer();
-  await supabase.auth.getUser();
-
   const templates = [
     {
       id: "crm",
