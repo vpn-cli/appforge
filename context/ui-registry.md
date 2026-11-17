@@ -25,29 +25,76 @@ Flex Stack Layout class: flex flex-col gap-X
 Responsive Grid class: grid grid-cols-1 md:grid-cols-2 lg:grid-cols-X gap-X
 ```
 
-### Standard Base Components
+### Shared Design System Primitives (Phase 7i Reference Specification)
 
-**Card Containers**
+**Buttons (`components/ui/button.tsx`)**
 ```text
-bg-card border border-border hover:border-border-strong rounded-lg transition-colors
-(No shadow on cards)
+All buttons are full pills: rounded-full (radius 9999).
+Sizes:
+  lg: h-[44px] px-[22px] text-[15px] font-medium
+  md: h-[36px] px-[16px] text-[14px] font-medium
+  sm: h-[30px] px-[12px] text-[13px] font-medium
+Primary Light:
+  background: linear-gradient(180deg, #2B2B35 0%, #0D0D12 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 1px 2px rgba(0,0,0,.25), 0 10px 28px -10px rgba(88,70,220,.6);
+  color: #FFFFFF;
+  hover: translateY(-1px) + stronger glow; active: scale(0.98);
+Primary Dark:
+  background: linear-gradient(180deg, #FFFFFF, #E6E6EE);
+  color: #0B0B10;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 10px 28px -10px rgba(88,70,220,.6);
+Secondary Light:
+  background: rgba(255,255,255,.72); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.9);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 6px 20px -8px rgba(60,50,150,.22);
+Secondary Dark:
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
 ```
 
-**Primary Buttons (Black in Light, White in Dark)**
+**Icon Button (`components/ui/icon-button.tsx`)**
 ```text
-bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground h-9 px-4 rounded-md font-medium text-sm transition-colors
-Disabled: bg-muted text-muted-foreground border-transparent cursor-not-allowed
+Neutral glass circles: rounded-full aspect-square.
+Sizes: lg (44px), md (36px), sm (30px).
+Light: glass-2 / hover:bg-black/5; Dark: glass-2-nested / hover:bg-white/10.
+Theme toggle Moon icon uses neutral currentColor text (no bright blue fill).
 ```
 
-**Secondary / Outline Buttons**
+**Glass Surfaces (`components/ui/glass-surface.tsx`)**
 ```text
-bg-card hover:bg-muted border border-border text-foreground h-9 px-3.5 rounded-md font-medium text-sm transition-colors
+glass-1: Floating chrome & popovers
+  Light: linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,255,255,.76)), blur(24px) saturate(180%)
+  Dark (Smoked Glass): rgba(20,20,26,.78), blur(28px) saturate(140%), 1px rgba(255,255,255,.08) border, inset 0 1px 0 rgba(255,255,255,.07), shadow: 0 30px 80px -30px rgba(0,0,0,.85)
+glass-2-nested / glass-3:
+  Dark: SOLID #18181F / #1F1F27 with zero blur (backdrop-filter: none)
 ```
 
-**Status Badges / Pills**
+**Card Containers (`components/ui/card.tsx`)**
 ```text
-Published (Success): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[13px] font-medium bg-success-light text-success-text border border-success-border
-Draft (Neutral): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[13px] font-medium bg-muted text-muted-foreground border border-border
+Content surfaces: near-solid with a glass rim.
+Light: bg-card (#FFFFFF) border border-border shadow-xs rounded-2xl
+Dark: bg-[#121217] border border-white/10 rounded-2xl
+```
+
+**Status Pills (`components/ui/status-pill.tsx`)**
+```text
+Full pill: rounded-full text-[13px] font-medium with status dot.
+Published / Running / Active: success-light / success-text
+Draft / Idle / Inactive: muted / muted-foreground
+Failed / Error: error-light / error-text
+```
+
+**Input & Hero Glass Input (`components/ui/input.tsx`)**
+```text
+Pill Input: rounded-full h-9 px-4 text-[14px]
+Hero Glass Input: h-14 (56px) rounded-[20px] glass-1 px-4
+```
+
+**Builder Floating Chat Pill (`components/builder/CopilotFloatingPill.tsx`)**
+```text
+Docked bottom-center: w-[94vw] max-w-[560px] h-[52px] rounded-full glass-1
+Expands smoothly upward on focus or ⌘K to ~560×520px chat panel with message history.
+Esc or outside click collapses back to 52px pill.
+Respects prefers-reduced-motion.
 ```
 
 ### Home Landing Overhaul Layout (Apple Liquid Glass Material System & Component Details)
