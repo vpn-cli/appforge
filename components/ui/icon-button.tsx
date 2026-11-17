@@ -35,11 +35,14 @@ export interface IconButtonProps
 }
 
 const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ className, variant = "glass", size = "md", ...props }, ref) => {
+  ({ className, variant = "glass", size = "md", render, nativeButton, ...props }, ref) => {
+    const isNativeButton = nativeButton !== undefined ? nativeButton : render ? false : true;
     return (
       <ButtonPrimitive
         ref={ref}
         data-slot="icon-button"
+        render={render}
+        nativeButton={isNativeButton}
         className={cn(iconButtonVariants({ variant, size, className }))}
         {...props}
       />

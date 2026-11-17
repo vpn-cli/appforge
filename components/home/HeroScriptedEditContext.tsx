@@ -97,6 +97,20 @@ export function HeroScriptedEditProvider({ children }: { children: ReactNode }) 
       animId = requestAnimationFrame(tick);
     };
 
+    if (typeof window !== "undefined") {
+      (window as unknown as { __heroController?: unknown }).__heroController = {
+        reset: () => {
+          loopTimeRef.current = 0;
+          setLoopTime(0);
+        },
+        setTime: (t: number) => {
+          loopTimeRef.current = t;
+          setLoopTime(t);
+        },
+        getTime: () => loopTimeRef.current,
+      };
+    }
+
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
   }, [shouldReduceMotion]);
@@ -212,10 +226,21 @@ export function HeroScriptedEditProvider({ children }: { children: ReactNode }) 
   );
 }
 
+const DEFAULT_STATE: HeroScriptedEditState = {
+  loopTime: 0,
+  typedText: "",
+  showCursor: false,
+  isLineHighlighted: false,
+  invoiceStatus: "Idle",
+  metricValue: 1244,
+  isSlackAlertsVisible: false,
+  isPaused: false,
+  onMouseEnter: () => {},
+  onMouseLeave: () => {},
+  containerRef: () => {},
+};
+
 export function useHeroScriptedEdit(): HeroScriptedEditState {
   const context = useContext(HeroScriptedEditContext);
-  if (!context) {
-    throw new Error("useHeroScriptedEdit must be used within HeroScriptedEditProvider");
-  }
-  return context;
+  return context || DEFAULT_STATE;
 }
