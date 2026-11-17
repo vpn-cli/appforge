@@ -43,7 +43,7 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends ButtonPrimitive.Props,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   showArrow?: boolean;
 }
 

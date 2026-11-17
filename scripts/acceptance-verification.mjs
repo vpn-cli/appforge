@@ -399,3 +399,4 @@ runAcceptanceVerification().catch((err) => {
   console.error('Acceptance verification failed:', err);
   process.exit(1);
 });
+

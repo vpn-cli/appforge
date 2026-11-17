@@ -1,4 +1,4 @@
-﻿import { AppShell } from "@/components/layout/AppShell";
+import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { createInsforgeServer } from "@/lib/insforge-server";

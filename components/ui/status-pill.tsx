@@ -70,3 +70,4 @@ export function StatusPill({
 }
 
 export { StatusPill as Badge };
+

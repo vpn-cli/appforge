@@ -1,4 +1,4 @@
-﻿import { Activity } from "lucide-react";
+import { Activity } from "lucide-react";
 import type { AppData } from "./AppGrid";
 import { formatRelativeTime } from "./AppCard";
 

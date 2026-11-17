@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from "vitest";
 
 // Mock Clerk auth to toggle simulated tenant sessions
@@ -86,14 +87,14 @@ describe("PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)
       const originalBypass = process.env.DEV_AUTH_BYPASS;
 
       try {
-        process.env.NODE_ENV = "production";
+        (process.env as Record<string, string | undefined>).NODE_ENV = "production";
         process.env.DEV_AUTH_BYPASS = "true";
         (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
 
         // Unauthenticated call in production must throw Unauthorized, bypass ignored
         await expect(saveAppConfig(testAppId, "{}")).rejects.toThrow("Unauthorized");
       } finally {
-        process.env.NODE_ENV = originalEnv;
+        (process.env as Record<string, string | undefined>).NODE_ENV = originalEnv;
         if (originalBypass !== undefined) {
           process.env.DEV_AUTH_BYPASS = originalBypass;
         } else {
@@ -422,7 +423,7 @@ describe("PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)
     it("Direct Postgres write on apps table is denied by RLS policy", async () => {
       const { error } = await directClient
         .from("apps")
-        .insert({ name: "Malicious Direct Insert", user_id: userB });
+        .insert({ name: "Malicious Direct Insert", user_id: userB } as any);
 
       expect(error).toBeDefined(); // RLS policy blocks unauthorized insert
     });
@@ -453,7 +454,7 @@ describe("PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)
     it("Direct Postgres write on dynamic per-app table is strictly denied by RLS", async () => {
       const { error } = await directClient
         .from(dynamicTableName)
-        .insert({ title: "Injected directly into dynamic table" });
+        .insert({ title: "Injected directly into dynamic table" } as any);
 
       expect(error).toBeDefined(); // Postgres denies insert directly
     });
