@@ -62,6 +62,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [x] 20 Observability (Sentry)
 - [x] 21 Enterprise Integrations & DevOps (Docker)
 - [x] 22 Security Hardening & Cross-Tenant Isolation (Removed ADMIN_BYPASS cookie backdoor, converted dev bypass to explicit opt-in DEV_AUTH_BYPASS=true guarded against production, added affected-rows validation on saveAppConfig/publishAppConfig/renameApp/deleteApp with 404 rejections, migrated LiveAppPage to Clerk auth, handled PostgREST PGRST205 schema cache missing table error, added 17 cross-tenant tests running real database queries with 29/29 tests passing)
+- [x] 23 Native RLS & CI Pipeline (Backfilled RLS policies wrapped with `(select auth.jwt()->>'sub')` on all core and dynamic app_* tables, switched health check to anon public key, established test database separation with TEST_SUPABASE_URL, added direct database-level RLS verification tests bringing suite to 34 passing tests, wired real database test-suite job into GitHub Actions CI)
 
 ---
 

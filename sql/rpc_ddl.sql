@@ -15,11 +15,30 @@ BEGIN
       IF position('app_' || clean_app_id in query) > 0 THEN
           EXECUTE query;
 
-          -- Automatically enable RLS on newly created table with NO policies so only service_role has access
+          -- Automatically configure RLS and optimized policies on newly created tables
           IF position('CREATE TABLE' in query) = 1 THEN
               tbl_name := substring(query from 'app_' || clean_app_id || '_[a-zA-Z0-9_]+');
               IF tbl_name IS NOT NULL THEN
                   EXECUTE 'ALTER TABLE ' || quote_ident(tbl_name) || ' ENABLE ROW LEVEL SECURITY;';
+                  
+                  EXECUTE format(
+                    'CREATE POLICY %I ON %I FOR ALL TO authenticated USING (
+                       EXISTS (SELECT 1 FROM apps WHERE id = %L::uuid AND user_id = (select auth.jwt()->>''sub''))
+                     ) WITH CHECK (
+                       EXISTS (SELECT 1 FROM apps WHERE id = %L::uuid AND user_id = (select auth.jwt()->>''sub''))
+                     );',
+                    'owner_policy_' || tbl_name, tbl_name, app_id, app_id
+                  );
+
+                  EXECUTE format(
+                    'CREATE POLICY %I ON %I FOR SELECT TO anon, authenticated USING (
+                       EXISTS (SELECT 1 FROM apps WHERE id = %L::uuid AND published_config IS NOT NULL)
+                     );',
+                    'public_read_policy_' || tbl_name, tbl_name, app_id
+                  );
+
+                  EXECUTE 'GRANT ALL ON ' || quote_ident(tbl_name) || ' TO authenticated;';
+                  EXECUTE 'GRANT SELECT ON ' || quote_ident(tbl_name) || ' TO anon;';
               END IF;
           END IF;
       ELSE
@@ -34,4 +53,3 @@ $$;
 -- Restrict execution solely to the service_role
 REVOKE EXECUTE ON FUNCTION execute_app_ddl(text, text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION execute_app_ddl(text, text) TO service_role;
-

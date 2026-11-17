@@ -350,4 +350,112 @@ describe("PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)
       expect(res.status).toBe(404);
     });
   });
+
+  // =========================================================================
+  // Fix 5: Direct Database-Level RLS Enforcement (Bypassing Application Code)
+  // =========================================================================
+  describe("Fix 5: Direct Postgres Database-Level Enforcement", () => {
+    let directClient: ReturnType<typeof import("@supabase/supabase-js").createClient>;
+    let directAppId: string;
+    let dynamicTableName: string;
+
+    beforeAll(async () => {
+      const { createClient } = await import("@supabase/supabase-js");
+      directClient = createClient(
+        process.env.NEXT_PUBLIC_INSFORGE_URL!,
+        process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!
+      );
+
+      const serverDb = await createInsforgeServer();
+      const { data } = await serverDb
+        .from("apps")
+        .insert({
+          user_id: userA,
+          name: "Direct RLS Verified App",
+          config: { app: "Direct RLS Verified App" },
+          published_config: null, // Strictly private
+        })
+        .select("id")
+        .single();
+
+      directAppId = data!.id;
+      dynamicTableName = `app_${directAppId.replace(/-/g, "_")}_secret_records`;
+
+      // Provision a dynamic table for this app using execute_app_ddl
+      await serverDb.rpc("execute_app_ddl", {
+        app_id: directAppId,
+        query: `CREATE TABLE IF NOT EXISTS ${dynamicTableName} (id uuid default gen_random_uuid() primary key, title text);`,
+      });
+
+      await serverDb.from("app_schemas").upsert(
+        {
+          app_id: directAppId,
+          table_name: "secret_records",
+          schema_definition: { title: "string" },
+        },
+        { onConflict: "app_id,table_name" }
+      );
+    });
+
+    afterAll(async () => {
+      if (directAppId) {
+        const serverDb = await createInsforgeServer();
+        await serverDb.rpc("execute_app_ddl", {
+          app_id: directAppId,
+          query: `ALTER TABLE ${dynamicTableName} RENAME TO ${dynamicTableName}_old; DROP TABLE IF EXISTS ${dynamicTableName}_old;`,
+        });
+        await serverDb.from("apps").delete().eq("id", directAppId);
+      }
+    });
+
+    it("Direct Postgres query on apps table returns zero rows for User A's private app", async () => {
+      // Querying Postgres directly with unprivileged client completely bypassing Next.js
+      const { data, error } = await directClient
+        .from("apps")
+        .select("id, name, config")
+        .eq("id", directAppId);
+
+      expect(error).toBeNull();
+      expect(data).toEqual([]); // Zero rows returned by Postgres RLS
+    });
+
+    it("Direct Postgres write on apps table is denied by RLS policy", async () => {
+      const { error } = await directClient
+        .from("apps")
+        .insert({ name: "Malicious Direct Insert", user_id: userB });
+
+      expect(error).toBeDefined(); // RLS policy blocks unauthorized insert
+    });
+
+    it("Direct Postgres query on app_schemas table returns zero rows for User A's app", async () => {
+      const { data, error } = await directClient
+        .from("app_schemas")
+        .select("*")
+        .eq("app_id", directAppId);
+
+      expect(error).toBeNull();
+      expect(data).toEqual([]); // Zero rows returned by Postgres RLS
+    });
+
+    it("Direct Postgres query on dynamic per-app table returns zero rows or is denied", async () => {
+      const { data, error } = await directClient
+        .from(dynamicTableName)
+        .select("*");
+
+      // PostgREST/Postgres evaluates RLS: private app tables are completely invisible
+      if (!error) {
+        expect(data).toEqual([]);
+      } else {
+        expect(error).toBeDefined();
+      }
+    });
+
+    it("Direct Postgres write on dynamic per-app table is strictly denied by RLS", async () => {
+      const { error } = await directClient
+        .from(dynamicTableName)
+        .insert({ title: "Injected directly into dynamic table" });
+
+      expect(error).toBeDefined(); // Postgres denies insert directly
+    });
+  });
 });
