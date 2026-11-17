@@ -8,16 +8,9 @@ import { Button } from "@/components/ui/button";
 const CODE_RAW = `{
   "app": "ops_dashboard",
   "pages": [{
-    "name": "Overview",
     "components": [
-      {
-        "type": "Metric",
-        "title": "Active Workflows"
-      },
-      {
-        "type": "DataTable",
-        "entity": "workflows"
-      }
+      { "type": "Metric", "title": "Active Workflows" },
+      { "type": "DataTable", "entity": "workflows" }
     ]
   }]
 }`;
@@ -62,99 +55,49 @@ const CODE_LINES: CodeLine[] = [
   {
     num: 4,
     parts: [
-      { text: '    "name"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"Overview"', className: strStyle },
-      { text: ",", className: punctStyle },
-    ],
-  },
-  {
-    num: 5,
-    parts: [
       { text: '    "components"', className: keyStyle },
       { text: ": ", className: punctStyle },
       { text: "[", className: bracketStyle },
     ],
   },
   {
+    num: 5,
+    parts: [
+      { text: "      { ", className: bracketStyle },
+      { text: '"type"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: '"Metric"', className: strStyle },
+      { text: ", ", className: punctStyle },
+      { text: '"title"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: '"Active Workflows"', className: strStyle },
+      { text: " },", className: bracketStyle },
+    ],
+  },
+  {
     num: 6,
     parts: [
-      { text: "      ", className: punctStyle },
-      { text: "{", className: bracketStyle },
+      { text: "      { ", className: bracketStyle },
+      { text: '"type"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: '"DataTable"', className: strStyle },
+      { text: ", ", className: punctStyle },
+      { text: '"entity"', className: keyStyle },
+      { text: ": ", className: punctStyle },
+      { text: '"workflows"', className: strStyle },
+      { text: " }", className: bracketStyle },
     ],
   },
   {
     num: 7,
-    parts: [
-      { text: '        "type"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"Metric"', className: strStyle },
-      { text: ",", className: punctStyle },
-    ],
+    parts: [{ text: "    ]", className: bracketStyle }],
   },
   {
     num: 8,
-    parts: [
-      { text: '        "title"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"Active Workflows"', className: strStyle },
-    ],
+    parts: [{ text: "  }]", className: bracketStyle }],
   },
   {
     num: 9,
-    parts: [
-      { text: "      ", className: punctStyle },
-      { text: "}", className: bracketStyle },
-      { text: ",", className: punctStyle },
-    ],
-  },
-  {
-    num: 10,
-    parts: [
-      { text: "      ", className: punctStyle },
-      { text: "{", className: bracketStyle },
-    ],
-  },
-  {
-    num: 11,
-    parts: [
-      { text: '        "type"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"DataTable"', className: strStyle },
-      { text: ",", className: punctStyle },
-    ],
-  },
-  {
-    num: 12,
-    parts: [
-      { text: '        "entity"', className: keyStyle },
-      { text: ": ", className: punctStyle },
-      { text: '"workflows"', className: strStyle },
-    ],
-  },
-  {
-    num: 13,
-    parts: [
-      { text: "      ", className: punctStyle },
-      { text: "}", className: bracketStyle },
-    ],
-  },
-  {
-    num: 14,
-    parts: [
-      { text: "    ", className: punctStyle },
-      { text: "]", className: bracketStyle },
-    ],
-  },
-  {
-    num: 15,
-    parts: [
-      { text: "  ", className: punctStyle },
-      { text: "}]", className: bracketStyle },
-    ],
-  },
-  {
-    num: 16,
     parts: [{ text: "}", className: bracketStyle }],
   },
 ];
@@ -172,9 +115,9 @@ export function DemoCodeCard() {
   };
 
   return (
-    <div className="glass-1 rounded-[24px] p-5 sm:p-6 flex flex-col justify-between h-full transition-all">
+    <div className="glass-1 rounded-[24px] p-5 flex flex-col justify-between h-[370px] max-h-[380px] transition-all overflow-hidden relative">
       {/* Top Header Row */}
-      <div className="flex items-center justify-between pb-4 border-b border-white/60 dark:border-white/10 shrink-0">
+      <div className="flex items-center justify-between pb-3.5 border-b border-white/60 dark:border-white/10 shrink-0">
         <div className="flex items-center gap-3">
           {/* Traffic lights */}
           <div className="flex items-center gap-1.5" aria-hidden="true">
@@ -184,20 +127,20 @@ export function DemoCodeCard() {
           </div>
 
           {/* File tab: app.config.json with a chevron */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg glass-2-nested text-[15px] font-medium text-slate-800 dark:text-slate-200 select-none ml-1">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-lg glass-2-nested text-[14px] font-medium text-slate-800 dark:text-slate-200 select-none ml-1">
             <FileCode className="w-4 h-4 text-slate-500 dark:text-slate-400" strokeWidth={1.75} />
             <span>app.config.json</span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5" strokeWidth={2} />
           </div>
         </div>
 
-        {/* Copy button (uses shared Button component, shows "Copied" for 1.5s) */}
+        {/* Copy button */}
         <Button
           type="button"
           onClick={handleCopy}
           variant="secondary"
           size="sm"
-          className="gap-1.5"
+          className="gap-1.5 h-8 px-2.5 text-[13px]"
           aria-label="Copy JSON code"
         >
           {copied ? (
@@ -214,22 +157,22 @@ export function DemoCodeCard() {
         </Button>
       </div>
 
-      {/* Code Editor Body: 15px mono, line-height 1.75, filling the space vertically with zero dead block */}
-      <div className="my-4 font-mono text-[15px] leading-[1.75] select-text flex gap-4 flex-1 overflow-x-auto items-start pt-1">
-        {/* Line numbers at exactly 35% opacity (lighter than code, never darker) */}
+      {/* Code Editor Body: Compact 9-line version, line-height 1.65 */}
+      <div className="my-2.5 font-mono text-[14px] leading-[25px] select-text flex gap-3.5 flex-1 overflow-x-auto items-start pt-0.5">
+        {/* Line numbers at 35% opacity */}
         <div
-          className="flex flex-col text-right text-slate-900/35 dark:text-slate-100/35 select-none font-mono pr-3.5 border-r border-slate-300/40 dark:border-white/10 shrink-0 font-normal"
+          className="flex flex-col text-right text-slate-900/35 dark:text-slate-100/35 select-none font-mono pr-3 border-r border-slate-300/40 dark:border-white/10 shrink-0 font-normal"
           aria-hidden="true"
         >
           {CODE_LINES.map((line) => (
-            <span key={line.num} className="leading-[1.75]">
+            <span key={line.num} className="leading-[25px]">
               {line.num}
             </span>
           ))}
         </div>
 
         {/* Code lines */}
-        <div className="font-mono leading-[1.75] whitespace-pre flex-1">
+        <div className="font-mono leading-[25px] whitespace-pre flex-1">
           {CODE_LINES.map((line, idx) => (
             <motion.div
               key={line.num}

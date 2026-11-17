@@ -48,10 +48,10 @@ export function DemoPreviewCard() {
         delay: shouldReduceMotion ? 0 : 0.28,
         ease: "easeOut",
       }}
-      className="glass-1 rounded-[24px] p-5 sm:p-6 flex flex-col justify-between h-full transition-all"
+      className="glass-1 rounded-[24px] p-5 flex flex-col h-[370px] max-h-[380px] transition-all overflow-hidden relative"
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-white/60 dark:border-white/10 shrink-0">
+      <div className="flex items-center justify-between pb-3.5 border-b border-white/60 dark:border-white/10 shrink-0">
         <div className="flex items-center gap-2.5">
           {/* Icon tile */}
           <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-2xs">
@@ -70,14 +70,13 @@ export function DemoPreviewCard() {
         </div>
       </div>
 
-      {/* Content Body: Metric Card + Floating Rows Table */}
-      <div className="my-5 flex flex-col gap-5 flex-1 justify-center min-w-0">
-        {/* Metric Card: Deepened gradient (#5B60C8 -> #8A82E3 light, #3B3A8C -> #5B4FB8 dark) ensuring >= 4.5:1 text contrast with white,
-            chart confined to right 45% of card below the icon without crossing text, chip or icon */}
-        <div className="rounded-2xl bg-gradient-to-r from-[#5B60C8] via-[#6B71D4] to-[#8A82E3] dark:from-[#3B3A8C] dark:to-[#5B4FB8] border border-white/60 dark:border-white/15 text-white p-5 relative overflow-hidden shadow-[0_8px_24px_-4px_rgba(91,96,200,0.30)] dark:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.5)] select-none">
+      {/* Content Body: Metric Card + Floating Rows Table (No dead gap above metric card) */}
+      <div className="mt-3.5 flex flex-col gap-3 flex-1 justify-start min-w-0">
+        {/* Metric Card: Deepened gradient ensuring >= 4.5:1 text contrast with white */}
+        <div className="rounded-2xl bg-gradient-to-r from-[#5B60C8] via-[#6B71D4] to-[#8A82E3] dark:from-[#3B3A8C] dark:to-[#5B4FB8] border border-white/60 dark:border-white/15 text-white p-4 relative overflow-hidden shadow-[0_4px_16px_-4px_rgba(91,96,200,0.30)] dark:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.5)] select-none shrink-0">
           {/* Confined chart to the right 45% of the card, strictly below the icon */}
           <div
-            className="absolute right-0 bottom-0 w-[45%] h-[56px] pointer-events-none opacity-40 dark:opacity-30"
+            className="absolute right-0 bottom-0 w-[45%] h-[52px] pointer-events-none opacity-40 dark:opacity-30"
             aria-hidden="true"
           >
             <svg
@@ -108,16 +107,16 @@ export function DemoPreviewCard() {
           </div>
 
           <div className="relative z-10 flex items-start justify-between">
-            {/* Left 55%: Text and chip - never touched by the chart */}
-            <div className="flex flex-col gap-1.5 max-w-[55%]">
+            {/* Left 55%: Text and chip */}
+            <div className="flex flex-col gap-1 max-w-[55%]">
               <span className="text-[13px] font-medium text-white/95">
                 Active Workflows
               </span>
-              <div className="flex items-baseline gap-2.5">
-                <span className="text-[36px] sm:text-[40px] font-bold font-sans tracking-tight tabular-nums text-white leading-none">
+              <div className="flex items-baseline gap-2">
+                <span className="text-[32px] sm:text-[36px] font-bold font-sans tracking-tight tabular-nums text-white leading-none">
                   1,244
                 </span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/25 border border-emerald-300/40 text-emerald-100 dark:text-emerald-200 text-[12px] font-medium leading-none shadow-2xs">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/25 border border-emerald-300/40 text-emerald-100 dark:text-emerald-200 text-[11px] font-medium leading-none shadow-2xs">
                   <ArrowUpRight className="w-3 h-3" strokeWidth={2.5} />
                   <span>+12%</span>
                 </span>
@@ -125,47 +124,46 @@ export function DemoPreviewCard() {
             </div>
 
             {/* Top-Right: Chart icon in glass circle */}
-            <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-white/10 border border-white/40 dark:border-white/20 flex items-center justify-center text-white shadow-2xs shrink-0">
-              <BarChart3 className="w-5 h-5" strokeWidth={2} />
+            <div className="w-9 h-9 rounded-full bg-white/20 dark:bg-white/10 border border-white/40 dark:border-white/20 flex items-center justify-center text-white shadow-2xs shrink-0">
+              <BarChart3 className="w-4 h-4" strokeWidth={2} />
             </div>
           </div>
         </div>
 
-        {/* Table: Header and rows share ONE CSS grid: grid-template-columns: 1.5fr 1fr 1fr 32px
-            Header labels: 11px uppercase tracking .08em, aligned exactly to column starts */}
-        <div className="flex flex-col">
+        {/* Table: Header and rows share ONE CSS grid: grid-template-columns: 1.5fr 1fr 1fr 32px */}
+        <div className="flex flex-col min-w-0">
           {/* Header row */}
-          <div className="grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 py-1 text-[12px] font-semibold tracking-[0.06em] uppercase text-slate-500 dark:text-slate-400 select-none mb-2">
+          <div className="grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 py-0.5 text-[11px] font-semibold tracking-[0.06em] uppercase text-slate-500 dark:text-slate-400 select-none mb-1.5">
             <span className="text-left">Workflow</span>
             <span className="text-left">Trigger</span>
             <span className="text-left">Status</span>
             <span />
           </div>
 
-          {/* Floating rows stack with 16px min between columns, kebab menu restored */}
-          <div className="flex flex-col gap-2.5">
+          {/* Floating rows stack */}
+          <div className="flex flex-col gap-2">
             {TABLE_ROWS.map((row) => {
               const Icon = row.icon;
               return (
                 <div
                   key={row.id}
-                  className="grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 h-[56px] rounded-2xl glass-3 hover:scale-[1.005] transition-all"
+                  className="grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 h-[50px] rounded-2xl glass-3 hover:scale-[1.005] transition-all"
                 >
-                  {/* Workflow: 40px circle icon tile + 15px weight 500 row title */}
+                  {/* Workflow: 36px circle icon tile + 14px weight 500 row title */}
                   <div className="flex items-center gap-3 min-w-0 pr-1">
                     <div
-                      className={`w-10 h-10 rounded-full glass-3-tile ${row.iconColor} flex items-center justify-center shrink-0`}
+                      className={`w-9 h-9 rounded-full glass-3-tile ${row.iconColor} flex items-center justify-center shrink-0`}
                     >
                       <Icon className="w-4 h-4" strokeWidth={2} />
                     </div>
-                    <span className="text-[15px] font-medium text-slate-900 dark:text-slate-100 truncate">
+                    <span className="text-[14px] font-medium text-slate-900 dark:text-slate-100 truncate">
                       {row.name}
                     </span>
                   </div>
 
-                  {/* Trigger: 13px mono, muted */}
+                  {/* Trigger: 12px mono, muted */}
                   <div className="min-w-0 pr-1">
-                    <span className="font-mono text-[13px] text-slate-500 dark:text-slate-400 truncate block">
+                    <span className="font-mono text-[12px] text-slate-500 dark:text-slate-400 truncate block">
                       {row.trigger}
                     </span>
                   </div>
