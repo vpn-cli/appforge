@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Phase 7 — Final Tweaks
-**Last completed:** 16 UI Chat Interface
-**Next:** 17 Visual Polish & Theming
+**Phase:** Phase 2 Hardening Complete (Stopped per user instruction)
+**Last completed:** 19 Copilot Multi-Provider Streaming & Resilience Hardening
+**Next:** Phase 3 / Next task per developer direction
 
 ---
 
@@ -19,10 +19,11 @@ Update this file after every completed feature. Any AI agent reading this should
 - [x] 02 Auth
 - [x] 03 Database Schema
 
-### Phase 2 — Dashboard
+### Phase 2 — Dashboard & Copilot Hardening
 - [x] 04 Dashboard Page — UI First
 - [x] 05 Dashboard Logic
 - [x] 05b Dashboard UI Revamp (Two Directions exploration: Linear Studio vs Vercel Workspace, 16:10 live registry app thumbnails, AppShell, prompt-first generation, right-column activity rail)
+- [x] 19 Copilot Multi-Provider Streaming & Resilience Hardening (Groq primary with Gemini fallback, strict pre-first-chunk failover semantics preventing model concatenation, per-component Zod schemas with safe fallback node for invalid ASTs, prompt cache key normalization, 100-prompt generation evaluation harness with resumable retry-after backoffs, and EVALS.md report)
 
 ### Phase 3 — App Builder
 - [x] 06 Builder Layout
