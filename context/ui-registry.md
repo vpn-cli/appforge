@@ -50,28 +50,31 @@ Published (Success): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text
 Draft (Neutral): inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[13px] font-medium bg-muted text-muted-foreground border border-border
 ```
 
-### Home Reference Layout (New Direction Glassmorphism)
+### Home Landing Overhaul Layout (Frosted Single Surfaces & Lavender Field)
 
-**Glass Card Surface**
+**Floating Frosted Top Bar Pill**
 ```text
-bg-white/80 dark:bg-[#12131F]/80 backdrop-blur-xl border border-white/70 dark:border-white/10 rounded-2xl p-5 shadow-[0_20px_48px_-12px_rgba(30,27,75,0.08)]
+h-16 px-4 sm:px-5 w-full flex items-center justify-between rounded-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_16px_32px_-8px_rgba(99,102,241,0.06)]
 ```
 
-**Eyebrow Badge**
+**Frosted Demo Panel (Single Surface, Zero Dark Inners)**
 ```text
-bg-[#EDEBFB] dark:bg-indigo-950/40 border border-[#DDD8F8] dark:border-indigo-800/40 text-[13px] font-medium text-[#4F46E5] dark:text-[#818CF8] px-3.5 py-1 rounded-full shadow-sm
+bg-white/75 dark:bg-slate-900/70 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[20px] p-5 sm:p-6 shadow-[0_2px_6px_-1px_rgba(15,23,42,0.04),0_20px_48px_-12px_rgba(99,102,241,0.08)] flex flex-col justify-between h-full
 ```
 
-**Headline Gradient**
+**Restrained Headline Gradient (Applied Only to 'driven Apps')**
 ```text
-bg-gradient-to-r from-[#6366F1] via-[#4F46E5] to-[#2563EB] dark:from-[#818CF8] dark:via-[#6366F1] dark:to-[#3B82F6] bg-clip-text text-transparent
+bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-500 dark:from-violet-400 dark:via-indigo-400 dark:to-indigo-300 bg-clip-text text-transparent
 ```
 
-**Dark Slate Inner Panels (Editor & Preview Stat)**
+**Metric Card (Indigo->Violet Gradient with Faint Sparkline)**
 ```text
-Editor: bg-[#14141E] border border-white/5 rounded-xl p-4 sm:p-5 font-mono text-[13px]
-Stat Panel: bg-[#1A1B29] border border-white/5 rounded-xl p-5 relative overflow-hidden text-white
-Table Frame: bg-[#161724] border border-white/5 rounded-xl text-slate-100 text-xs
+rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 text-white p-4 sm:p-5 relative overflow-hidden shadow-sm
+```
+
+**Table Container (Light Rows, Tinted Circle Lucide Icons, Status Pills, Row Kebab on Hover)**
+```text
+rounded-xl border border-slate-200/70 dark:border-white/10 overflow-hidden bg-white/50 dark:bg-white/[0.02] backdrop-blur-sm shadow-xs
 ```
 
 ---
