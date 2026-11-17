@@ -45,20 +45,10 @@ export function DashboardView({ initialApps }: Props) {
     return initialApps.filter((a) => a.name.toLowerCase().includes(q));
   }, [initialApps, searchQuery]);
 
-  // Compute quiet stats line (no zero-value metrics)
-  const statsLine = useMemo(() => {
-    const total = initialApps.length;
-    if (total === 0) return "0 apps";
-
-    const published = initialApps.filter((a) => a.status === "Published").length;
-    const drafts = initialApps.filter((a) => a.status !== "Published").length;
-
-    const parts = [`${total} ${total === 1 ? "app" : "apps"}`];
-    if (published > 0) parts.push(`${published} published`);
-    if (drafts > 0) parts.push(`${drafts} draft`);
-
-    return parts.join(" · ");
-  }, [initialApps]);
+  // Stats counts
+  const totalApps = initialApps.length;
+  const publishedCount = initialApps.filter((a) => a.status === "Published").length;
+  const draftsCount = initialApps.filter((a) => a.status !== "Published").length;
 
   const handlePlainCreate = () => {
     if (isPending) return;
@@ -107,22 +97,38 @@ export function DashboardView({ initialApps }: Props) {
   return (
     <AppShell activeSearchQuery={searchQuery} onSearchChange={setSearchQuery}>
       <div className="w-full max-w-[1200px] mx-auto px-6 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8">
-        {/* Page Title Row: Title + Count on left, "New app" button on right */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
+        {/* Page Title Row: Title + Inline Stat Chips on left, "New app" primary button aligned to h1 baseline */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-1">
+          <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
             <h1 className="text-[32px] font-semibold tracking-[-0.02em] leading-tight text-foreground">
               Apps
             </h1>
-            <p className="text-[13px] text-muted-foreground">
-              {statsLine}
-            </p>
+            {/* Inline stat chips: 2 apps · 1 published · 1 draft */}
+            <div className="inline-flex items-center gap-1.5 flex-wrap">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-slate-200/60 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 text-foreground">
+                {totalApps} {totalApps === 1 ? "app" : "apps"}
+              </span>
+              {publishedCount > 0 && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  {publishedCount} published
+                </span>
+              )}
+              {draftsCount > 0 && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-slate-200/50 dark:bg-white/5 text-muted-foreground border border-slate-300/40 dark:border-white/10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 shrink-0" />
+                  {draftsCount} draft
+                </span>
+              )}
+            </div>
           </div>
 
           <Button
-            variant="secondary"
+            variant="primary"
             size="md"
             onClick={handlePlainCreate}
             disabled={isPending}
+            className="shrink-0 self-start sm:self-auto"
           >
             {isPending ? (
               <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
@@ -133,7 +139,7 @@ export function DashboardView({ initialApps }: Props) {
           </Button>
         </div>
 
-        {/* Prompt-first Box */}
+        {/* Prompt-first Composer */}
         <PromptBox
           onPlainCreate={handlePlainCreate}
           isPending={isPending}
@@ -141,7 +147,7 @@ export function DashboardView({ initialApps }: Props) {
         />
 
         {/* Main Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
           {/* Main App Grid Section (Desktop: 8 or 9 cols) */}
           <div className="lg:col-span-8 xl:col-span-9 flex flex-col gap-5">
             {/* Apps or Empty State */}
@@ -167,11 +173,9 @@ export function DashboardView({ initialApps }: Props) {
             )}
           </div>
 
-          {/* Activity Column (Desktop: right-hand column, Mobile: below grid) */}
-          <div className="lg:col-span-4 xl:col-span-3 w-full flex flex-col gap-4">
-            <div className="sticky top-20 flex flex-col gap-4">
-              <RecentActivity apps={initialApps} />
-            </div>
+          {/* Activity Column (Desktop: right-hand column matching grid top & height, Mobile: below grid) */}
+          <div className="lg:col-span-4 xl:col-span-3 w-full h-full flex flex-col">
+            <RecentActivity apps={initialApps} />
           </div>
         </div>
       </div>
