@@ -334,15 +334,15 @@ body::after {
 /* Level 1: Primary floating glass surfaces (Nav bar pill, Demo panels) */
 .glass-1 {
   position: relative;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.32));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.76));
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(255, 255, 255, 0.90);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.25),
-    0 1px 2px rgba(30, 30, 80, 0.05),
-    0 20px 50px -20px rgba(70, 60, 170, 0.22);
+    inset 0 -1px 0 rgba(255, 255, 255, 0.30),
+    0 1px 2px rgba(30, 30, 80, 0.04),
+    0 20px 50px -20px rgba(70, 60, 170, 0.16);
 }
 
 .glass-1::before {
@@ -355,13 +355,13 @@ body::after {
 }
 
 .dark .glass-1 {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025));
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 24px 60px -24px rgba(0, 0, 0, 0.6);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 60px -24px rgba(0, 0, 0, 0.7);
 }
 
 .dark .glass-1::before {
