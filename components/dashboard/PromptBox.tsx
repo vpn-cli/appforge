@@ -83,7 +83,7 @@ export function PromptBox({ onPlainCreate, isPending, appCount = 0 }: Props) {
             ) : (
               <>
                 <span>Generate</span>
-                <kbd className="hidden sm:inline-block font-mono text-[10px] opacity-70">
+                <kbd className="hidden sm:inline-block font-mono text-[12px] opacity-70">
                   ↵
                 </kbd>
               </>

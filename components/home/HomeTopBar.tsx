@@ -85,7 +85,7 @@ export function HomeTopBar() {
 
           {/* Org Switcher pill (avatar + name + chevron) - 15px weight 500 */}
           <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 h-9 rounded-full glass-2-nested text-slate-800 dark:text-slate-200 select-none">
-            <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-semibold text-[11px] flex items-center justify-center shrink-0">
+            <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-semibold text-[12px] flex items-center justify-center shrink-0">
               {orgInitial}
             </span>
             <span className="truncate max-w-[160px] font-medium text-[15px] text-slate-800 dark:text-slate-200">

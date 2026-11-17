@@ -623,7 +623,7 @@ export default function BuilderPage() {
               <FileCode className="w-4 h-4" />
             </IconButton>
             <div className="flex-1 flex items-center justify-center">
-              <span className="[writing-mode:vertical-lr] rotate-180 text-[11px] font-medium text-muted-foreground group-hover:text-foreground tracking-wider select-none">
+              <span className="[writing-mode:vertical-lr] rotate-180 text-[12px] font-medium text-muted-foreground group-hover:text-foreground tracking-wider select-none">
                 Config
               </span>
             </div>

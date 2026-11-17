@@ -135,7 +135,7 @@ export function DemoPreviewCard() {
             Header labels: 11px uppercase tracking .08em, aligned exactly to column starts */}
         <div className="flex flex-col">
           {/* Header row */}
-          <div className="grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 py-1 text-[11px] font-semibold tracking-[0.08em] uppercase text-slate-500 dark:text-slate-400 select-none mb-2">
+          <div className="grid grid-cols-[1.5fr_1fr_1fr_32px] gap-x-4 items-center px-4 py-1 text-[12px] font-semibold tracking-[0.06em] uppercase text-slate-500 dark:text-slate-400 select-none mb-2">
             <span className="text-left">Workflow</span>
             <span className="text-left">Trigger</span>
             <span className="text-left">Status</span>

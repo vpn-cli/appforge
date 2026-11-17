@@ -39,14 +39,14 @@ export function ValidationPanel({
           {isGenerating ? (
             <>
               <Loader2 className="w-3 h-3 text-brand animate-spin" />
-              <span className="text-[11px] text-brand font-medium">
+              <span className="text-[12px] text-brand font-medium">
                 Validating layout...
               </span>
             </>
           ) : hasIssues ? (
             <>
               <AlertCircle className="w-3 h-3 text-error-text" />
-              <span className="text-[11px] text-error-text font-medium">
+              <span className="text-[12px] text-error-text font-medium">
                 {errors.length} error{errors.length === 1 ? "" : "s"}
                 {warnings.length > 0 ? `, ${warnings.length} warning${warnings.length === 1 ? "" : "s"}` : ""}
               </span>
@@ -54,7 +54,7 @@ export function ValidationPanel({
           ) : (
             <>
               <CheckCircle2 className="w-3 h-3 text-success-text" />
-              <span className="text-[11px] text-success-text font-medium">
+              <span className="text-[12px] text-success-text font-medium">
                 No issues
               </span>
             </>
@@ -76,16 +76,16 @@ export function ValidationPanel({
         aria-label="Collapse validation log"
       >
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-medium text-muted-foreground">
+          <span className="text-[12px] font-medium text-muted-foreground">
             Validation log
           </span>
           {!isGenerating && (
             <div className="flex items-center gap-2.5">
-              <span className="flex items-center gap-1 text-[11px] font-mono font-medium text-error-text">
+              <span className="flex items-center gap-1 text-[12px] font-mono font-medium text-error-text">
                 <AlertCircle className="w-3 h-3" />
                 {errors.length}
               </span>
-              <span className="flex items-center gap-1 text-[11px] font-mono font-medium text-warning-text">
+              <span className="flex items-center gap-1 text-[12px] font-mono font-medium text-warning-text">
                 <AlertCircle className="w-3 h-3" />
                 {warnings.length}
               </span>
@@ -118,7 +118,7 @@ export function ValidationPanel({
                 key={`err-${i}`}
                 className="text-error-text text-xs font-mono bg-error-light p-2 rounded border border-error-border leading-relaxed break-all"
               >
-                <span className="font-bold mr-1 uppercase text-[10px]">[ERR]</span>{" "}
+                <span className="font-bold mr-1 uppercase text-[12px]">[ERR]</span>{" "}
                 {err}
               </div>
             ))}
@@ -127,7 +127,7 @@ export function ValidationPanel({
                 key={`warn-${i}`}
                 className="text-warning-text text-xs font-mono bg-warning-light p-2 rounded border border-warning-border leading-relaxed break-all"
               >
-                <span className="font-bold mr-1 uppercase text-[10px]">[WARN]</span>{" "}
+                <span className="font-bold mr-1 uppercase text-[12px]">[WARN]</span>{" "}
                 {warn}
               </div>
             ))}

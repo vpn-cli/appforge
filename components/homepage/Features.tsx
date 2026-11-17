@@ -94,7 +94,7 @@ export function Features() {
                         <div className="text-[12px] font-mono font-semibold text-slate-800 dark:text-slate-200">
                           users
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                        <div className="text-[12px] text-slate-500 dark:text-slate-400 font-mono">
                           4 fields · id, role
                         </div>
                       </div>
@@ -111,7 +111,7 @@ export function Features() {
                         <div className="text-[12px] font-mono font-semibold text-slate-800 dark:text-slate-200">
                           projects
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                        <div className="text-[12px] text-slate-500 dark:text-slate-400 font-mono">
                           6 fields · org_id
                         </div>
                       </div>
@@ -128,7 +128,7 @@ export function Features() {
                         <div className="text-[12px] font-mono font-semibold text-slate-800 dark:text-slate-200">
                           workflows
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                        <div className="text-[12px] text-slate-500 dark:text-slate-400 font-mono">
                           3 fields · trigger
                         </div>
                       </div>
@@ -168,15 +168,15 @@ export function Features() {
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-500/10 dark:bg-indigo-400/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
                       <Database className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.8} />
                     </div>
-                    <span className="font-mono text-[11px] font-bold tracking-widest px-2.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20">
+                    <span className="font-mono text-[12px] font-bold tracking-widest px-2.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20">
                       LIVE DB
                     </span>
                   </div>
                   <div className="sm:mt-1 text-right sm:text-center">
-                    <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                    <div className="text-[12px] font-mono text-slate-500 dark:text-slate-400">
                       PostgreSQL 16
                     </div>
-                    <div className="text-[11px] font-mono font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    <div className="text-[12px] font-mono font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
                       &lt; 2ms latency
                     </div>
                   </div>
@@ -206,10 +206,10 @@ export function Features() {
                 {/* Tile 1 (Live - Metrics) */}
                 <div className="glass-3 rounded-2xl p-3.5 sm:p-5 flex flex-col justify-between h-[135px] sm:h-[150px] border border-white/80 dark:border-white/10">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
+                    <span className="text-[12px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
                       Active Users
                     </span>
-                    <span className="flex items-center gap-1 text-[11px] sm:text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
+                    <span className="flex items-center gap-1 text-[12px] sm:text-[12px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       LIVE
                     </span>
@@ -218,7 +218,7 @@ export function Features() {
                     <div className="text-[20px] sm:text-[24px] font-bold tracking-tight text-slate-900 dark:text-slate-100">
                       12,840
                     </div>
-                    <div className="text-[11px] sm:text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    <div className="text-[12px] sm:text-[12px] font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
                       +14% this week
                     </div>
                   </div>
@@ -229,19 +229,19 @@ export function Features() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <ShieldAlert className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 dark:text-rose-400 shrink-0" />
-                      <span className="text-[11px] sm:text-[12px] font-medium text-rose-600 dark:text-rose-400 truncate">
+                      <span className="text-[12px] sm:text-[12px] font-medium text-rose-600 dark:text-rose-400 truncate">
                         Boundary
                       </span>
                     </div>
-                    <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-500/20 shrink-0">
+                    <span className="text-[12px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-500/20 shrink-0">
                       ISOLATED
                     </span>
                   </div>
                   <div>
-                    <div className="text-[11px] sm:text-[11px] text-rose-600/90 dark:text-rose-300 font-mono leading-tight">
+                    <div className="text-[12px] sm:text-[12px] text-rose-600/90 dark:text-rose-300 font-mono leading-tight">
                       Render caught: Type mismatch at &apos;metrics&apos;
                     </div>
-                    <div className="text-[11px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">
+                    <div className="text-[12px] sm:text-[12px] text-slate-500 dark:text-slate-400 mt-1 truncate">
                       Page remains interactive
                     </div>
                   </div>
@@ -250,10 +250,10 @@ export function Features() {
                 {/* Tile 3 (Live - Data Table) */}
                 <div className="glass-3 rounded-2xl p-3.5 sm:p-5 flex flex-col justify-between h-[135px] sm:h-[150px] border border-white/80 dark:border-white/10">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
+                    <span className="text-[12px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
                       Data Table
                     </span>
-                    <span className="flex items-center gap-1 text-[11px] sm:text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
+                    <span className="flex items-center gap-1 text-[12px] sm:text-[12px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       LIVE
                     </span>
@@ -263,7 +263,7 @@ export function Features() {
                     <div className="h-1.5 sm:h-2 w-3/4 rounded bg-slate-300/40 dark:bg-white/5" />
                     <div className="h-1.5 sm:h-2 w-5/6 rounded bg-slate-300/40 dark:bg-white/5" />
                   </div>
-                  <div className="text-[11px] sm:text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                  <div className="text-[12px] sm:text-[12px] font-mono text-slate-500 dark:text-slate-400">
                     3 records rendered
                   </div>
                 </div>
@@ -271,23 +271,23 @@ export function Features() {
                 {/* Tile 4 (Live - API Proxy) */}
                 <div className="glass-3 rounded-2xl p-3.5 sm:p-5 flex flex-col justify-between h-[135px] sm:h-[150px] border border-white/80 dark:border-white/10">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
+                    <span className="text-[12px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
                       API Gateway
                     </span>
-                    <span className="flex items-center gap-1 text-[11px] sm:text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
+                    <span className="flex items-center gap-1 text-[12px] sm:text-[12px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       LIVE
                     </span>
                   </div>
                   <div>
-                    <div className="text-[11px] sm:text-[11px] font-mono font-medium text-slate-800 dark:text-slate-200">
+                    <div className="text-[12px] sm:text-[12px] font-mono font-medium text-slate-800 dark:text-slate-200">
                       200 OK
                     </div>
-                    <div className="text-[11px] sm:text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                    <div className="text-[12px] sm:text-[12px] font-mono text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                       GET /api/proxy · 14ms
                     </div>
                   </div>
-                  <div className="text-[11px] sm:text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                  <div className="text-[12px] sm:text-[12px] font-mono text-slate-500 dark:text-slate-400">
                     Status: operational
                   </div>
                 </div>
@@ -360,13 +360,13 @@ export function Features() {
               <div className="w-full max-w-[540px] flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-5">
                 
                 {/* Left: JSON card */}
-                <div className="glass-3 rounded-2xl p-3.5 sm:p-4 w-full max-w-[260px] sm:w-[220px] border border-white/80 dark:border-white/10 font-mono text-[11px] leading-[1.65] select-none shrink-0 shadow-xs">
+                <div className="glass-3 rounded-2xl p-3.5 sm:p-4 w-full max-w-[260px] sm:w-[220px] border border-white/80 dark:border-white/10 font-mono text-[12px] leading-[1.65] select-none shrink-0 shadow-xs">
                   <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-200/50 dark:border-white/5 font-sans">
                     <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                       <Code className="w-3.5 h-3.5 text-indigo-500" />
-                      <span className="text-[11px] font-medium">app.config</span>
+                      <span className="text-[12px] font-medium">app.config</span>
                     </div>
-                    <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-mono font-semibold">
+                    <span className="text-[12px] text-indigo-600 dark:text-indigo-400 font-mono font-semibold">
                       &lt;5ms
                     </span>
                   </div>
@@ -408,7 +408,7 @@ export function Features() {
                         Revenue
                       </span>
                     </div>
-                    <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <span className="text-[12px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                       +18%
                     </span>
                   </div>
@@ -417,12 +417,12 @@ export function Features() {
                     <div className="text-[20px] sm:text-[24px] font-bold tracking-tight text-slate-900 dark:text-slate-100">
                       $48,200
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+                    <div className="text-[12px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
                       Synced from Postgres
                     </div>
                   </div>
 
-                  <div className="h-7 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 text-[11px] font-medium flex items-center justify-center transition-colors shadow-xs select-none gap-1">
+                  <div className="h-7 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 text-[12px] font-medium flex items-center justify-center transition-colors shadow-xs select-none gap-1">
                     <CheckCircle2 className="w-3 h-3" />
                     <span>Rendered Component</span>
                   </div>

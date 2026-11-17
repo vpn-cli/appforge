@@ -77,7 +77,7 @@ export function AppThumbnail({ config }: Props) {
       <span className="text-xs font-mono font-medium text-error-text">
         Scoped render error
       </span>
-      <span className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px] truncate">
+      <span className="text-[12px] text-muted-foreground mt-0.5 max-w-[200px] truncate">
         Component failed in this preview
       </span>
     </div>
@@ -106,7 +106,7 @@ export function AppThumbnail({ config }: Props) {
             <span className="text-[12px] font-medium text-muted-foreground/80">
               Empty application
             </span>
-            <span className="text-[11px] text-muted-foreground/50 mt-0.5">
+            <span className="text-[12px] text-muted-foreground/60 mt-0.5">
               Add components in builder
             </span>
           </div>

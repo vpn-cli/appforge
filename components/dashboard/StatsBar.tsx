@@ -41,7 +41,7 @@ export function StatsBar({ counts = { apps: 12, components: 14392, drafts: 3, pu
               {stat.value}
             </div>
           </div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-[12px] text-muted-foreground">
             {stat.subtext}
           </div>
         </div>
