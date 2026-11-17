@@ -1,55 +1,113 @@
 {
-  "timestamp": "2026-11-17T18:43:14.946Z",
+  "timestamp": "2026-11-17T20:20:04.584Z",
   "environment": {
     "platform": "win32",
-    "release": "10.0.26300",
     "arch": "x64",
     "cpus": "AMD Ryzen 7 6800H with Radeon Graphics         ",
-    "nodeVersion": "v24.15.0"
+    "cpuCount": 16,
+    "nodeVersion": "v24.15.0",
+    "totalMemoryMB": 15629
   },
-  "models": {
-    "groq_120b_partial": {
-      "model": "Groq (openai/gpt-oss-120b) [Partial]",
-      "sampleSize": 67,
-      "successCount": 57,
-      "nodeValidationPassRate": 92.8,
-      "fullLayoutPassRate": 71.6,
-      "firstRenderP50Ms": 5326,
-      "firstRenderP95Ms": 30202,
-      "fullLayoutP50Ms": 6181,
-      "fullLayoutP95Ms": 31394,
-      "avgTokensPerPrompt": 0,
-      "totalComponentsEvaluated": 152,
-      "validComponentsEvaluated": 141
-    },
-    "groq_20b": {
-      "model": "Groq (openai/gpt-oss-20b)",
-      "sampleSize": 100,
-      "successCount": 97,
-      "nodeValidationPassRate": 87.7,
-      "fullLayoutPassRate": 68,
-      "firstRenderP50Ms": 1620,
-      "firstRenderP95Ms": 2917,
-      "fullLayoutP50Ms": 1956,
-      "fullLayoutP95Ms": 3341,
-      "avgTokensPerPrompt": 1749,
-      "totalComponentsEvaluated": 260,
-      "validComponentsEvaluated": 228
-    },
-    "gemini_2_5_flash": {
-      "model": "Gemini (gemini-2.5-flash)",
-      "sampleSize": 100,
-      "successCount": 6,
-      "nodeValidationPassRate": 100,
-      "fullLayoutPassRate": 6,
-      "firstRenderP50Ms": 12733,
-      "firstRenderP95Ms": 16676,
-      "fullLayoutP50Ms": 14211,
-      "fullLayoutP95Ms": 18076,
-      "avgTokensPerPrompt": 3249,
-      "totalComponentsEvaluated": 17,
-      "validComponentsEvaluated": 17
+  "groq": {
+    "model": "openai/gpt-oss-120b",
+    "summary": {
+      "totalPrompts": 100,
+      "successCount": 100,
+      "failCount": 0,
+      "avgTtftMs": 31122,
+      "avgDurationMs": 31611,
+      "nodeValidationPassRate": 93.1,
+      "fullLayoutPassRate": 51,
+      "totalComponentsEvaluated": 159,
+      "validComponentsEvaluated": 148,
+      "categoryStats": {
+        "forms": {
+          "count": 20,
+          "avgTtft": 4198,
+          "avgDuration": 4738,
+          "nodePassRate": 82,
+          "layoutPassRate": 50
+        },
+        "dashboards": {
+          "count": 20,
+          "avgTtft": 13396,
+          "avgDuration": 14161,
+          "nodePassRate": 100,
+          "layoutPassRate": 95
+        },
+        "crud": {
+          "count": 20,
+          "avgTtft": 11260,
+          "avgDuration": 12146,
+          "nodePassRate": 100,
+          "layoutPassRate": 90
+        },
+        "settings": {
+          "count": 20,
+          "avgTtft": 63791,
+          "avgDuration": 63963,
+          "nodePassRate": 75,
+          "layoutPassRate": 5
+        },
+        "analytics": {
+          "count": 20,
+          "avgTtft": 62965,
+          "avgDuration": 63048,
+          "nodePassRate": 100,
+          "layoutPassRate": 15
+        }
+      }
     }
   },
-  "reproductionCommand": "node scripts/run-evals.mjs"
+  "gemini": {
+    "model": "gemini-2.5-flash",
+    "summary": {
+      "totalPrompts": 100,
+      "successCount": 100,
+      "failCount": 0,
+      "avgTtftMs": 64227,
+      "avgDurationMs": 64260,
+      "nodeValidationPassRate": 100,
+      "fullLayoutPassRate": 1,
+      "totalComponentsEvaluated": 3,
+      "validComponentsEvaluated": 3,
+      "categoryStats": {
+        "forms": {
+          "count": 20,
+          "avgTtft": 64104,
+          "avgDuration": 64104,
+          "nodePassRate": 0,
+          "layoutPassRate": 0
+        },
+        "dashboards": {
+          "count": 20,
+          "avgTtft": 64337,
+          "avgDuration": 64504,
+          "nodePassRate": 100,
+          "layoutPassRate": 5
+        },
+        "crud": {
+          "count": 20,
+          "avgTtft": 64162,
+          "avgDuration": 64162,
+          "nodePassRate": 0,
+          "layoutPassRate": 0
+        },
+        "settings": {
+          "count": 20,
+          "avgTtft": 64201,
+          "avgDuration": 64201,
+          "nodePassRate": 0,
+          "layoutPassRate": 0
+        },
+        "analytics": {
+          "count": 20,
+          "avgTtft": 64330,
+          "avgDuration": 64330,
+          "nodePassRate": 0,
+          "layoutPassRate": 0
+        }
+      }
+    }
+  }
 }
