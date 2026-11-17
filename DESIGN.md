@@ -119,3 +119,4 @@ No harsh, saturated drop shadows. Elevation is rendered via two-step ambient + d
 - **Rendered Panel Resolution**: Resolves gently after code begins (~250ms delay, 400ms duration).
 - **CTA Interaction**: Primary button arrow shifts `+2px` right on hover (`translate-x-0.5`).
 - **Reduced Motion**: All animations wrapped in `@media (prefers-reduced-motion: reduce)` with instantaneous fallback.
+
