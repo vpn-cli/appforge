@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppThumbnail } from "@/components/dashboard/AppThumbnail";
-import { MoreHorizontal, ExternalLink, Settings2, Edit3, Trash2, CheckCircle2 } from "lucide-react";
+import { MoreHorizontal, ExternalLink, Settings2, Edit3, Trash2 } from "lucide-react";
+import { StatusPill } from "@/components/ui/status-pill";
+import { IconButton } from "@/components/ui/icon-button";
 import type { AppData } from "@/components/dashboard/AppGrid";
 
 type Props = {
@@ -52,7 +54,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
   return (
     <div
       onClick={handleCardClick}
-      className="group cursor-pointer bg-card border border-border hover:border-border-strong rounded-lg overflow-hidden transition-colors duration-150 flex flex-col relative select-none"
+      className="group cursor-pointer rounded-2xl bg-card dark:bg-[#14141A] border border-border dark:border-white/10 hover:border-slate-400/50 dark:hover:border-white/20 overflow-hidden transition-all duration-200 flex flex-col relative select-none hover:-translate-y-0.5 hover:shadow-lg"
       role="link"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -62,115 +64,106 @@ export function AppCard({ app, onRename, onDelete }: Props) {
         }
       }}
     >
-      {/* 16:10 Live Thumbnail */}
+      {/* 16:10 Live Thumbnail with bottom fade mask */}
       <AppThumbnail config={appConfig} />
 
-      {/* Card Body */}
-      <div className="p-3.5 sm:p-4 flex flex-col justify-between flex-1 gap-2">
-        <div className="flex items-start justify-between gap-2">
-          {/* App title & metadata */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-[16px] font-semibold text-foreground truncate transition-colors">
-                {app.name}
-              </h3>
-            </div>
-            <p className="text-[13px] text-muted-foreground mt-0.5">
-              Edited {formatRelativeTime(app.updated_at)}
-            </p>
-          </div>
+      {/* Card Body with consistent padding */}
+      <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 gap-3.5">
+        {/* Title 17/600 and meta 13 muted */}
+        <div className="min-w-0">
+          <h3 className="text-[17px] font-semibold text-foreground truncate tracking-tight transition-colors">
+            {app.name}
+          </h3>
+          <p className="text-[13px] text-muted-foreground mt-0.5">
+            Edited {formatRelativeTime(app.updated_at)}
+          </p>
+        </div>
 
-          {/* Status Badge + Overflow menu */}
-          <div className="flex items-center gap-2 shrink-0">
-            <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[13px] font-medium shrink-0 whitespace-nowrap ${
-                isPublished
-                  ? "bg-success-light text-success-text border border-success-border"
-                  : "bg-muted text-muted-foreground border border-border"
-              }`}
+        {/* Status pill and kebab aligned on one row */}
+        <div className="flex items-center justify-between pt-3 border-t border-border/40 dark:border-white/5">
+          <StatusPill variant={isPublished ? "published" : "draft"}>
+            {app.status}
+          </StatusPill>
+
+          {/* Overflow Menu Trigger */}
+          <div className="relative" data-no-navigate>
+            <IconButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
+              aria-label="App actions menu"
+              aria-expanded={isMenuOpen}
+              className="text-muted-foreground hover:text-foreground"
             >
-              {isPublished && <span className="w-1.5 h-1.5 rounded-full bg-success-text shrink-0" />}
-              <span>{app.status}</span>
-            </span>
+              <MoreHorizontal className="w-4 h-4" />
+            </IconButton>
 
-            {/* Overflow Menu Trigger */}
-            <div className="relative" data-no-navigate>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsMenuOpen(!isMenuOpen);
-                }}
-                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-1 focus:ring-border"
-                aria-label="App actions menu"
-                aria-expanded={isMenuOpen}
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-
-              {/* Dropdown Menu */}
-              {isMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsMenuOpen(false);
-                    }}
-                  />
-                  <div
-                    className="absolute right-0 top-full mt-1 w-44 rounded-md border border-border bg-card shadow-lg py-1 z-50 text-[13px] animate-in fade-in-50 zoom-in-95 duration-100"
-                    onClick={(e) => e.stopPropagation()}
+            {/* Dropdown Menu */}
+            {isMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMenuOpen(false);
+                  }}
+                />
+                <div
+                  className="absolute right-0 bottom-full mb-1 w-44 rounded-2xl glass-1 border border-border dark:border-white/10 shadow-xl py-1.5 z-50 text-[13px] animate-in fade-in zoom-in-95 duration-100"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Link
+                    href={`/builder/${app.id}`}
+                    className="flex items-center gap-2 px-3.5 py-1.5 text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
                   >
+                    <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>Open in builder</span>
+                  </Link>
+
+                  {isPublished && (
                     <Link
-                      href={`/builder/${app.id}`}
-                      className="flex items-center gap-2 px-3 py-1.5 text-foreground hover:bg-muted transition-colors"
+                      href={`/apps/${app.id}`}
+                      className="flex items-center gap-2 px-3.5 py-1.5 text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span>Open in builder</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span>Run app</span>
                     </Link>
+                  )}
 
-                    {isPublished && (
-                      <Link
-                        href={`/apps/${app.id}`}
-                        className="flex items-center gap-2 px-3 py-1.5 text-foreground hover:bg-muted transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>Run app</span>
-                      </Link>
-                    )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onRename(app.id, app.name);
+                    }}
+                    className="w-full flex items-center gap-2 px-3.5 py-1.5 text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-left cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>Rename</span>
+                  </button>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onRename(app.id, app.name);
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-foreground hover:bg-muted transition-colors text-left"
-                    >
-                      <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span>Rename</span>
-                    </button>
+                  <div className="my-1 border-t border-border/50 dark:border-white/10" />
 
-                    <div className="my-1 border-t border-border/50" />
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onDelete(app.id);
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-error-text hover:bg-error-light transition-colors text-left"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Delete app</span>
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onDelete(app.id);
+                    }}
+                    className="w-full flex items-center gap-2 px-3.5 py-1.5 text-error-text hover:bg-error-light/50 transition-colors text-left cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete app</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

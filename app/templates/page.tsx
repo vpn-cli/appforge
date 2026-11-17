@@ -1,6 +1,6 @@
 ﻿import { AppShell } from "@/components/layout/AppShell";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { StatusPill } from "@/components/ui/status-pill";
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { createAppFromTemplate } from "@/actions/apps";
 import { ArrowRight, LayoutTemplate, Database, FileCode2 } from "lucide-react";
@@ -35,10 +35,13 @@ export default async function TemplatesPage() {
 
   return (
     <AppShell>
-      <div className="w-full max-w-7xl mx-auto px-4 py-10 flex flex-col gap-8">
+      {/* Same max-w-[1200px] container width and padding as Apps page */}
+      <div className="w-full max-w-[1200px] mx-auto px-6 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Templates</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-[32px] font-semibold tracking-[-0.02em] leading-tight text-foreground">
+            Templates
+          </h1>
+          <p className="text-[13px] text-muted-foreground mt-1">
             Starter configurations to jumpstart your internal tools.
           </p>
         </div>
@@ -47,39 +50,47 @@ export default async function TemplatesPage() {
           {templates.map((tpl) => {
             const Icon = tpl.icon;
             return (
-              <Card
+              <div
                 key={tpl.id}
-                className="bg-card border-border hover:border-foreground/30 transition-colors flex flex-col justify-between"
+                className="rounded-2xl bg-card dark:bg-[#14141A] border border-border dark:border-white/10 hover:border-slate-400/50 dark:hover:border-white/25 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 flex flex-col justify-between p-5 h-full"
               >
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-foreground">
-                      <Icon className="w-4 h-4 text-brand" />
+                <div>
+                  {/* Top row: 40px icon tile + Category badge */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 rounded-full glass-3-tile flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-2xs shrink-0">
+                      <Icon className="w-5 h-5" strokeWidth={1.75} />
                     </div>
-                    <span className="text-[11px] font-medium text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/40">
+                    <StatusPill variant="neutral" showDot={false}>
                       {tpl.tag}
-                    </span>
+                    </StatusPill>
                   </div>
-                  <CardTitle className="text-base font-semibold text-foreground">
+
+                  {/* Title: 17/600 */}
+                  <h3 className="text-[17px] font-semibold text-foreground tracking-tight">
                     {tpl.title}
-                  </CardTitle>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">
+                  </h3>
+
+                  {/* Description: 14 at readable contrast */}
+                  <p className="text-[14px] text-muted-foreground mt-1.5 leading-normal">
                     {tpl.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <form action={createAppFromTemplate.bind(null, tpl.id)}>
+                  </p>
+                </div>
+
+                {/* Bottom: Use template full-width secondary button */}
+                <div className="pt-6">
+                  <form action={createAppFromTemplate.bind(null, tpl.id)} className="w-full">
                     <Button
                       type="submit"
-                      variant="outline"
-                      className="w-full text-xs font-medium h-8 border-border hover:bg-muted justify-between"
+                      variant="secondary"
+                      size="md"
+                      className="w-full justify-center gap-2"
                     >
                       <span>Use template</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </Button>
                   </form>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>

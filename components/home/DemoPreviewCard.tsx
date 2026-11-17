@@ -2,6 +2,8 @@
 
 import { Layers, MoreHorizontal, Users, FileText, ArrowUpRight, BarChart3 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { IconButton } from "@/components/ui/icon-button";
+import { StatusPill } from "@/components/ui/status-pill";
 
 interface TableRowData {
   id: string;
@@ -70,9 +72,9 @@ export function DemoPreviewCard() {
 
       {/* Content Body: Metric Card + Floating Rows Table */}
       <div className="my-5 flex flex-col gap-5 flex-1 justify-center min-w-0">
-        {/* Metric Card: Deepened gradient (#5B60C8 -> #8A82E3) ensuring >= 4.5:1 text contrast with white,
+        {/* Metric Card: Deepened gradient (#5B60C8 -> #8A82E3 light, #3B3A8C -> #5B4FB8 dark) ensuring >= 4.5:1 text contrast with white,
             chart confined to right 45% of card below the icon without crossing text, chip or icon */}
-        <div className="rounded-2xl bg-gradient-to-r from-[#5B60C8] via-[#6B71D4] to-[#8A82E3] dark:from-[#3730A3]/90 dark:via-[#4338CA]/90 dark:to-[#4F46E5]/80 border border-white/60 dark:border-white/15 text-white p-5 relative overflow-hidden shadow-[0_8px_24px_-4px_rgba(91,96,200,0.30)] dark:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.5)] select-none">
+        <div className="rounded-2xl bg-gradient-to-r from-[#5B60C8] via-[#6B71D4] to-[#8A82E3] dark:from-[#3B3A8C] dark:to-[#5B4FB8] border border-white/60 dark:border-white/15 text-white p-5 relative overflow-hidden shadow-[0_8px_24px_-4px_rgba(91,96,200,0.30)] dark:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.5)] select-none">
           {/* Confined chart to the right 45% of the card, strictly below the icon */}
           <div
             className="absolute right-0 bottom-0 w-[45%] h-[56px] pointer-events-none opacity-40 dark:opacity-30"
@@ -170,28 +172,21 @@ export function DemoPreviewCard() {
 
                   {/* Status pill with dot */}
                   <div className="min-w-0">
-                    {row.status === "Running" ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium bg-emerald-500/15 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-300 border border-emerald-500/35 whitespace-nowrap">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                        <span>Running</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium bg-indigo-500/15 dark:bg-indigo-950/70 text-indigo-950 dark:text-indigo-200 border border-indigo-500/35 whitespace-nowrap">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
-                        <span>Idle</span>
-                      </span>
-                    )}
+                    <StatusPill variant={row.status === "Running" ? "published" : "idle"}>
+                      {row.status}
+                    </StatusPill>
                   </div>
 
                   {/* Restored kebab menu in the last column (32px) */}
                   <div className="flex items-center justify-center">
-                    <button
-                      type="button"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                    <IconButton
+                      variant="ghost"
+                      size="sm"
                       aria-label="Row actions"
+                      className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                     >
                       <MoreHorizontal className="w-4 h-4" strokeWidth={2} />
-                    </button>
+                    </IconButton>
                   </div>
                 </div>
               );

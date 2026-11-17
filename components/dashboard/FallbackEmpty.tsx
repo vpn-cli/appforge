@@ -29,9 +29,10 @@ export function FallbackEmpty() {
         </Link>.
       </p>
       <Button 
+        variant="primary"
+        size="md"
         onClick={handleCreate} 
         disabled={isPending}
-        className="bg-brand hover:bg-brand-dark text-text-inverse font-medium transition-colors px-6 py-2 h-9"
       >
         {isPending ? (
           <>

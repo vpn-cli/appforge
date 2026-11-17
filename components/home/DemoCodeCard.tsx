@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FileCode, ChevronDown, Copy, Check } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 const CODE_RAW = `{
   "app": "ops_dashboard",
@@ -190,11 +191,13 @@ export function DemoCodeCard() {
           </div>
         </div>
 
-        {/* Copy button (shows "Copied" for 1.5s) */}
-        <button
+        {/* Copy button (uses shared Button component, shows "Copied" for 1.5s) */}
+        <Button
           type="button"
           onClick={handleCopy}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium glass-2-nested text-slate-700 dark:text-slate-300 hover:opacity-90 transition-all cursor-pointer outline-none active:scale-95"
+          variant="secondary"
+          size="sm"
+          className="gap-1.5"
           aria-label="Copy JSON code"
         >
           {copied ? (
@@ -208,7 +211,7 @@ export function DemoCodeCard() {
               <span>Copy</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
 
       {/* Code Editor Body: 15px mono, line-height 1.75, filling the space vertically with zero dead block */}

@@ -18,16 +18,20 @@ export default function NotFound() {
           The requested page could not be located. It may have been moved, renamed, or does not exist in this environment.
         </p>
         <div className="flex items-center gap-3">
-          <Link href="/">
-            <Button variant="outline" className="h-9 px-4 text-sm border-border hover:bg-muted">
-              Return Home
-            </Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button className="h-9 px-4 text-sm bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground">
-              Dashboard
-            </Button>
-          </Link>
+          <Button
+            variant="secondary"
+            size="md"
+            render={<Link href="/" />}
+          >
+            Return Home
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            render={<Link href="/dashboard" />}
+          >
+            Dashboard
+          </Button>
         </div>
       </main>
       <Footer />

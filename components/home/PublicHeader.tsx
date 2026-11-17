@@ -21,15 +21,12 @@ export function PublicHeader() {
       <div className="flex items-center gap-3">
         <ThemeToggle />
         <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
-          <Button
-            variant="ghost"
-            className="text-sm font-medium hover:bg-slate-200/50 dark:hover:bg-slate-800/50 h-9 px-4 text-slate-700 dark:text-slate-200"
-          >
+          <Button variant="ghost" size="md">
             Log in
           </Button>
         </SignInButton>
         <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-          <Button className="bg-[#09090B] dark:bg-white text-white dark:text-[#09090B] hover:bg-[#1E1E24] dark:hover:bg-slate-100 font-medium text-sm h-9 px-4 rounded-lg shadow-sm transition-colors">
+          <Button variant="primary" size="md">
             Start for free
           </Button>
         </SignUpButton>

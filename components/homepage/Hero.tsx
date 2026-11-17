@@ -82,27 +82,25 @@ export function Hero() {
             variants={itemVariants}
             className="flex justify-center gap-4 mb-16"
           >
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link href="/builder/demo" tabIndex={-1}>
-                <Button
-                  size="lg"
-                  className="bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground font-medium text-sm h-10 px-8 rounded-md transition-colors shadow-none"
-                >
-                  Start Building
-                </Button>
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link href="/templates" tabIndex={-1}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="bg-card hover:bg-muted text-foreground border border-border-strong font-medium text-sm h-10 px-8 rounded-md transition-colors shadow-none"
-                >
-                  View Templates
-                </Button>
-              </Link>
-            </motion.div>
+            <div>
+              <Button
+                size="lg"
+                variant="primary"
+                showArrow
+                render={<Link href="/builder/demo" />}
+              >
+                Start Building
+              </Button>
+            </div>
+            <div>
+              <Button
+                size="lg"
+                variant="secondary"
+                render={<Link href="/templates" />}
+              >
+                View Templates
+              </Button>
+            </div>
           </motion.div>
         </motion.div>
 

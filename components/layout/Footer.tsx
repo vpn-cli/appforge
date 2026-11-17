@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
 
 export function Footer() {

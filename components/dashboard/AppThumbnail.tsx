@@ -88,30 +88,39 @@ export function AppThumbnail({ config }: Props) {
       className="relative aspect-[16/10] w-full overflow-hidden bg-background/80 border-b border-border/60 select-none pointer-events-none group-hover:border-foreground/30 transition-colors"
       aria-hidden="true"
     >
-      {parseError ? (
-        errorFallback
-      ) : !hasComponents ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-muted/10 text-center">
-          <div className="w-8 h-8 rounded border border-dashed border-border/80 flex items-center justify-center text-muted-foreground/40 mb-2">
-            <span className="font-mono text-xs">&lt;&gt;</span>
+      {/* Scaled desktop viewport container with bottom fade mask */}
+      <div
+        className="w-full h-full relative overflow-hidden"
+        style={{
+          maskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
+        }}
+      >
+        {parseError ? (
+          errorFallback
+        ) : !hasComponents ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-muted/10 text-center">
+            <div className="w-8 h-8 rounded-full border border-dashed border-border/80 flex items-center justify-center text-muted-foreground/40 mb-2">
+              <span className="font-mono text-xs">&lt;&gt;</span>
+            </div>
+            <span className="text-[12px] font-medium text-muted-foreground/80">
+              Empty application
+            </span>
+            <span className="text-[11px] text-muted-foreground/50 mt-0.5">
+              Add components in builder
+            </span>
           </div>
-          <span className="text-[11px] font-medium text-muted-foreground/70">
-            Empty application canvas
-          </span>
-          <span className="text-[10px] text-muted-foreground/40 mt-0.5">
-            Add components in builder
-          </span>
-        </div>
-      ) : (
-        <ThumbnailErrorBoundary fallback={errorFallback}>
-          {/* Scaled desktop viewport container */}
-          <div className="absolute top-0 left-0 w-[840px] h-[525px] origin-top-left transform scale-[0.44] sm:scale-[0.48] p-5 bg-background flex flex-col gap-4 overflow-hidden pointer-events-none">
-            {components.slice(0, 4).map((comp, idx) => (
-              <RenderNode key={idx} config={comp} />
-            ))}
-          </div>
-        </ThumbnailErrorBoundary>
-      )}
+        ) : (
+          <ThumbnailErrorBoundary fallback={errorFallback}>
+            {/* Scaled desktop viewport container */}
+            <div className="absolute top-0 left-0 w-[840px] h-[525px] origin-top-left transform scale-[0.44] sm:scale-[0.48] p-5 bg-background flex flex-col gap-4 overflow-hidden pointer-events-none">
+              {components.slice(0, 4).map((comp, idx) => (
+                <RenderNode key={idx} config={comp} />
+              ))}
+            </div>
+          </ThumbnailErrorBoundary>
+        )}
+      </div>
 
       {/* Subtle top edge glare/vignette to evoke a crisp viewport edge */}
       <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/5 pointer-events-none" />

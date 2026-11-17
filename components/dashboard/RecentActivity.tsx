@@ -18,9 +18,9 @@ export function RecentActivity({ apps = [] }: { apps?: AppData[] }) {
   }
 
   return (
-    <aside className="w-full bg-card border border-border rounded-lg p-4 sm:p-5">
-      <div className="flex items-center justify-between pb-3 mb-4 border-b border-border/50">
-        <h2 className="text-[18px] font-semibold text-foreground flex items-center gap-2">
+    <aside className="w-full rounded-2xl bg-card dark:bg-[#14141A] border border-border dark:border-white/10 p-5 shadow-xs">
+      <div className="flex items-center justify-between pb-3 mb-4 border-b border-border/50 dark:border-white/5">
+        <h2 className="text-[17px] font-semibold text-foreground flex items-center gap-2">
           <Activity className="w-4 h-4 text-muted-foreground" />
           <span>Recent activity</span>
         </h2>
@@ -29,11 +29,11 @@ export function RecentActivity({ apps = [] }: { apps?: AppData[] }) {
         </span>
       </div>
 
-      <div className="relative pl-3 space-y-4 before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-[1px] before:bg-border/60">
+      <div className="relative pl-3 space-y-4 before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-[1px] before:bg-border/60 dark:before:bg-white/10">
         {activities.map((item, i) => (
           <div key={i} className="flex items-start gap-3 relative">
-            {/* Timeline node */}
-            <div className="w-2 h-2 rounded-full bg-muted-foreground/40 border border-card ring-2 ring-background mt-1.5 shrink-0 z-10" />
+            {/* Timeline node dot */}
+            <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-card dark:border-[#14141A] ring-2 ring-background mt-1 shrink-0 z-10" />
 
             <div className="flex-1 min-w-0">
               <p className="text-[13px] text-foreground font-medium truncate">

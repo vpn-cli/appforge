@@ -110,25 +110,24 @@ export function DashboardView({ initialApps }: Props) {
         {/* Page Title Row: Title + Count on left, "New app" button on right */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-[30px] font-semibold tracking-[-0.02em] leading-tight text-foreground">
+            <h1 className="text-[32px] font-semibold tracking-[-0.02em] leading-tight text-foreground">
               Apps
             </h1>
-            <p className="text-[13px] text-muted-foreground font-medium">
+            <p className="text-[13px] text-muted-foreground">
               {statsLine}
             </p>
           </div>
 
           <Button
-            variant="outline"
-            size="default"
+            variant="secondary"
+            size="md"
             onClick={handlePlainCreate}
             disabled={isPending}
-            className="h-9 text-sm border-border hover:bg-muted font-medium px-3.5"
           >
             {isPending ? (
-              <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
             ) : (
-              <Plus className="w-4 h-4 mr-1.5" />
+              <Plus className="w-3.5 h-3.5 mr-1.5" />
             )}
             <span>New app</span>
           </Button>
@@ -180,31 +179,30 @@ export function DashboardView({ initialApps }: Props) {
       {/* Delete Confirmation Modal */}
       {appToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in-95 duration-150">
-            <h2 className="text-base font-semibold text-foreground mb-1.5">
+          <div className="bg-card dark:bg-[#14141A] border border-border dark:border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in-95 duration-150">
+            <h2 className="text-[17px] font-semibold text-foreground mb-1.5">
               Delete application?
             </h2>
             <p className="text-[13px] text-muted-foreground mb-5">
               This will permanently delete this app and its configuration. This action cannot be undone.
             </p>
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2.5">
               <Button
-                variant="outline"
-                size="default"
+                variant="secondary"
+                size="md"
                 onClick={() => setAppToDelete(null)}
                 disabled={isPending}
-                className="text-sm h-9 border-border hover:bg-muted"
               >
                 Cancel
               </Button>
               <Button
                 variant="destructive"
-                size="default"
+                size="md"
                 onClick={confirmDelete}
                 disabled={isPending}
-                className="text-sm h-9 min-w-[90px]"
+                className="min-w-[90px]"
               >
-                {isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Delete"}
+                {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto" /> : "Delete"}
               </Button>
             </div>
           </div>

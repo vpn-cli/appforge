@@ -88,14 +88,14 @@ export function Navbar() {
           </motion.div>
           <motion.div variants={item} className="hidden sm:block">
             <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
-              <Button variant="ghost" className="text-sm font-medium hover:bg-muted h-9 px-3.5">
+              <Button variant="ghost" size="md">
                 Log in
               </Button>
             </SignInButton>
           </motion.div>
           <motion.div variants={item} className="hidden sm:block" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-              <Button className="bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground font-medium text-sm h-9 px-4 transition-colors">
+              <Button variant="primary" size="md">
                 Start for free
               </Button>
             </SignUpButton>
@@ -138,12 +138,12 @@ export function Navbar() {
               <SignedOut>
                 <div className="h-[1px] w-full bg-border/50 my-2" />
                 <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
-                  <Button variant="outline" className="w-full justify-center h-9 border-border text-sm">
+                  <Button variant="secondary" size="md" className="w-full justify-center">
                     Log in
                   </Button>
                 </SignInButton>
                 <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-                  <Button className="w-full justify-center h-9 bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground font-medium text-sm">
+                  <Button variant="primary" size="md" className="w-full justify-center">
                     Start for free
                   </Button>
                 </SignUpButton>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { IconButton } from "@/components/ui/icon-button";
 
 export function ThemeToggle() {
   const [isDark, setIsDark] = useState(false);
@@ -68,13 +69,15 @@ export function ThemeToggle() {
   };
 
   // Prevent hydration mismatch on the icon (36px x 36px)
-  if (!mounted) return <div className="h-9 w-9" />;
+  if (!mounted) return <div className="h-9 w-9 rounded-full" />;
 
   return (
-    <button
+    <IconButton
       onClick={toggleTheme}
-      className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-200/60 dark:bg-white/10 text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-300/60 dark:hover:bg-white/15 outline-none cursor-pointer"
+      variant="glass"
+      size="md"
       aria-label="Toggle theme"
+      className="relative cursor-pointer"
     >
       <AnimatePresence mode="wait" initial={false}>
         {isDark ? (
@@ -83,10 +86,11 @@ export function ThemeToggle() {
             initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
             animate={{ opacity: 1, rotate: 0, scale: 1 }}
             exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-            transition={{ duration: 0.3, ease: "backOut" }}
-            className="absolute flex items-center justify-center"
+            transition={{ duration: 0.25, ease: "backOut" }}
+            className="flex items-center justify-center text-slate-200"
           >
-            <Moon className="h-4 w-4" />
+            {/* Neutral glass circle with NO blue fill */}
+            <Moon className="h-4 w-4 fill-none" strokeWidth={1.75} />
           </motion.div>
         ) : (
           <motion.div
@@ -94,13 +98,13 @@ export function ThemeToggle() {
             initial={{ opacity: 0, rotate: 90, scale: 0.5 }}
             animate={{ opacity: 1, rotate: 0, scale: 1 }}
             exit={{ opacity: 0, rotate: -90, scale: 0.5 }}
-            transition={{ duration: 0.3, ease: "backOut" }}
-            className="absolute flex items-center justify-center"
+            transition={{ duration: 0.25, ease: "backOut" }}
+            className="flex items-center justify-center text-slate-700"
           >
-            <Sun className="h-4 w-4" />
+            <Sun className="h-4 w-4 fill-none" strokeWidth={1.75} />
           </motion.div>
         )}
       </AnimatePresence>
-    </button>
+    </IconButton>
   );
 }

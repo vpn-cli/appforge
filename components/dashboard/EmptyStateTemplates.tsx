@@ -189,8 +189,9 @@ export function EmptyStateTemplates() {
               <Button
                 onClick={() => handleUseTemplate(tpl.id)}
                 disabled={isPending}
-                variant="outline"
-                className="w-full text-sm font-medium h-9 border-border hover:bg-muted justify-between"
+                variant="secondary"
+                size="md"
+                className="w-full justify-between"
               >
                 <span>{isPending ? "Creating app..." : "Use template"}</span>
                 {isPending ? (

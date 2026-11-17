@@ -7,6 +7,8 @@ import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { Search, ChevronDown, Menu, X, LayoutGrid, FileCode2 } from "lucide-react";
+import { IconButton } from "@/components/ui/icon-button";
+import { Kbd } from "@/components/ui/kbd";
 
 type Props = {
   activeSearchQuery?: string;
@@ -21,28 +23,34 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
   const isAppsActive = pathname === "/dashboard" || pathname.startsWith("/apps");
   const isTemplatesActive = pathname === "/templates";
 
+  const navSegments = [
+    { label: "Apps", href: "/dashboard", active: isAppsActive },
+    { label: "Templates", href: "/templates", active: isTemplatesActive },
+  ];
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-sm">
-      <div className="max-w-[1200px] mx-auto px-6 h-14 flex items-center justify-between gap-4">
-        {/* Left: Brand + Workspace + Nav */}
-        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+    <header className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 relative z-40 shrink-0">
+      {/* Floating Frosted Pill: 64px tall, glass-1 material matching landing page */}
+      <div className="h-16 px-4 sm:px-5 w-full flex items-center justify-between rounded-full glass-1 transition-all">
+        {/* Left: Brand + Org Breadcrumb */}
+        <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/"
-            className="flex items-center gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md py-1"
+            className="flex items-center gap-2.5 outline-none group select-none shrink-0"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center text-foreground transition-transform group-hover:scale-105 shrink-0">
-              <AppForgeLogo size={18} isHovered={isHovered} className="text-foreground" />
+            <div className="w-8 h-8 rounded-[10px] bg-slate-900 text-white dark:bg-white/10 dark:text-white flex items-center justify-center shadow-xs transition-colors">
+              <AppForgeLogo size={18} isHovered={isHovered} className="text-white" />
             </div>
-            <span className="font-semibold text-sm tracking-tight text-foreground hidden xs:inline-block">
+            <span className="font-semibold text-[15px] sm:text-[16px] tracking-tight text-slate-900 dark:text-slate-100 hidden xs:inline-block">
               AppForge
             </span>
           </Link>
 
-          <span className="text-muted-foreground/30 text-sm font-mono select-none">/</span>
+          <span className="text-slate-400/40 dark:text-white/20 text-sm font-mono select-none">/</span>
 
-          {/* Workspace identifier */}
+          {/* Org identifier in pill format */}
           <div className="flex items-center">
             <div className="hidden sm:block">
               <OrganizationSwitcher
@@ -50,18 +58,18 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
                 appearance={{
                   elements: {
                     organizationSwitcherTrigger:
-                      "text-sm font-medium text-foreground hover:bg-muted px-2.5 py-1 rounded-md border border-border transition-colors flex items-center gap-1.5 h-9",
-                    organizationPreviewTextContainer: "text-sm font-medium text-foreground",
-                    organizationPreviewMainIdentifier: "text-sm font-medium text-foreground",
-                    organizationPreviewSecondaryIdentifier: "text-[13px] text-muted-foreground",
+                      "text-[13px] font-medium text-foreground hover:bg-black/5 dark:hover:bg-white/10 px-3 py-1 rounded-full border border-black/10 dark:border-white/10 transition-colors flex items-center gap-1.5 h-8",
+                    organizationPreviewTextContainer: "text-[13px] font-medium text-foreground",
+                    organizationPreviewMainIdentifier: "text-[13px] font-medium text-foreground",
+                    organizationPreviewSecondaryIdentifier: "text-[12px] text-muted-foreground",
                     organizationSwitcherTriggerIcon: "text-muted-foreground",
-                    organizationPreviewAvatarBox: "bg-muted text-foreground border border-border",
+                    organizationPreviewAvatarBox: "bg-muted text-foreground border border-border w-5 h-5 rounded-full text-[10px]",
                   },
                 }}
                 fallback={
-                  <div className="flex items-center gap-1.5 text-sm font-medium text-foreground px-2.5 py-1 rounded-md bg-muted border border-border h-9">
-                    <div className="w-5 h-5 rounded bg-muted border border-border flex items-center justify-center text-[10px] font-bold text-foreground">
-                      AC
+                  <div className="flex items-center gap-1.5 text-[13px] font-medium text-foreground px-3 py-1 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 h-8">
+                    <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
+                      A
                     </div>
                     <span>Acme Corp</span>
                     <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
@@ -69,99 +77,101 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
                 }
               />
             </div>
-            <div className="sm:hidden flex items-center gap-1.5 text-sm font-medium text-foreground px-2 py-1 rounded bg-muted border border-border h-9">
-              <div className="w-5 h-5 rounded bg-muted border border-border flex items-center justify-center text-[10px] font-bold text-foreground">
-                AC
+            <div className="sm:hidden flex items-center gap-1.5 text-[13px] font-medium text-foreground px-2.5 py-1 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 h-8">
+              <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
+                A
               </div>
-              <span>Acme Corp</span>
+              <span className="max-w-[80px] truncate">Acme</span>
               <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
           </div>
-
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 ml-2 border-l border-border pl-3">
-            <Link
-              href="/dashboard"
-              className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors ${
-                isAppsActive
-                  ? "bg-muted text-foreground font-semibold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-              }`}
-            >
-              Apps
-            </Link>
-            <Link
-              href="/templates"
-              className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors ${
-                isTemplatesActive
-                  ? "bg-muted text-foreground font-semibold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-              }`}
-            >
-              Templates
-            </Link>
-          </nav>
         </div>
 
-        {/* Right: Search hint + Theme + User Profile */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Center: Segmented control (Apps / Templates) - desktop */}
+        <nav
+          aria-label="Application Navigation"
+          className="hidden md:flex items-center p-1 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 select-none"
+        >
+          {navSegments.map((seg) => (
+            <Link
+              key={seg.label}
+              href={seg.href}
+              className={`px-4 py-1.5 rounded-full text-[15px] font-medium transition-all ${
+                seg.active
+                  ? "bg-white text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.08)] dark:bg-white/[0.12] dark:text-white dark:shadow-none"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              {seg.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Right: Search hint (⌘K) + Theme Toggle + User profile */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
           {/* ⌘K Search hint */}
           <div className="relative hidden sm:flex items-center">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 pointer-events-none" />
             <input
               type="text"
               placeholder="Search apps..."
               value={activeSearchQuery || ""}
               onChange={(e) => onSearchChange?.(e.target.value)}
-              className="w-44 lg:w-56 h-9 pl-9 pr-9 text-sm bg-muted/40 hover:bg-muted/70 focus:bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent focus:border-border-strong transition-all"
+              className="w-36 lg:w-48 h-9 pl-8 pr-11 text-[13px] bg-slate-200/40 dark:bg-white/5 hover:bg-slate-200/60 dark:hover:bg-white/10 focus:bg-background border border-slate-300/40 dark:border-white/10 rounded-full text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all"
             />
-            <kbd className="absolute right-2 text-[11px] font-mono text-muted-foreground bg-background/80 border border-border rounded px-1.5 py-0.5 select-none pointer-events-none">
-              ⌘K
-            </kbd>
+            <div className="absolute right-2 pointer-events-none">
+              <Kbd>⌘K</Kbd>
+            </div>
           </div>
 
+          {/* Theme Toggle (36px neutral glass circle) */}
           <ThemeToggle />
 
-          <div className="flex items-center">
+          {/* User Profile */}
+          <div className="flex items-center justify-center shrink-0">
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: "w-8 h-8 border border-border",
-                  userButtonPopoverCard: "border border-border bg-card shadow-lg text-foreground",
+                  avatarBox: "w-9 h-9 rounded-full border border-slate-200 dark:border-white/10",
+                  userButtonPopoverCard: "glass-1 rounded-2xl shadow-xl text-foreground",
                 },
               }}
             />
           </div>
 
-          {/* Mobile menu toggle */}
-          <button
+          {/* Mobile menu trigger */}
+          <IconButton
+            variant="glass"
+            size="md"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+            className="md:hidden"
             aria-label="Toggle navigation menu"
           >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+            {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </IconButton>
         </div>
       </div>
 
       {/* Mobile drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-background px-6 py-4 flex flex-col gap-2 animate-in slide-in-from-top-1">
+        <div className="md:hidden mt-2 p-3 rounded-2xl glass-1 border border-white/80 dark:border-white/10 flex flex-col gap-2 shadow-xl animate-in fade-in zoom-in-95 duration-150">
           <div className="relative flex items-center mb-1">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 pointer-events-none" />
             <input
               type="text"
               placeholder="Search apps..."
               value={activeSearchQuery || ""}
               onChange={(e) => onSearchChange?.(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 text-sm bg-muted/40 border border-border rounded-md text-foreground placeholder:text-muted-foreground"
+              className="w-full h-9 pl-8 pr-3 text-[13px] bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-full text-foreground placeholder:text-muted-foreground outline-none"
             />
           </div>
           <Link
             href="/dashboard"
             onClick={() => setIsMobileMenuOpen(false)}
-            className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
-              isAppsActive ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/50"
+            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${
+              isAppsActive
+                ? "bg-white text-slate-900 shadow-xs dark:bg-white/15 dark:text-white"
+                : "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
             }`}
           >
             <LayoutGrid className="w-4 h-4" />
@@ -170,8 +180,10 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
           <Link
             href="/templates"
             onClick={() => setIsMobileMenuOpen(false)}
-            className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
-              isTemplatesActive ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/50"
+            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${
+              isTemplatesActive
+                ? "bg-white text-slate-900 shadow-xs dark:bg-white/15 dark:text-white"
+                : "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
             }`}
           >
             <FileCode2 className="w-4 h-4" />

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { IconButton } from "@/components/ui/icon-button";
 import { useOrganization, useUser, UserButton } from "@clerk/nextjs";
 
 export function HomeTopBar() {
@@ -115,14 +116,15 @@ export function HomeTopBar() {
           </div>
 
           {/* Mobile menu button */}
-          <button
-            type="button"
+          <IconButton
+            variant="glass"
+            size="md"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="sm:hidden p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="sm:hidden"
             aria-label="Toggle navigation menu"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </IconButton>
         </div>
       </div>
 

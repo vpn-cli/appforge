@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 export function HomeHero() {
   const shouldReduceMotion = useReducedMotion();
@@ -45,23 +46,22 @@ export function HomeHero() {
         transition={{ duration: 0.35, delay: 0.14, ease: easeOut }}
         className="flex items-center justify-center gap-3.5 select-none mb-[64px]"
       >
-        <Link
-          href="/builder/demo"
-          className="group h-11 px-6 rounded-xl bg-[#0A0A12] hover:bg-[#1A1A24] text-white shadow-[0_4px_20px_rgba(99,102,241,0.22)] dark:bg-[#F8FAFC] dark:hover:bg-white dark:text-[#0A0A12] dark:shadow-[0_4px_20px_rgba(255,255,255,0.12)] font-medium text-[15px] inline-flex items-center gap-2 transition-all active:scale-[0.98]"
+        <Button
+          render={<Link href="/builder/demo" />}
+          variant="primary"
+          size="lg"
+          showArrow
         >
           <span>Start Building</span>
-          <ArrowRight
-            className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5"
-            strokeWidth={2}
-          />
-        </Link>
+        </Button>
 
-        <Link
-          href="/templates"
-          className="h-11 px-6 rounded-xl glass-2 text-slate-800 dark:text-slate-100 font-medium text-[15px] inline-flex items-center transition-all active:scale-[0.98]"
+        <Button
+          render={<Link href="/templates" />}
+          variant="secondary"
+          size="lg"
         >
           <span>View Templates</span>
-        </Link>
+        </Button>
       </motion.div>
     </section>
   );
