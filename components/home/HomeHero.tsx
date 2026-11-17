@@ -10,16 +10,16 @@ export function HomeHero() {
   const easeOut = [0.16, 1, 0.3, 1] as const;
 
   return (
-    <section className="w-full text-center pt-6 sm:pt-8 pb-0 px-4 relative z-10 flex flex-col items-center shrink-0">
-      {/* Main Headline: "Live Config-" stays solid; only "driven Apps" gets the violet->indigo gradient */}
+    <section className="w-full text-center pt-[80px] pb-0 px-4 relative z-10 flex flex-col items-center shrink-0">
+      {/* Main Headline: "Live Config-" stays solid; only "driven Apps" gets the brighter violet->indigo gradient */}
       <motion.h1
         initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: easeOut }}
-        className="text-[38px] sm:text-[48px] lg:text-[64px] font-bold tracking-[-0.035em] leading-[1.04] text-slate-900 dark:text-slate-100 max-w-4xl mx-auto mb-3 sm:mb-4 select-none"
+        className="text-[38px] sm:text-[48px] lg:text-[64px] font-bold tracking-[-0.035em] leading-[1.04] text-slate-900 dark:text-slate-100 max-w-4xl mx-auto mb-[20px] select-none"
       >
         <span>Live Config-</span>
-        <span className="bg-gradient-to-r from-[#5B21B6] via-[#4338CA] to-[#3730A3] dark:from-[#A78BFA] dark:via-[#818CF8] dark:to-[#6366F1] bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-[#7C5CFF] to-[#4F6BFF] dark:from-[#9D8CFF] dark:to-[#6B85FF] bg-clip-text text-transparent">
           driven Apps
         </span>
       </motion.h1>
@@ -29,7 +29,7 @@ export function HomeHero() {
         initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.08, ease: easeOut }}
-        className="text-[17px] sm:text-[18px] text-slate-600 dark:text-slate-400 leading-[1.6] max-w-[60ch] mx-auto mb-6 sm:mb-7 font-normal"
+        className="text-[17px] sm:text-[18px] text-slate-600 dark:text-slate-400 leading-[1.6] max-w-[60ch] mx-auto mb-[36px] font-normal"
       >
         Write a single JSON configuration describing your data and UI. AppForge
         instantly renders a working application, complete with a database, dynamic
@@ -43,7 +43,7 @@ export function HomeHero() {
         initial={shouldReduceMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.35, delay: 0.14, ease: easeOut }}
-        className="flex items-center justify-center gap-3.5 select-none mb-7 sm:mb-8"
+        className="flex items-center justify-center gap-3.5 select-none mb-[64px]"
       >
         <Link
           href="/builder/demo"
