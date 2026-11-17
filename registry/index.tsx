@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-﻿import { Header } from "./components/Header";
+import { Header } from "./components/Header";
 import { ButtonAction } from "./components/ButtonAction";
 import { Card } from "./components/Card";
 import { Grid } from "./components/Grid";
 import { Statistic } from "./components/Statistic";
 import { DataTable } from "./components/DataTable";
+import { InvalidNodeFallback } from "./components/InvalidNodeFallback";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { validateComponentNode } from "@/lib/validation";
 
 export const ComponentRegistry: Record<string, React.ComponentType<any>> = {
   Header,
@@ -27,12 +29,12 @@ export function RenderNode({ config }: { config: unknown }) {
       </div>
     );
   }
-  
-  if (!config || typeof config !== 'object') return null;
-  
-  const { type, ...props } = config as { type: string, [key: string]: unknown };
-  
-  if (!type) {
+
+  if (!config || typeof config !== "object") return null;
+
+  const raw = config as { type?: unknown; [key: string]: unknown };
+
+  if (!raw.type || typeof raw.type !== "string") {
     return (
       <div className="p-3 bg-warning-light border border-warning-border text-warning-text text-xs font-mono rounded-md flex flex-col gap-1 my-2">
         <span className="font-bold tracking-widest uppercase">Warning</span>
@@ -41,6 +43,7 @@ export function RenderNode({ config }: { config: unknown }) {
     );
   }
 
+  const type = raw.type;
   const Component = ComponentRegistry[type];
 
   if (!Component) {
@@ -52,10 +55,32 @@ export function RenderNode({ config }: { config: unknown }) {
     );
   }
 
+  // Deep validate component props against its specific Zod schema
+  const validation = validateComponentNode(config);
+
+  if (!validation.valid) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[AppForge AST Schema Violation] Component <${type}> failed validation:`,
+        validation.issues
+      );
+    }
+    return (
+      <InvalidNodeFallback
+        type={type}
+        issues={validation.issues}
+        rawNode={config}
+      />
+    );
+  }
+
+  const validatedProps = validation.data || raw;
+  // Strip out the 'type' field from props passed to the component
+  const { type: _t, ...props } = validatedProps;
+
   return (
     <ErrorBoundary componentName={type}>
       <Component {...props} />
     </ErrorBoundary>
   );
 }
-
