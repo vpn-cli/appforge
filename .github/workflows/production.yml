@@ -15,10 +15,10 @@ jobs:
       - name: Checkout Codebase
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install Dependencies
@@ -39,10 +39,10 @@ jobs:
       - name: Checkout Codebase
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install Dependencies
@@ -53,6 +53,9 @@ jobs:
           NEXT_PUBLIC_INSFORGE_URL: ${{ secrets.TEST_SUPABASE_URL || secrets.NEXT_PUBLIC_INSFORGE_URL }}
           NEXT_PUBLIC_INSFORGE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_INSFORGE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL || secrets.NEXT_PUBLIC_INSFORGE_URL }}
+          TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_INSFORGE_ANON_KEY }}
+          TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
         run: npm test

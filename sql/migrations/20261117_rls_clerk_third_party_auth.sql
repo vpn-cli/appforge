@@ -160,3 +160,4 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION execute_app_ddl(text, text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION execute_app_ddl(text, text) TO service_role;
+

@@ -59,3 +59,4 @@ In `.github/workflows/production.yml`, the `test-suite` job binds to GitHub Acti
 - If `TEST_SUPABASE_URL` is set in repository secrets, CI runs against the dedicated test database.
 - The test suite executes real queries (creating temporary test apps, validating cross-tenant boundaries, and cleaning up test records in `afterAll`).
 - Cross-tenant tests assert that user B receives 404 / 401 on user A's apps, verifying database integrity.
+

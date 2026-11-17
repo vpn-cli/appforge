@@ -26,36 +26,42 @@ describe("PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)
   let kafkaPublishSpy: ReturnType<typeof vi.spyOn>;
 
   beforeAll(async () => {
-    // Connect to real Supabase database and create a test app owned by User A
-    const supabase = await createInsforgeServer();
-    const { data, error } = await supabase
-      .from("apps")
-      .insert({
-        user_id: userA,
-        name: "Tenant A Confidential App",
-        config: {
-          app: "Tenant A Confidential App",
-          pages: [],
-          entities: { items: { name: "string" } },
+    try {
+      // Connect to real Supabase database and create a test app owned by User A
+      const supabase = await createInsforgeServer();
+      const { data, error } = await supabase
+        .from("apps")
+        .insert({
+          user_id: userA,
+          name: "Tenant A Confidential App",
+          config: {
+            app: "Tenant A Confidential App",
+            pages: [],
+            entities: { items: { name: "string" } },
+          },
+        })
+        .select("id")
+        .single();
+
+      if (error || !data) {
+        console.error("beforeAll insert error details:", JSON.stringify(error, null, 2));
+        throw new Error(`Failed to set up test app in Supabase: ${error?.message}`);
+      }
+      testAppId = data.id;
+
+      // Register a schema record for entity 'items' in app_schemas
+      await supabase.from("app_schemas").upsert(
+        {
+          app_id: testAppId,
+          table_name: "items",
+          schema_definition: { name: "string" },
         },
-      })
-      .select("id")
-      .single();
-
-    if (error || !data) {
-      throw new Error(`Failed to set up test app in Supabase: ${error?.message}`);
+        { onConflict: "app_id,table_name" }
+      );
+    } catch (err: any) {
+      console.error("beforeAll SETUP EXCEPTION:", err?.message || err);
+      throw err;
     }
-    testAppId = data.id;
-
-    // Register a schema record for entity 'items' in app_schemas
-    await supabase.from("app_schemas").upsert(
-      {
-        app_id: testAppId,
-        table_name: "items",
-        schema_definition: { name: "string" },
-      },
-      { onConflict: "app_id,table_name" }
-    );
   });
 
   afterAll(async () => {
@@ -361,41 +367,51 @@ describe("PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)
     let dynamicTableName: string;
 
     beforeAll(async () => {
-      const { createClient } = await import("@supabase/supabase-js");
-      directClient = createClient(
-        process.env.NEXT_PUBLIC_INSFORGE_URL!,
-        process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!
-      );
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        directClient = createClient(
+          process.env.NEXT_PUBLIC_INSFORGE_URL!,
+          process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!
+        );
 
-      const serverDb = await createInsforgeServer();
-      const { data } = await serverDb
-        .from("apps")
-        .insert({
-          user_id: userA,
-          name: "Direct RLS Verified App",
-          config: { app: "Direct RLS Verified App" },
-          published_config: null, // Strictly private
-        })
-        .select("id")
-        .single();
+        const serverDb = await createInsforgeServer();
+        const { data, error } = await serverDb
+          .from("apps")
+          .insert({
+            user_id: userA,
+            name: "Direct RLS Verified App",
+            config: { app: "Direct RLS Verified App" },
+            published_config: null, // Strictly private
+          })
+          .select("id")
+          .single();
 
-      directAppId = data!.id;
-      dynamicTableName = `app_${directAppId.replace(/-/g, "_")}_secret_records`;
+        if (error || !data) {
+          console.error("Direct RLS beforeAll error:", error);
+          throw new Error(`Failed to create Direct RLS test app: ${error?.message}`);
+        }
 
-      // Provision a dynamic table for this app using execute_app_ddl
-      await serverDb.rpc("execute_app_ddl", {
-        app_id: directAppId,
-        query: `CREATE TABLE IF NOT EXISTS ${dynamicTableName} (id uuid default gen_random_uuid() primary key, title text);`,
-      });
+        directAppId = data.id;
+        dynamicTableName = `app_${directAppId.replace(/-/g, "_")}_secret_records`;
 
-      await serverDb.from("app_schemas").upsert(
-        {
+        // Provision a dynamic table for this app using execute_app_ddl
+        await serverDb.rpc("execute_app_ddl", {
           app_id: directAppId,
-          table_name: "secret_records",
-          schema_definition: { title: "string" },
-        },
-        { onConflict: "app_id,table_name" }
-      );
+          query: `CREATE TABLE IF NOT EXISTS ${dynamicTableName} (id uuid default gen_random_uuid() primary key, title text);`,
+        });
+
+        await serverDb.from("app_schemas").upsert(
+          {
+            app_id: directAppId,
+            table_name: "secret_records",
+            schema_definition: { title: "string" },
+          },
+          { onConflict: "app_id,table_name" }
+        );
+      } catch (err: any) {
+        console.error("Direct RLS beforeAll EXCEPTION:", err?.message || err);
+        throw err;
+      }
     });
 
     afterAll(async () => {
