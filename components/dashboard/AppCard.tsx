@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { AppThumbnail } from "@/components/dashboard/AppThumbnail";
 import { MoreHorizontal, ExternalLink, Settings2, Edit3, Trash2 } from "lucide-react";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -38,7 +39,10 @@ export function formatRelativeTime(dateStr: string): string {
 
 export function AppCard({ app, onRename, onDelete }: Props) {
   const router = useRouter();
+  const { user } = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const userInitial = (user?.firstName?.[0] || user?.username?.[0] || "U").toUpperCase();
 
   const isPublished = app.status === "Published";
   const appConfig = app.config || app.published_config;
@@ -215,7 +219,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
           {/* "Edited by" avatar + relative time */}
           <div className="flex items-center gap-1.5 shrink-0">
             <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-200 text-[9px] font-semibold flex items-center justify-center shrink-0 border border-slate-300/60 dark:border-white/10 shadow-2xs">
-              V
+              {userInitial}
             </span>
             <span className="text-muted-foreground text-[12px]">
               {formatRelativeTime(app.updated_at)}
