@@ -27,14 +27,17 @@ export async function GET(request: Request, { params }: RouteParams) {
     .limit(limit);
 
   if (error) {
-    // If table doesn't exist yet in the database, return empty array gracefully
+    // If entity is registered in app_schemas but physical table does not exist in Postgres
     if (
       error.code === "42P01" ||
       error.code === "PGRST205" ||
       error.message?.includes("does not exist") ||
       error.message?.includes("schema cache")
     ) {
-      return NextResponse.json([]);
+      return NextResponse.json(
+        { error: `Entity table '${entity}' is registered in schema but physical table does not exist` },
+        { status: 503 }
+      );
     }
     return NextResponse.json({ error: error.message }, { status: 400 });
   }

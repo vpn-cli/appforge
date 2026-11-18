@@ -90,7 +90,7 @@ DECLARE
   clean_app_id text;
   tbl_name text;
 BEGIN
-  IF position('CREATE TABLE' in query) = 1 OR position('ALTER TABLE' in query) = 1 THEN
+  IF position('CREATE TABLE' in query) = 1 OR position('ALTER TABLE' in query) = 1 OR position('DROP TABLE' in query) = 1 THEN
       clean_app_id := replace(app_id, '-', '_');
       IF position('app_' || clean_app_id in query) > 0 THEN
           EXECUTE query;
@@ -126,7 +126,7 @@ BEGIN
           RAISE EXCEPTION 'Unauthorized table prefix modifying attempt.';
       END IF;
   ELSE
-      RAISE EXCEPTION 'Only CREATE or ALTER allowed via this proxy. No DROPs.';
+      RAISE EXCEPTION 'Only CREATE, ALTER, or DROP allowed for namespaced tables via this proxy.';
   END IF;
 END;
 $$;

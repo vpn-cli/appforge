@@ -4,6 +4,7 @@ import { createInsforgeServer } from "@/lib/insforge-server";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { EventPublisher } from "@/lib/event-queue";
+import { syncAppSchema } from "@/actions/schema";
 
 /**
  * Resolves the authenticated user ID.
@@ -239,15 +240,21 @@ export async function createAppFromTemplate(templateId: string) {
     .single();
 
   if (error) {
-    console.error("[createTemplate] failed:", error);
+    console.error("[createAppFromTemplate] failed:", error);
     throw new Error("Failed to create app from template");
+  }
+
+  // Trigger schema synchronization for template entities so tables are provisioned immediately
+  if (initialConfig.entities) {
+    const syncRes = await syncAppSchema(data.id, initialConfig.entities, userId);
+    if (!syncRes.success) {
+      console.warn("Schema Sync Warning in createAppFromTemplate:", syncRes.message);
+    }
   }
 
   // Redirecting the user to the builder with a flag so the UI can seed the template
   redirect(`/builder/${data.id}?template=${templateId}`);
 }
-
-import { syncAppSchema } from "@/actions/schema";
 
 export async function saveAppConfig(appId: string, configStr: string) {
   const supabase = await createInsforgeServer();
@@ -346,7 +353,7 @@ export async function publishAppConfig(appId: string, configStr: string) {
     .update({ published_config: rawConfig, config: rawConfig })
     .eq("id", appId)
     .eq("user_id", userId)
-    .select("id");
+    .select("id, config");
 
   if (error) {
     return { success: false, error: `Failed to publish app: ${error.message}` };
@@ -358,6 +365,18 @@ export async function publishAppConfig(appId: string, configStr: string) {
       error: "App not found or not owned by user",
       status: 404,
     };
+  }
+
+  // Trigger schema synchronization if entities exist (ensures tables exist if user publishes without saving first)
+  const targetEntities =
+    (rawConfig as Record<string, unknown>).entities ||
+    (updatedRows[0]?.config as Record<string, unknown>)?.entities;
+
+  if (targetEntities) {
+    const syncRes = await syncAppSchema(appId, targetEntities, userId);
+    if (!syncRes.success) {
+      console.warn("Schema Sync Warning in publishAppConfig:", syncRes.message);
+    }
   }
 
   // Asynchronously fire a Kafka event to our decoupled queue tracking 'app_published' events.

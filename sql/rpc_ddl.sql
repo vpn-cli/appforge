@@ -9,7 +9,7 @@ DECLARE
   tbl_name text;
 BEGIN
   -- Strict guard rails to only allow structural DDL, never data mutation or drops against core tables
-  IF position('CREATE TABLE' in query) = 1 OR position('ALTER TABLE' in query) = 1 THEN
+  IF position('CREATE TABLE' in query) = 1 OR position('ALTER TABLE' in query) = 1 OR position('DROP TABLE' in query) = 1 THEN
       clean_app_id := replace(app_id, '-', '_');
       -- Ensure they are only modifying their namespaced tables
       IF position('app_' || clean_app_id in query) > 0 THEN
@@ -50,7 +50,7 @@ BEGIN
           RAISE EXCEPTION 'Unauthorized table prefix modifying attempt.';
       END IF;
   ELSE
-      RAISE EXCEPTION 'Only CREATE or ALTER allowed via this proxy. No DROPs.';
+      RAISE EXCEPTION 'Only CREATE, ALTER, or DROP allowed for namespaced tables via this proxy.';
   END IF;
 END;
 $$;
