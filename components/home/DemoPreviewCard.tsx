@@ -39,7 +39,7 @@ export function DemoPreviewCard() {
       {/* Explicit Demo Data Disclosure */}
       <div className="pt-2.5 border-t border-border text-[13px] text-muted-foreground flex items-center justify-between gap-2 shrink-0">
         <span>Demo data</span>
-        <span className="font-mono">ComponentRegistry</span>
+        <span className="font-mono whitespace-nowrap shrink-0">ComponentRegistry</span>
       </div>
     </div>
   );

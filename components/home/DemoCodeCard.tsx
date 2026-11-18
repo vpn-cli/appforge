@@ -92,8 +92,8 @@ export function DemoCodeCard() {
 
       {/* Quiet Footer Caption */}
       <div className="pt-2.5 border-t border-border text-[13px] text-muted-foreground flex items-center justify-between gap-2 shrink-0">
-        <span>Registry types: Statistic, DataTable</span>
-        <span className="font-mono">Zod-validated</span>
+        <span className="truncate">Registry: Statistic, DataTable</span>
+        <span className="font-mono whitespace-nowrap shrink-0">Zod-validated</span>
       </div>
     </div>
   );
