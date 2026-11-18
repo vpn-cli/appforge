@@ -28,11 +28,11 @@
 | **Groq (`openai/gpt-oss-120b`)** *(Excl. 429s)* | 59 (8 rate-limited excluded) | **92.8%** (141/152) | **81.4%** (48/59) | *INVALID\** | *INVALID\** | *INVALID\** | *INVALID\** | ~1,250 |
 | **Groq (`openai/gpt-oss-120b`)** *(Raw All)* | 67 (429s counted as fail) | **92.8%** (141/152) | **71.6%** (48/67) | *INVALID\** | *INVALID\** | *INVALID\** | *INVALID\** | ~1,250 |
 | **Groq (`openai/gpt-oss-20b`)** *(Full)* | 100 | **87.7% (old type-only check)\*\*** | **68.0%** (68/100) | **1,620 ms** | **2,917 ms** | **1,956 ms** | **3,341 ms** | **1,749** |
-| **Gemini (`gemini-2.5-flash`)** *(Free Tier)* | 100 (1 valid)\*\*\* | **100.0%** (2/2) | **1.0%** (1/100) | 69,174 ms | 69,174 ms | 72,502 ms | 72,502 ms | Quota Blocked |
+| **Gemini (`gemini-2.5-flash`)** *(Free Tier)* | 100 (1 valid)\*\*\* | **100.0%** (2/2) | **1.0%** (1/100) | *INVALID\*\*\** | *INVALID\*\*\** | *INVALID\*\*\** | *INVALID\*\*\** | Quota Blocked |
 
 *\*Note on 120b Latency: Marked INVALID per protocol. In the original evaluation run, `streamText` internal retries and outer backoff sleep delays on 429 rate limits were captured inside the overall attempt timer (inflating recorded durations to 63–92 seconds for rate-limited prompts). Because individual per-chunk or per-attempt timestamps were not preserved, model inference time cannot be isolated mathematically from retry sleep.*  
 *\*\*Note on 20b Validity: Results files do NOT store full raw model output (only a 150-character `rawOutputPreview`). Because historical completions were not saved in full, 20b cannot be re-scored post-hoc against the current per-component Zod schemas (`lib/validation.ts`), so its validity score is strictly marked as the historical "old type-only check".*  
-*\*\*\*Note on Gemini: Evaluated with Google's default dynamic thinking budget. Gemini hit Google AI Studio's Free Tier limit of 20 requests per day (`generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20 exceeded. Retry in 13h28m`). Only 1 layout (`dash-04`) completed with valid components before hard quota cutoff. Per instructions, all eval runs are suspended until a separate eval account is provisioned.*
+*\*\*\*Note on Gemini Latency: Marked INVALID per protocol. Gemini hit Google AI Studio's Free Tier quota (20 requests/day) and recorded artificial delay before quota blocking. No valid latency metrics can be inferred from a single rate-blocked attempt. Per strict instructions, all further eval runs on the live app's keys are suspended.*
 
 ---
 
@@ -94,6 +94,7 @@ Between the intermediate chat update and the committed dataset, the reported 120
 
 ### Recomputed Metrics (Excluding Rate-Limited Prompts)
 * **Total Evaluated Entries:** 67
+* **Completed (Non-Rate-Limited):** 59 prompts
 * **Status Distribution:**
   * **Pass:** 48 prompts
   * **Fail:** 9 prompts (`form-04`, `form-05`, `form-07`, `form-09`, `form-11`, `form-12`, `form-13`, `form-15`, `sett-02`)
@@ -104,6 +105,17 @@ Between the intermediate chat update and the committed dataset, the reported 120
 * **Node Validity % (Excluding Rate-Limited):**
   $$\text{Node Validity \%} = \frac{141 \text{ valid nodes}}{152 \text{ evaluated nodes}} = 92.76\%$$
   *(126 valid / 126 in passes + 15 valid / 26 in fails + 0 / 0 in refusals + 0 / 0 in rate-limited)*
+
+### Performance Across All 5 Prompt Categories
+
+| Category | Suite Total | Evaluated | Completed (Non-429) | Rate-Limited (429) | Full Layout Passes | Fails / Refusals | Pass % (Completed) | Pass % (Evaluated) | Node Validity % |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Forms** | 20 | 20 | 20 | 0 | 10 | 10 (8 fail, 2 refusal) | **50.0%** (10/20) | **50.0%** (10/20) | **82.0%** (41/50) |
+| **Dashboards** | 20 | 20 | 19 | 1 | 19 | 0 | **100.0%** (19/19) | **95.0%** (19/20) | **100.0%** (48/48) |
+| **CRUD Interfaces** | 20 | 20 | 18 | 2 | 18 | 0 | **100.0%** (18/18) | **90.0%** (18/20) | **100.0%** (46/46) |
+| **System Settings** | 20 | 7 | 2 | 5 | 1 | 1 | **50.0%** (1/2) | **14.3%** (1/7) | **75.0%** (6/8) |
+| **Analytics & Telemetry** | 20 | 0 | 0 | 0 | 0 | 0 | *N/A (unattempted)* | *N/A (unattempted)* | *N/A* |
+| **Total / Overall** | **100** | **67** | **59** | **8** | **48** | **11** | **81.4%** (48/59) | **71.6%** (48/67) | **92.8%** (141/152) |
 
 ### Refusal Investigation (`form-02` & `form-03`)
 * **Prompt `form-02`:**
