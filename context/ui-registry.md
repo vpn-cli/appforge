@@ -97,6 +97,44 @@ Esc or outside click collapses back to 52px pill.
 Respects prefers-reduced-motion.
 ```
 
+### Home Landing Redesign (MeshGradient Background, Honest Registry Hero & Below-the-Fold Sections)
+
+**Hero Animated Mesh-Gradient Background (`components/home/HeroMeshBackground.tsx`, `components/home/HeroMeshShader.tsx`)**
+```text
+Library: @paper-design/shaders-react (MeshGradient) — 8.73 KB gzipped (vs 14.15 KB gzipped for ogl before shader code)
+Tokens (app/globals.css):
+  Light: --mesh-c1 (#F8F7FC), --mesh-c2 (#EEEBFF), --mesh-c3 (#E6EDFF), --mesh-c4 (#FFFFFF)
+  Dark:  --mesh-c1 (#0B0B14), --mesh-c2 (#12152E), --mesh-c3 (#1D163A), --mesh-c4 (#0E1022)
+Fallback: .hero-mesh-fallback (static CSS radial mesh) + .hero-mesh-mask (bottom fade to canvas)
+Lifecycle:
+  - Dynamic import with ssr:false after window.load + first paint (rAF + requestIdleCallback + startTransition)
+  - Pauses rAF completely when document.hidden or hero leaves viewport (IntersectionObserver)
+  - DPR capped at 1.5x via minPixelRatio + ResizeObserver maxPixelCount budget
+  - Frame rate capped at ~30fps via speed={0} + throttled setFrame() loop
+  - Automatic CSS fallback for prefers-reduced-motion, no-WebGL2, failIfMajorPerformanceCaveat, or webglcontextlost
+```
+
+**Honest Registry-Rendered Hero (`components/home/HomeHero.tsx`, `DemoCodeCard.tsx`, `DemoPreviewCard.tsx`)**
+```text
+Hero Wrapper: relative w-full min-h-[90vh] pt-20 flex flex-col overflow-hidden (vertically centered content)
+Container: max-w-[1200px] mx-auto px-4 sm:px-6, consistent 8px spacing scale
+Single Source of Truth: components/home/heroDemoConfig.ts (HERO_DEMO_CONFIG uses real registry types: Statistic, DataTable)
+Left Card (DemoCodeCard): glass-1 rounded-2xl p-4 sm:p-5, 14-line JSON (<=32 chars/line), whitespace-pre-wrap break-words (zero horizontal scroll), Copy button, Zod-validated caption
+Right Card (DemoPreviewCard): glass-1 rounded-2xl p-4 sm:p-5, <h2> Rendered Application + StatusPill "Rendered from config" (no fake Live badge), renders HERO_DEMO_CONFIG through real <RenderNode /> components, explicit "Demo data · ComponentRegistry" footer
+Viewport Fit: At 1440×900 both cards fully visible with >=96px clearance below and zero clipped rows
+```
+
+**Below-the-Fold Sections & Footer (`HowItWorks.tsx`, `WhatsInside.tsx`, `TemplatesStrip.tsx`, `Footer.tsx`)**
+```text
+Spacing: py-16 sm:py-20, max-w-[1200px] mx-auto px-4 sm:px-6, grid-cols-1 md:grid-cols-3 gap-6
+Cards: rounded-2xl bg-card border border-border p-6 (WhatsInside sits on bg-surface-sunken border-y border-border)
+Sections:
+  1. HowItWorks: 3 steps (01 Describe -> 02 Config -> 03 Running app with database)
+  2. WhatsInside: Schema-to-Postgres tables, Zod-validated AI with Groq->Gemini failover, Tenant isolation
+  3. TemplatesStrip: 3 real starter templates linking to /templates + "Browse all templates" CTA
+Footer: border-t border-border bg-background, token-aligned AppForge mark + tagline, links to /templates, /terms, /privacy
+```
+
 ### Home Landing Overhaul Layout (Apple Liquid Glass Material System & Component Details)
 
 **Glass Material Utilities (3 Levels)**

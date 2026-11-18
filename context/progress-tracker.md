@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Phase 2 Hardening Complete (Stopped per user instruction)
-**Last completed:** 19 Copilot Multi-Provider Streaming & Resilience Hardening
-**Next:** Phase 3 / Next task per developer direction
+**Phase:** Landing Page Redesign Complete (branch `feat/landing-redesign`)
+**Last completed:** 26 Landing Page Redesign (MeshGradient Background, Honest Registry Hero & Below-the-Fold Sections)
+**Next:** Review and merge per developer direction
 
 ---
 
@@ -70,6 +70,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [x] 23 Native RLS & CI Pipeline (Backfilled RLS policies wrapped with `(select auth.jwt()->>'sub')` on all core and dynamic app_* tables, switched health check to anon public key, established test database separation with TEST_SUPABASE_URL, added direct database-level RLS verification tests bringing suite to 34 passing tests, resolved Node 22 CI compatibility, verified green GitHub Actions CI run #44126961661 across Code Integrity, Cross-Tenant Real Database Verification, and Docker Build)
 - [x] 24 Live Database Isolation, DDL Hardening & Test Suite Rigor (Forensic audit of all historical live writes; eliminated live fallbacks in tests and server client where missing test secrets immediately fail; switched schema DDL to structured format('%I') parameters with strict column type whitelist; strictly removed DROP TABLE from execute_app_ddl and blocked multi-statement injection; created test teardown helper with service_role; updated migration 20261118_fix_published_apps_leak.sql to drop published_apps view, drop unused owner policies, and DROP FUNCTION get_jwt_secret; added cleanup-live-artifacts script with dry-run default and live guard; added SQL injection and malicious DDL tests)
 - [x] 25 CI Test Job Isolation & Dashboard Semantics (Separated CI workflow into dedicated unit-tests and database-tests jobs using Vitest projects; verified database tests are excluded from unit-tests and never skipped in database-tests; renamed dashboard rail to 'Recently updated' backed directly by PostgreSQL apps.updated_at timestamps; allowed id and created_at in update/delete proxy bodies while stripping on insert)
+- [x] 26 Landing Page Redesign (`feat/landing-redesign`: removed ribbon/dither images and preloads; evaluated `@paper-design/shaders-react` MeshGradient [8.73 KB gzipped] vs `ogl` [14.15 KB gzipped before shader] and selected MeshGradient; implemented lazy `ssr:false` WebGL2 mesh gradient loaded after first paint with theme CSS tokens, 1.5x DPR cap, ~30fps throttle, `document.hidden` + `IntersectionObserver` pause, and `prefers-reduced-motion`/no-WebGL CSS fallback; centered ~90vh hero on 8px spacing scale with >=96px space below both cards at 1440×900 and zero horizontal scroll in code panel; replaced fake hero with real `ComponentRegistry` rendering of `Statistic` + `DataTable` from shared JSON config with "Rendered from config" badge and "Demo data" disclosure; replaced old Features with honest `HowItWorks`, `WhatsInside`, `TemplatesStrip` linking to `/templates`, and token-aligned `Footer`; optimized `SmoothScroller` idle CPU and skipped unnecessary Clerk handshake redirect on static `/`)
 
 ---
 
