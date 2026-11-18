@@ -75,6 +75,17 @@ npm test
 
 ## Step 3: Apply Migration A to the LIVE Project
 
+### ⚠️ MANDATORY PRE-CHECK BEFORE MIGRATION A ON LIVE
+> [!CAUTION]
+> **CRITICAL PRE-REQUISITE**: Before executing Migration A on live, you MUST confirm:
+> 1. `SUPABASE_SERVICE_ROLE_KEY` exists in Vercel Production environment variables (`Project Settings` → `Environment Variables`).
+> 2. The deployed application code never falls back to the anon key (`NEXT_PUBLIC_INSFORGE_ANON_KEY`).
+> 
+> **Why this pre-check is non-negotiable:**
+> Migration A immediately executes `REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;` to eliminate public table leaks. If the live production deployment were ever to fall back to the anon key, all server database queries would immediately fail with permission denied errors, causing a catastrophic production outage.
+> 
+> In this release, the server client (`lib/insforge-server.ts`) and startup instrumentation (`instrumentation.ts`) have permanently eliminated the anon-key fallback: any missing service role key will fail loudly at startup. Verify that `SUPABASE_SERVICE_ROLE_KEY` is present in Vercel Production before running Migration A.
+
 In your **LIVE** production Supabase project (`upljqampxcmhqjszatrp`) dashboard (SQL Editor):
 
 Copy and execute the entire contents of:
