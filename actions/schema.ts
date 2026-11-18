@@ -3,6 +3,19 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { authorizeAppAccess } from "@/lib/app-access";
 
+// Whitelist of valid PostgreSQL column types for runtime entities
+const COLUMN_TYPE_WHITELIST: Record<string, string> = {
+  string: "TEXT",
+  text: "TEXT",
+  number: "NUMERIC",
+  numeric: "NUMERIC",
+  boolean: "BOOLEAN",
+  date: "TIMESTAMPTZ",
+  timestamptz: "TIMESTAMPTZ",
+};
+
+const IDENTIFIER_RE = /^[a-zA-Z0-9_]{1,63}$/;
+
 export async function syncAppSchema(appId: string, entities: unknown, userId: string | null) {
   const supabase = await createInsforgeServer();
 
@@ -23,7 +36,7 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
   for (const [entityName, fields] of Object.entries(entities)) {
     // Sanitize entity name
     const validEntityName = entityName.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
-    if (!validEntityName) continue;
+    if (!validEntityName || !IDENTIFIER_RE.test(validEntityName)) continue;
 
     // Verify ownership and write authorization before executing structural DDL.
     // skipEntityCheck is explicitly used here because the entity table is about to be created/synced.
@@ -36,34 +49,50 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
       };
     }
 
-    const tableName = authResult.tableName;
-    
-    // Default columns
-    const columns = [
-      `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`,
-      `created_at TIMESTAMPTZ DEFAULT NOW()`
+    const cleanAppId = appId.replace(/-/g, "_");
+    const sanitizedTableName = `app_${cleanAppId}_${validEntityName}`;
+
+    // Process fields with strict identifier validation and type whitelisting
+    const sanitizedFields: Record<string, string> = {};
+    const columnDefinitions: string[] = [
+      `"id" UUID PRIMARY KEY DEFAULT gen_random_uuid()`,
+      `"created_at" TIMESTAMPTZ DEFAULT NOW()`
     ];
 
-    // Map JSON types to Postgres types
-    for (const [fieldName, fieldType] of Object.entries(fields as Record<string, string>)) {
-      const validFieldName = fieldName.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
-      if (!validFieldName || validFieldName === 'id' || validFieldName === 'created_at') continue;
+    if (fields && typeof fields === "object") {
+      for (const [fieldName, rawType] of Object.entries(fields as Record<string, unknown>)) {
+        const cleanFieldName = String(fieldName).replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+        if (!cleanFieldName || !IDENTIFIER_RE.test(cleanFieldName)) continue;
+        if (cleanFieldName === 'id' || cleanFieldName === 'created_at') continue;
 
-      let pgType = "TEXT";
-      if (fieldType === "number") pgType = "NUMERIC";
-      if (fieldType === "boolean") pgType = "BOOLEAN";
-      if (fieldType === "date") pgType = "TIMESTAMPTZ";
+        const stringType = typeof rawType === "string" ? rawType.toLowerCase() : "string";
+        const pgType = COLUMN_TYPE_WHITELIST[stringType] || "TEXT";
 
-      columns.push(`${validFieldName} ${pgType}`);
+        sanitizedFields[cleanFieldName] = pgType;
+        // Identifiers quoted safely with double quotes (equivalent to format('%I'))
+        columnDefinitions.push(`"${cleanFieldName}" ${pgType}`);
+      }
     }
 
-    const ddl = `CREATE TABLE IF NOT EXISTS ${tableName} (${columns.join(', ')});`;
+    // Try structured RPC call first: execute_app_ddl(app_id, entity_name, fields)
+    const { error: structuredErr } = await supabase.rpc('execute_app_ddl', {
+      app_id: appId,
+      entity_name: validEntityName,
+      fields: sanitizedFields
+    });
 
-    // Execute generated DDL statement using RPC
-    const { error: ddlError } = await supabase.rpc('execute_app_ddl', { app_id: appId, query: ddl });
-    if (ddlError) {
-      console.error("[syncAppSchema] Failed DDL execution:", ddlError);
-      return { success: false, message: `Failed to create tables: ${ddlError.message}` };
+    if (structuredErr) {
+      // Fallback to safely parameterized single CREATE TABLE statement if structured overload isn't deployed yet
+      const safeDdl = `CREATE TABLE IF NOT EXISTS "${sanitizedTableName}" (${columnDefinitions.join(', ')});`;
+      const { error: fallbackErr } = await supabase.rpc('execute_app_ddl', {
+        app_id: appId,
+        query: safeDdl
+      });
+
+      if (fallbackErr) {
+        console.error("[syncAppSchema] Failed DDL execution:", fallbackErr);
+        return { success: false, message: `Failed to create tables: ${fallbackErr.message}` };
+      }
     }
 
     // Upsert a row in app_schemas after successful DDL using consistent validEntityName
@@ -73,7 +102,7 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
         {
           app_id: appId,
           table_name: validEntityName,
-          schema_definition: fields,
+          schema_definition: sanitizedFields,
         },
         { onConflict: "app_id,table_name" }
       );

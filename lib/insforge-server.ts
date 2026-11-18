@@ -2,16 +2,38 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function createInsforgeServer() {
-  const serviceRoleKey = process.env.TEST_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceRoleKey) {
-    throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY (or TEST_SUPABASE_SERVICE_ROLE_KEY) is required for server database operations. Missing or empty service role key."
-    );
-  }
+  const isTestEnvironment = process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
 
-  const supabaseUrl = process.env.TEST_SUPABASE_URL || process.env.NEXT_PUBLIC_INSFORGE_URL;
-  if (!supabaseUrl) {
-    throw new Error("NEXT_PUBLIC_INSFORGE_URL (or TEST_SUPABASE_URL) is missing.");
+  let serviceRoleKey: string | undefined;
+  let supabaseUrl: string | undefined;
+
+  if (isTestEnvironment) {
+    // In test mode: REQUIRE dedicated test secrets. Fallback to production live keys is strictly prohibited.
+    serviceRoleKey = process.env.TEST_SUPABASE_SERVICE_ROLE_KEY;
+    supabaseUrl = process.env.TEST_SUPABASE_URL;
+
+    if (!serviceRoleKey || !supabaseUrl) {
+      throw new Error(
+        "Missing test database secrets: TEST_SUPABASE_SERVICE_ROLE_KEY and TEST_SUPABASE_URL are required in test environment. Falling back to live production database keys is strictly forbidden."
+      );
+    }
+
+    if (supabaseUrl.includes("upljqampxcmhqjszatrp")) {
+      throw new Error(
+        "SAFETY VIOLATION: TEST_SUPABASE_URL points to live production project 'upljqampxcmhqjszatrp'. Running tests on live database is strictly prohibited."
+      );
+    }
+  } else {
+    // In production / development server runtime
+    serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    supabaseUrl = process.env.NEXT_PUBLIC_INSFORGE_URL;
+
+    if (!serviceRoleKey) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for server database operations. Missing or empty service role key.");
+    }
+    if (!supabaseUrl) {
+      throw new Error("NEXT_PUBLIC_INSFORGE_URL is missing.");
+    }
   }
 
   let cookieStore: Awaited<ReturnType<typeof cookies>> | null = null;
@@ -38,7 +60,6 @@ export async function createInsforgeServer() {
             }
           } catch {
             // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing user sessions.
           }
         },
       },
