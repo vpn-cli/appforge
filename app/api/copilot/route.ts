@@ -35,7 +35,9 @@ Architectural Rules:
 1. Top-level layout typically starts with a Header.
 2. Below the Header, use a Grid (columns: 3 or 4) containing at most 3-4 numeric Statistic KPIs.
 3. For lists of records (e.g. incidents, orders, users, tickets), always render a DataTable with a "status" column typed as "badge".
-4. Output must be a direct JSON array, e.g. [{ type: "Header", ... }, { type: "Grid", ... }, { type: "DataTable", ... }]`;
+4. Mock data dates: If including date/timestamp values in mock data (e.g. DataTable rows, timestamps), always use recent dates relative to today (e.g. current year/month 2026), NEVER outdated 2023 dates.
+5. Entity and Database Names: When generating, naming, or referencing schema entities or database tables, entity names MUST be snake_case (e.g. "incident_reports", "user_tasks") and at most 22 characters in length. Never exceed 22 characters.
+6. Output must be a direct JSON array, e.g. [{ type: "Header", ... }, { type: "Grid", ... }, { type: "DataTable", ... }]`;
 
 export async function POST(req: Request) {
   try {

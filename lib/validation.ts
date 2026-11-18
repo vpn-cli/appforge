@@ -212,9 +212,22 @@ export function validateConfig(configStr: string): { errors: string[]; warnings:
     }
 
     const warnings: string[] = [];
+    const errors: string[] = [];
+
     if (!raw.app) warnings.push("App name ('app') is missing. A layout fallback will be used.");
     if (!raw.pages || raw.pages.length === 0)
       warnings.push("No pages defined. App will load completely blank.");
+
+    // Validate entity names (max 22 characters, alphanumeric/underscore)
+    if (raw.entities && typeof raw.entities === "object") {
+      for (const entityName of Object.keys(raw.entities)) {
+        if (entityName.length > 22) {
+          errors.push(
+            `Entity name "${entityName}" exceeds maximum length of 22 characters. Database entities must be snake_case and at most 22 characters.`
+          );
+        }
+      }
+    }
 
     // Deep-validate each component against its per-component schema
     if (Array.isArray(raw.pages)) {
@@ -234,7 +247,7 @@ export function validateConfig(configStr: string): { errors: string[]; warnings:
       });
     }
 
-    return { errors: [], warnings };
+    return { errors, warnings };
   } catch (e: any) {
     return {
       errors: [`Invalid JSON Syntax: ${e.message}`],

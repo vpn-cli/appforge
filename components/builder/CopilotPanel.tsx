@@ -112,6 +112,42 @@ export function CopilotPanel({
           } catch {}
         }
 
+        // Validate entity identifier length and format in generated AST / schema
+        // If an entity name is longer than 22 characters, show the user a clear message, not a database error
+        const checkEntityLengths = (obj: unknown): string | null => {
+          if (!obj || typeof obj !== "object") return null;
+          const candidate = obj as Record<string, unknown>;
+          if (candidate.entities && typeof candidate.entities === "object") {
+            for (const entityKey of Object.keys(candidate.entities as Record<string, unknown>)) {
+              if (entityKey.length > 22) {
+                return `Entity name "${entityKey}" exceeds maximum length of 22 characters. Please use a shorter snake_case name (at most 22 characters).`;
+              }
+            }
+          }
+          if (typeof candidate.entity === "string" && candidate.entity.length > 22) {
+            return `Entity name "${candidate.entity}" exceeds maximum length of 22 characters. Please use a shorter snake_case name (at most 22 characters).`;
+          }
+          for (const val of Object.values(candidate)) {
+            if (typeof val === "object" && val !== null) {
+              const err = checkEntityLengths(val);
+              if (err) return err;
+            }
+          }
+          return null;
+        };
+
+        const lengthError = checkEntityLengths(parsed);
+        if (lengthError) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "ai",
+              content: `Naming Error: ${lengthError}`,
+            },
+          ]);
+          return;
+        }
+
         if (parsed?.pages?.[0]?.components) {
           parsed = parsed.pages[0].components;
         } else if (parsed?.components && Array.isArray(parsed.components)) {

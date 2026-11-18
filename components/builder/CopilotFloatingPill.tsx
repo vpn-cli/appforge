@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 type CopilotFloatingPillProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onApply: (components: unknown[]) => void;
+  onApply: (components: unknown[], appName?: string) => void;
   onStreamStart?: () => void;
   onStreamEnd?: () => void;
   initialPrompt?: string;
@@ -160,6 +160,48 @@ export function CopilotFloatingPill({
           } catch {}
         }
 
+        // Validate entity identifier length and format in generated AST / schema
+        // If an entity name is longer than 22 characters, show the user a clear message, not a database error
+        const checkEntityLengths = (obj: unknown): string | null => {
+          if (!obj || typeof obj !== "object") return null;
+          const candidate = obj as Record<string, unknown>;
+          if (candidate.entities && typeof candidate.entities === "object") {
+            for (const entityKey of Object.keys(candidate.entities as Record<string, unknown>)) {
+              if (entityKey.length > 22) {
+                return `Entity name "${entityKey}" exceeds maximum length of 22 characters. Please use a shorter snake_case name (at most 22 characters).`;
+              }
+            }
+          }
+          if (typeof candidate.entity === "string" && candidate.entity.length > 22) {
+            return `Entity name "${candidate.entity}" exceeds maximum length of 22 characters. Please use a shorter snake_case name (at most 22 characters).`;
+          }
+          for (const val of Object.values(candidate)) {
+            if (typeof val === "object" && val !== null) {
+              const err = checkEntityLengths(val);
+              if (err) return err;
+            }
+          }
+          return null;
+        };
+
+        const lengthError = checkEntityLengths(parsed);
+        if (lengthError) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "ai",
+              content: `Naming Error: ${lengthError}`,
+            },
+          ]);
+          return;
+        }
+
+        // Extract app name if top-level "app" is returned
+        let extractedAppName: string | undefined = undefined;
+        if (parsed && typeof parsed.app === "string" && parsed.app.trim()) {
+          extractedAppName = parsed.app.trim();
+        }
+
         if (parsed?.pages?.[0]?.components) {
           parsed = parsed.pages[0].components;
         } else if (parsed?.components && Array.isArray(parsed.components)) {
@@ -167,7 +209,48 @@ export function CopilotFloatingPill({
         }
 
         const finalArray = Array.isArray(parsed) ? parsed : [parsed];
-        onApply(finalArray);
+
+        // If no top-level "app" field was provided, infer from first Header component
+        if (!extractedAppName && Array.isArray(finalArray)) {
+          const headerNode = finalArray.find((node: unknown) => {
+            return (
+              node &&
+              typeof node === "object" &&
+              (node as Record<string, unknown>).type === "Header" &&
+              typeof (node as Record<string, unknown>).title === "string"
+            );
+          }) as { title?: string } | undefined;
+          if (headerNode?.title && headerNode.title.trim()) {
+            extractedAppName = headerNode.title.trim();
+          }
+        }
+
+        // Sanitize any outdated 2023 dates in mock data to recent dates relative to today
+        const currentYear = new Date().getFullYear();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sanitizeDates = (obj: any): any => {
+          if (!obj) return obj;
+          if (typeof obj === "string") {
+            return obj
+              .replace(/202[0-3](-[0-1][0-9]-[0-3][0-9])/g, `${currentYear}$1`)
+              .replace(/202[0-3]/g, String(currentYear));
+          }
+          if (Array.isArray(obj)) {
+            return obj.map(sanitizeDates);
+          }
+          if (typeof obj === "object") {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const newObj: Record<string, any> = {};
+            for (const k of Object.keys(obj)) {
+              newObj[k] = sanitizeDates(obj[k]);
+            }
+            return newObj;
+          }
+          return obj;
+        };
+
+        const sanitizedComponents = sanitizeDates(finalArray);
+        onApply(sanitizedComponents, extractedAppName);
         setMessages((prev) => [
           ...prev,
           {
@@ -244,11 +327,11 @@ export function CopilotFloatingPill({
             animate={{ opacity: 1, scale: 1 }}
             exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
             transition={springTransition}
-            className="w-full h-10 px-3.5 rounded-full flex items-center justify-between gap-2 border border-black/10 dark:border-white/15 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group"
+            className="w-full h-10 px-3.5 rounded-full flex items-center justify-between gap-2 border border-black/10 dark:border-white/15 bg-card/95 dark:bg-card/95 backdrop-blur-xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group"
             aria-label="Open Copilot chat"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 group-hover:rotate-12 transition-transform" />
+              <Sparkles className="w-3.5 h-3.5 text-brand-link shrink-0 group-hover:rotate-12 transition-transform" />
               <span className="text-[13px] font-medium text-foreground truncate">
                 Ask Copilot
               </span>
@@ -277,12 +360,12 @@ export function CopilotFloatingPill({
                 : { opacity: 0, scale: 0.95, originX: 1, originY: 1 }
             }
             transition={springTransition}
-            className="w-full h-full rounded-[22px] border border-black/10 dark:border-white/15 bg-white/96 dark:bg-[#121218]/96 backdrop-blur-2xl shadow-[0_24px_70px_-20px_rgba(0,0,0,0.45)] dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden"
+            className="w-full h-full rounded-[22px] border border-black/10 dark:border-white/15 bg-card/96 dark:bg-card/96 backdrop-blur-2xl shadow-[0_24px_70px_-20px_rgba(0,0,0,0.45)] dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden"
           >
             {/* Header: Title + Esc/Collapse buttons */}
             <div className="h-11 px-4 border-b border-border/40 dark:border-white/8 flex items-center justify-between shrink-0 bg-transparent">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-indigo-500/15 dark:bg-indigo-400/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-brand-500/15 dark:bg-brand-400/20 text-brand-link flex items-center justify-center">
                   <Sparkles className="w-3.5 h-3.5" />
                 </div>
                 <span className="text-[13px] font-semibold text-foreground">
@@ -324,7 +407,7 @@ export function CopilotFloatingPill({
                     className={cn(
                       "p-3 max-w-[85%] rounded-2xl text-[13px]",
                       m.role === "user"
-                        ? "bg-slate-900 text-white dark:bg-white dark:text-[#0B0B10] font-medium shadow-xs"
+                        ? "bg-foreground text-background font-medium shadow-xs"
                         : "bg-black/5 dark:bg-white/5 text-foreground border border-black/5 dark:border-white/5"
                     )}
                   >
@@ -336,7 +419,7 @@ export function CopilotFloatingPill({
               {isGenerating && (
                 <div className="flex w-full justify-start">
                   <div className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl p-3 inline-flex items-center gap-2 text-[13px]">
-                    <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                    <Loader2 className="w-4 h-4 animate-spin text-brand-link" />
                     <span>Synthesizing components from prompt...</span>
                   </div>
                 </div>
@@ -349,7 +432,7 @@ export function CopilotFloatingPill({
               onSubmit={handleGenerate}
               className="h-[52px] px-3.5 border-t border-border/40 dark:border-white/8 flex items-center gap-2.5 shrink-0 bg-black/[0.02] dark:bg-white/[0.02]"
             >
-              <div className="text-indigo-600 dark:text-indigo-400 shrink-0">
+              <div className="text-brand-link shrink-0">
                 <Sparkles className="w-4 h-4" />
               </div>
 
@@ -368,21 +451,24 @@ export function CopilotFloatingPill({
                 className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0"
               />
 
-              {/* Circular send button */}
-              <Button
+              {/* Circular send button: visibly enabled (accent) whenever input has text; muted only when empty */}
+              <button
                 type="submit"
                 disabled={isGenerating || !hasText}
-                variant="primary"
-                size="icon"
-                className="w-7 h-7 rounded-full shrink-0"
                 aria-label="Send prompt"
+                className={cn(
+                  "w-7 h-7 rounded-full flex items-center justify-center transition-all duration-150 outline-none shrink-0",
+                  hasText && !isGenerating
+                    ? "bg-brand-600 hover:bg-brand-500 text-white shadow-[0_2px_8px_rgba(109,91,240,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
+                    : "bg-black/5 dark:bg-white/5 text-muted-foreground/30 cursor-not-allowed pointer-events-none"
+                )}
               >
                 {isGenerating ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                 ) : (
-                  <ArrowUp className="w-3.5 h-3.5" />
+                  <ArrowUp className="w-3.5 h-3.5 stroke-[2.25]" />
                 )}
-              </Button>
+              </button>
             </form>
           </motion.div>
         )}

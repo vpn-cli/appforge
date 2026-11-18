@@ -2,6 +2,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 import { streamText } from "ai";
 import { createGroq } from "@ai-sdk/groq";
@@ -11,6 +12,16 @@ import { validateComponentNode } from "../lib/validation.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
+
+const PROMPT_VERSION = "v1.0.0";
+const EVAL_TEMPERATURE = 0.1;
+
+let currentCommitHash = "unknown";
+try {
+  currentCommitHash = execSync("git rev-parse HEAD", { cwd: rootDir, encoding: "utf-8" }).trim();
+} catch {
+  currentCommitHash = "unknown";
+}
 
 // Load env vars from .env.local without altering production config
 const envFile = path.join(rootDir, ".env.local");
@@ -49,7 +60,8 @@ Architectural Rules:
 1. Top-level layout typically starts with a Header.
 2. Below the Header, use a Grid (columns: 3 or 4) containing at most 3-4 numeric Statistic KPIs.
 3. For lists of records (e.g. incidents, orders, users, tickets), always render a DataTable with a "status" column typed as "badge".
-4. Output must be a direct JSON array, e.g. [{ type: "Header", ... }, { type: "Grid", ... }, { type: "DataTable", ... }]`;
+4. Entity and Database Names: When generating, naming, or referencing schema entities or database tables, entity names MUST be snake_case (e.g. "incident_reports", "user_tasks") and at most 22 characters in length. Never exceed 22 characters.
+5. Output must be a direct JSON array, e.g. [{ type: "Header", ... }, { type: "Grid", ... }, { type: "DataTable", ... }]`;
 
 // Providers setup
 const groqKey = (process.env.GROQ_API_KEY || "").trim().replace(/^["']|["']$/g, "");
@@ -115,7 +127,7 @@ function extractRetryAfterMs(err) {
  * Evaluates a single prompt.
  * Latency timing begins strictly at the start of this attempt.
  */
-async function evalSinglePrompt(item, providerName, model) {
+async function evalSinglePrompt(item, providerName, model, modelId) {
   const attemptStart = performance.now();
   let firstChunkTime = null;
   let rawText = "";
@@ -126,7 +138,7 @@ async function evalSinglePrompt(item, providerName, model) {
       model,
       system: SYSTEM_PROMPT,
       prompt: item.prompt,
-      temperature: 0.1,
+      temperature: EVAL_TEMPERATURE,
       maxRetries: 0,
       onError({ error }) {
         streamError = error;
@@ -192,6 +204,10 @@ async function evalSinglePrompt(item, providerName, model) {
       category: item.category,
       prompt: item.prompt,
       provider: providerName,
+      model: modelId || providerName,
+      promptVersion: PROMPT_VERSION,
+      temperature: EVAL_TEMPERATURE,
+      commitHash: currentCommitHash,
       ttftMs,
       durationMs,
       inputTokens,
@@ -207,6 +223,7 @@ async function evalSinglePrompt(item, providerName, model) {
       success: true,
       rateLimited: false,
       status: "completed",
+      rawOutput: rawText,
       rawOutputPreview: rawText.slice(0, 150) + "...",
     };
   } catch (err) {
@@ -229,6 +246,10 @@ async function evalSinglePrompt(item, providerName, model) {
       category: item.category,
       prompt: item.prompt,
       provider: providerName,
+      model: modelId || providerName,
+      promptVersion: PROMPT_VERSION,
+      temperature: EVAL_TEMPERATURE,
+      commitHash: currentCommitHash,
       ttftMs: null,
       durationMs: Math.round(end - attemptStart),
       inputTokens: 0,
@@ -246,6 +267,8 @@ async function evalSinglePrompt(item, providerName, model) {
       status: isRateLimit ? "rate_limited" : "failed",
       error: effectiveErr.message || String(effectiveErr),
       retryAfterMs,
+      rawOutput: rawText || null,
+      rawOutputPreview: (rawText || "").slice(0, 150) + "...",
     };
   }
 }
@@ -255,11 +278,11 @@ async function evalSinglePrompt(item, providerName, model) {
  * Separates wait time spent on 429s into `rateLimitWaitMs`.
  * Timing of successful response begins at the attempt that succeeds.
  */
-async function evalWithRetry(item, providerName, model, maxRetries = 15) {
+async function evalWithRetry(item, providerName, model, modelId, maxRetries = 15) {
   let rateLimitWaitMs = 0;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const res = await evalSinglePrompt(item, providerName, model);
+    const res = await evalSinglePrompt(item, providerName, model, modelId);
     if (res.success && res.totalNodes > 0) {
       res.rateLimitWaitMs = rateLimitWaitMs;
       return res;
@@ -374,7 +397,7 @@ async function runModelSuite(modelKey, providerName, modelInstance, outFileName)
     }
 
     process.stdout.write(`\r[${modelKey}] Running: ${i + 1}/${prompts.length} (${item.id} - ${item.category})`);
-    const res = await evalWithRetry(item, providerName, modelInstance);
+    const res = await evalWithRetry(item, providerName, modelInstance, modelKey);
     const existingIndex = dataset.findIndex((r) => r.id === item.id);
     if (existingIndex >= 0) {
       dataset[existingIndex] = res;
