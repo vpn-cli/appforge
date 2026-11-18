@@ -1,8 +1,12 @@
 # AppForge Generation Evaluation Harness Report
 
 **Evaluation Timestamp:** 2026-11-18T00:15:12Z  
+**Current Prompt Version:** `v1.2.0` (bumped from `v1.1.0` in `lib/copilot-prompt.ts`)  
 **Reproduction Command:** `node scripts/run-evals.mjs`  
 **Resumption Command (for 120b after quota reset):** `node scripts/run-evals.mjs 120b-only`
+
+> [!NOTE]
+> **Schema & Prompt Version Notice (`v1.1.0` → `v1.2.0`):** All recorded evaluation results below predate the `PROMPT_VERSION` bump to `v1.2.0` and were executed under the old schema (`v1.1.0`), before `DataTableSchema` added `type: "status"` and `colors?: Record<string, "success" | "warning" | "danger" | "info" | "neutral" | "violet">` and before the Copilot system prompt instructed models to emit `type: "status"` with a `colors` map. No new LLM evals have been run under `v1.2.0`.
 
 ---
 
@@ -60,7 +64,7 @@ A node is considered **Valid** if and only if:
 2. `node` strictly satisfies its component-specific Zod schema via `schema.safeParse(node).success === true`:
    * `HeaderSchema`: Requires valid string `title`, optional `subtitle`, and `size` strictly in `["sm", "md", "lg"]`.
    * `StatisticSchema`: Requires numeric/string `value`, valid `label` or `title`, and optional `trend` strictly adhering to trend union schemas (`up | down | neutral` or `{ value, label, direction, sentiment }`).
-   * `DataTableSchema`: Requires structured `columns` (`string` or `{ key, label, type, align }`) and `data` or `rows` records.
+   * `DataTableSchema`: Requires structured `columns` (`string` or `{ key, label, type, colors, align }`, where `type` supports `"status"` and `colors` maps status values to `"success" | "warning" | "danger" | "info" | "neutral" | "violet"`) and `data` or `rows` records. *(Note: historical `v1.1.0` runs below used the prior schema without `type: "status"` or `colors`.)*
    * `ButtonActionSchema`: Requires `label` and `variant` strictly in `["default", "outline", "secondary", "ghost"]`.
    * `CardSchema` / `GridSchema`: Recursively validates that all child `content`, `footer`, or `items` are themselves valid component nodes.
 

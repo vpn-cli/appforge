@@ -75,12 +75,18 @@ Light: bg-card (#FFFFFF) border border-border shadow-xs rounded-2xl
 Dark: bg-[#121217] border border-white/10 rounded-2xl
 ```
 
-**Status Pills (`components/ui/status-pill.tsx`)**
+**Status Pills (`components/ui/status-pill.tsx` & `registry/components/DataTable.tsx`)**
 ```text
-Full pill: rounded-full text-[13px] font-medium with status dot.
-Published / Running / Active: success-light / success-text
-Draft / Idle / Inactive: muted / muted-foreground
-Failed / Error: error-light / error-text
+Full pill: rounded-full text-xs/text-[13px] font-medium with 6px (w-1.5 h-1.5) status dot, palette token tinted background, dark text of same hue, and matching subtle border.
+Six semantic tones (`lib/status-colors.ts`):
+  success: bg-status-success-bg / text-status-success-text / border-status-success-border / --status-success-dot
+  warning: bg-status-warning-bg / text-status-warning-text / border-status-warning-border / --status-warning-dot
+  danger:  bg-status-danger-bg  / text-status-danger-text  / border-status-danger-border  / --status-danger-dot
+  info:    bg-status-info-bg    / text-status-info-text    / border-status-info-border    / --status-info-dot
+  neutral: bg-status-neutral-bg / text-status-neutral-text / border-status-neutral-border / --status-neutral-dot
+  violet:  bg-status-violet-bg  / text-status-violet-text  / border-status-violet-border  / --status-violet-dot
+DataTable status columns (`type: "status"`, optional `colors?: Record<string, StatusColorTone>`):
+  Resolution order: 1) explicit `colors` map -> 2) case-insensitive built-in keyword map -> 3) deterministic FNV-1a hash into neutral or violet.
 ```
 
 **Input & Hero Glass Input (`components/ui/input.tsx`)**

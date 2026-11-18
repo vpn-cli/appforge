@@ -74,6 +74,12 @@
   --color-status-danger-bg: var(--status-danger-bg);
   --color-status-danger-text: var(--status-danger-text);
   --color-status-danger-border: var(--status-danger-border);
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-neutral-text: var(--status-neutral-text);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-status-violet-bg: var(--status-violet-bg);
+  --color-status-violet-text: var(--status-violet-text);
+  --color-status-violet-border: var(--status-violet-border);
 
   /* Validation & State Aliases */
   --color-error: var(--theme-error);
@@ -331,6 +337,11 @@
   --status-neutral-border: var(--border);
   --status-neutral-dot: var(--ink-400);
 
+  --status-violet-bg: var(--brand-100);
+  --status-violet-text: var(--brand-700);
+  --status-violet-border: rgba(75, 55, 191, 0.20);
+  --status-violet-dot: var(--brand-500);
+
   --theme-brand: var(--brand-600);
   --theme-brand-dark: var(--brand-700);
   --theme-brand-light: var(--brand-50);
@@ -426,6 +437,11 @@
   --status-neutral-text: #A9A9BD;
   --status-neutral-border: rgba(255, 255, 255, 0.08);
   --status-neutral-dot: #8A8AA0;
+
+  --status-violet-bg: rgba(173, 166, 252, 0.15);
+  --status-violet-text: var(--brand-300);
+  --status-violet-border: rgba(173, 166, 252, 0.25);
+  --status-violet-dot: var(--brand-300);
 
   --theme-brand: var(--brand-300);
   --theme-brand-dark: var(--brand-400);

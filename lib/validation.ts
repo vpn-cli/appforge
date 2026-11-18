@@ -52,12 +52,24 @@ export const StatisticSchema = z.object({
   className: z.string().optional(),
 }).passthrough();
 
+export const StatusColorToneSchema = z.enum([
+  "success",
+  "warning",
+  "danger",
+  "info",
+  "neutral",
+  "violet",
+]);
+
 export const DataTableColumnSchema = z.union([
   z.string(),
   z.object({
     key: z.string(),
     label: z.string().optional(),
-    type: z.enum(["text", "number", "currency", "id", "code", "badge", "avatar"]).optional(),
+    type: z
+      .enum(["text", "number", "currency", "id", "code", "badge", "status", "avatar"])
+      .optional(),
+    colors: z.record(z.string(), StatusColorToneSchema).optional(),
     align: z.enum(["left", "right", "center"]).optional(),
   }).passthrough(),
 ]);

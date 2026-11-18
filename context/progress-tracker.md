@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Landing Page Redesign Complete (branch `feat/landing-redesign`)
-**Last completed:** 26 Landing Page Redesign (MeshGradient Background, Honest Registry Hero & Below-the-Fold Sections)
-**Next:** Review and merge per developer direction
+**Phase:** Status Colors (Part 1) Complete (branch `feat/landing-redesign`)
+**Last completed:** 27 DataTable Status Colors (`type: "status"`, `colors` map, 3-tier color resolution, palette-token pills with 6px dot, Copilot prompt v1.2.0, EVALS.md notice, and 12 unit tests)
+**Next:** Part 2 — Spacing (Builder & Landing Hero)
 
 ---
 
@@ -71,6 +71,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [x] 24 Live Database Isolation, DDL Hardening & Test Suite Rigor (Forensic audit of all historical live writes; eliminated live fallbacks in tests and server client where missing test secrets immediately fail; switched schema DDL to structured format('%I') parameters with strict column type whitelist; strictly removed DROP TABLE from execute_app_ddl and blocked multi-statement injection; created test teardown helper with service_role; updated migration 20261118_fix_published_apps_leak.sql to drop published_apps view, drop unused owner policies, and DROP FUNCTION get_jwt_secret; added cleanup-live-artifacts script with dry-run default and live guard; added SQL injection and malicious DDL tests)
 - [x] 25 CI Test Job Isolation & Dashboard Semantics (Separated CI workflow into dedicated unit-tests and database-tests jobs using Vitest projects; verified database tests are excluded from unit-tests and never skipped in database-tests; renamed dashboard rail to 'Recently updated' backed directly by PostgreSQL apps.updated_at timestamps; allowed id and created_at in update/delete proxy bodies while stripping on insert)
 - [x] 26 Landing Page Redesign (`feat/landing-redesign`: removed ribbon/dither images and preloads; evaluated `@paper-design/shaders-react` MeshGradient [8.73 KB gzipped] vs `ogl` [14.15 KB gzipped before shader] and selected MeshGradient; implemented lazy `ssr:false` WebGL2 mesh gradient loaded after first paint with theme CSS tokens, 1.5x DPR cap, ~30fps throttle, `document.hidden` + `IntersectionObserver` pause, and `prefers-reduced-motion`/no-WebGL CSS fallback; centered ~90vh hero on 8px spacing scale with >=96px space below both cards at 1440×900 and zero horizontal scroll in code panel; replaced fake hero with real `ComponentRegistry` rendering of `Statistic` + `DataTable` from shared JSON config with "Rendered from config" badge and "Demo data" disclosure; replaced old Features with honest `HowItWorks`, `WhatsInside`, `TemplatesStrip` linking to `/templates`, and token-aligned `Footer`; optimized `SmoothScroller` idle CPU and skipped unnecessary Clerk handshake redirect on static `/`)
+- [x] 27 DataTable Status Colors (Part 1: extended `DataTableSchema` with `type: "status"` and `colors?: Record<string, StatusColorTone>`; implemented 3-tier resolution in `lib/status-colors.ts` [explicit config map → case-insensitive keyword map → stable FNV-1a hash into `neutral`/`violet`]; added `--status-violet-*` and `@theme` status-neutral/violet tokens in `app/globals.css`; rendered palette-token pills with 6px dot in `DataTable.tsx`; extracted shared Copilot prompt in `lib/copilot-prompt.ts` with `PROMPT_VERSION = "v1.2.0"` emitting `type: "status"` + `colors`; documented pre-bump schema notice in `EVALS.md`; added 12 unit tests in `tests/data-table-status-colors.test.tsx`)
 
 ---
 

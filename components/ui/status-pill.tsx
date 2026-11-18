@@ -13,6 +13,8 @@ const statusPillVariants = cva(
           "bg-status-neutral-bg text-status-neutral-text border border-status-neutral-border",
         active:
           "bg-status-success-bg text-status-success-text border border-status-success-border",
+        success:
+          "bg-status-success-bg text-status-success-text border border-status-success-border",
         idle:
           "bg-status-info-bg text-status-info-text border border-status-info-border",
         info:
@@ -21,8 +23,12 @@ const statusPillVariants = cva(
           "bg-status-warning-bg text-status-warning-text border border-status-warning-border",
         error:
           "bg-status-danger-bg text-status-danger-text border border-status-danger-border",
+        danger:
+          "bg-status-danger-bg text-status-danger-text border border-status-danger-border",
         neutral:
           "bg-status-neutral-bg text-status-neutral-text border border-status-neutral-border",
+        violet:
+          "bg-status-violet-bg text-status-violet-text border border-status-violet-border",
       },
     },
     defaultVariants: {
@@ -35,11 +41,14 @@ const dotColors: Record<string, string> = {
   published: "bg-[var(--status-success-dot)]",
   draft: "bg-[var(--status-neutral-dot)]",
   active: "bg-[var(--status-success-dot)] animate-pulse",
+  success: "bg-[var(--status-success-dot)]",
   idle: "bg-[var(--status-info-dot)]",
   info: "bg-[var(--status-info-dot)]",
   warning: "bg-[var(--status-warning-dot)]",
   error: "bg-[var(--status-danger-dot)]",
+  danger: "bg-[var(--status-danger-dot)]",
   neutral: "bg-[var(--status-neutral-dot)]",
+  violet: "bg-[var(--status-violet-dot)]",
 };
 
 export interface StatusPillProps

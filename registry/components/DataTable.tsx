@@ -3,11 +3,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useAppRuntimeContext } from "../context";
+import {
+  resolveStatusColor,
+  STATUS_PILL_CLASSES,
+  type StatusColorTone,
+} from "@/lib/status-colors";
+
+export { resolveStatusColor, type StatusColorTone };
 
 export interface ColumnSchema {
   key: string;
   label?: string;
-  type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "avatar";
+  type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "status" | "avatar";
+  colors?: Record<string, StatusColorTone>;
   align?: "left" | "right" | "center";
 }
 
@@ -103,7 +111,7 @@ export function DataTable({
     ? [
         { key: "workflow", label: "WORKFLOW", type: "avatar" as const },
         { key: "trigger", label: "TRIGGER", type: "code" as const },
-        { key: "status", label: "STATUS", type: "badge" as const },
+        { key: "status", label: "STATUS", type: "status" as const },
       ]
     : [];
 
@@ -142,7 +150,7 @@ export function DataTable({
       ) {
         type = "number";
       } else if (lower.includes("status") || lower.includes("badge") || lower.includes("state")) {
-        type = "badge";
+        type = "status";
       } else if (lower === "workflow" || lower.includes("avatar") || lower.includes("user")) {
         type = "avatar";
       }
@@ -157,6 +165,7 @@ export function DataTable({
       key: col.key,
       label: col.label || col.key.charAt(0).toUpperCase() + col.key.slice(1).replace(/_/g, " "),
       type: col.type || "text",
+      colors: col.colors,
       align: col.align || (col.type === "number" || col.type === "currency" ? "right" : "left"),
     };
   });
@@ -252,64 +261,18 @@ export function DataTable({
       );
     }
 
-    if (col.type === "badge") {
-      const valStr = String(value).toLowerCase();
-      const isRunning = valStr.includes("running");
-      const isIdle = valStr.includes("idle");
-
-      if (isRunning) {
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            {String(value)}
-          </span>
-        );
-      }
-
-      if (isIdle) {
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
-            {String(value)}
-          </span>
-        );
-      }
-
-      let colorClass = "bg-muted text-muted-foreground border-border";
-      if (
-        valStr.includes("active") ||
-        valStr.includes("success") ||
-        valStr.includes("published") ||
-        valStr.includes("paid") ||
-        valStr.includes("operational") ||
-        valStr.includes("nominal") ||
-        valStr.includes("resolved")
-      ) {
-        colorClass = "bg-success-light text-success-text border-success-border";
-      } else if (
-        valStr.includes("pending") ||
-        valStr.includes("warning") ||
-        valStr.includes("draft") ||
-        valStr.includes("investigating") ||
-        valStr.includes("degraded") ||
-        valStr.includes("in progress")
-      ) {
-        colorClass = "bg-warning-light text-warning-text border-warning-border";
-      } else if (
-        valStr.includes("error") ||
-        valStr.includes("failed") ||
-        valStr.includes("inactive") ||
-        valStr.includes("critical") ||
-        valStr.includes("major") ||
-        valStr.includes("down") ||
-        valStr.includes("breached")
-      ) {
-        colorClass = "bg-error-light text-error-text border-error-border";
-      }
+    if (col.type === "status" || col.type === "badge") {
+      const tone = resolveStatusColor(value, col.colors);
+      const classes = STATUS_PILL_CLASSES[tone];
       return (
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${colorClass}`}
+          data-status-tone={tone}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border select-none whitespace-nowrap ${classes.pill}`}
         >
+          <span
+            className={`w-1.5 h-1.5 rounded-full shrink-0 ${classes.dot}`}
+            aria-hidden="true"
+          />
           {String(value)}
         </span>
       );
