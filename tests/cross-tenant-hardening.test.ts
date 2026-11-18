@@ -20,18 +20,24 @@ import { syncAppSchema } from "@/actions/schema";
 import { GET, POST, PUT, DELETE } from "@/app/api/proxy/[appId]/[entity]/route";
 import { EventPublisher } from "@/lib/event-queue";
 
+// Dedicated Test Database Helper: Teardown must drop tables through a test-only helper using service_role
+async function dropTestTable(serverDb: any, tableName: string) {
+  const { error } = await serverDb.rpc("test_teardown_drop_table", {
+    target_table: tableName,
+  });
+  if (error) {
+    console.warn(`[test teardown] Failed to drop test table ${tableName}:`, error.message);
+  }
+}
+
 // SAFETY GUARD: Integration tests require a dedicated test database (TEST_SUPABASE_URL).
 // Direct execution against production project 'upljqampxcmhqjszatrp' is strictly prohibited.
+// Fallback to live keys is removed: Missing test secrets = FAIL.
 const testDbUrl = process.env.TEST_SUPABASE_URL;
 const testServiceKey = process.env.TEST_SUPABASE_SERVICE_ROLE_KEY;
-const isLiveDemoDb = Boolean(
-  (testDbUrl && testDbUrl.includes("upljqampxcmhqjszatrp")) ||
-  (!testDbUrl && process.env.NEXT_PUBLIC_INSFORGE_URL?.includes("upljqampxcmhqjszatrp"))
-);
+const testAnonKey = process.env.TEST_SUPABASE_ANON_KEY;
 
-const canRunDbTests = Boolean(testDbUrl && testServiceKey && !isLiveDemoDb);
-
-describe.skipIf(!canRunDbTests)(
+describe(
   "PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)",
   () => {
     const userA = "tenant_user_a_" + Date.now();
@@ -40,8 +46,21 @@ describe.skipIf(!canRunDbTests)(
     let kafkaPublishSpy: ReturnType<typeof vi.spyOn>;
 
     beforeAll(async () => {
+      // Missing test secrets = fail
+      if (!testDbUrl || !testServiceKey || !testAnonKey) {
+        throw new Error(
+          "Missing dedicated test database secrets: TEST_SUPABASE_URL, TEST_SUPABASE_SERVICE_ROLE_KEY, and TEST_SUPABASE_ANON_KEY must all be defined. Testing against production or running with missing test secrets is strictly prohibited (Missing test secrets = fail)."
+        );
+      }
+
+      if (testDbUrl.includes("upljqampxcmhqjszatrp")) {
+        throw new Error(
+          "SAFETY GUARD VIOLATION: TEST_SUPABASE_URL points to live production project 'upljqampxcmhqjszatrp'. Running tests on live database is strictly forbidden."
+        );
+      }
+
       try {
-        // Connect to real Supabase database and create a test app owned by User A
+        // Connect to test Supabase database and create a test app owned by User A
         const supabase = await createInsforgeServer();
         const { data, error } = await supabase
           .from("apps")
@@ -82,10 +101,7 @@ describe.skipIf(!canRunDbTests)(
       // Cleanup: remove the test app from the real database and drop dynamic tables
       if (testAppId) {
         const supabase = await createInsforgeServer();
-        await supabase.rpc("execute_app_ddl", {
-          app_id: testAppId,
-          query: `DROP TABLE IF EXISTS app_${testAppId.replace(/-/g, "_")}_items;`,
-        });
+        await dropTestTable(supabase, `app_${testAppId.replace(/-/g, "_")}_items`);
         await supabase.from("apps").delete().eq("id", testAppId);
       }
     });
@@ -298,10 +314,7 @@ describe.skipIf(!canRunDbTests)(
           const { data: checkDeleted } = await supabase.from("apps").select("id").eq("id", testAppIdB).maybeSingle();
           expect(checkDeleted).toBeNull();
         } finally {
-          await supabase.rpc("execute_app_ddl", {
-            app_id: testAppIdB,
-            query: `DROP TABLE IF EXISTS app_${testAppIdB.replace(/-/g, "_")}_notes;`,
-          });
+          await dropTestTable(supabase, `app_${testAppIdB.replace(/-/g, "_")}_notes`);
           await supabase.from("apps").delete().eq("id", testAppIdB);
         }
       }, 20000);
@@ -347,10 +360,7 @@ describe.skipIf(!canRunDbTests)(
           expect(inserted?.name).toBe("Jane Doe");
         } finally {
           if (createdAppId && dynamicTableName) {
-            await supabase.rpc("execute_app_ddl", {
-              app_id: createdAppId,
-              query: `DROP TABLE IF EXISTS ${dynamicTableName};`,
-            });
+            await dropTestTable(supabase, dynamicTableName);
             await supabase.from("apps").delete().eq("id", createdAppId);
           }
         }
@@ -396,10 +406,7 @@ describe.skipIf(!canRunDbTests)(
           expect(insertErr).toBeNull();
           expect(inserted?.title).toBe("Apollo Program");
         } finally {
-          await supabase.rpc("execute_app_ddl", {
-            app_id: appId,
-            query: `DROP TABLE IF EXISTS ${projectsTableName};`,
-          });
+          await dropTestTable(supabase, projectsTableName);
           await supabase.from("apps").delete().eq("id", appId);
         }
       }, 20000);
@@ -658,10 +665,7 @@ describe.skipIf(!canRunDbTests)(
           const remaining = await verifyRes.json();
           expect(remaining).toEqual([]);
         } finally {
-          await supabase.rpc("execute_app_ddl", {
-            app_id: userBAppId,
-            query: `DROP TABLE IF EXISTS ${bTableName};`,
-          });
+          await dropTestTable(supabase, bTableName);
           await supabase.from("apps").delete().eq("id", userBAppId);
         }
       }, 20000);
@@ -678,8 +682,8 @@ describe.skipIf(!canRunDbTests)(
       beforeAll(async () => {
         try {
           const { createClient } = await import("@supabase/supabase-js");
-          const clientUrl = process.env.TEST_SUPABASE_URL || process.env.NEXT_PUBLIC_INSFORGE_URL!;
-          const clientAnonKey = process.env.TEST_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!;
+          const clientUrl = process.env.TEST_SUPABASE_URL!;
+          const clientAnonKey = process.env.TEST_SUPABASE_ANON_KEY!;
           directClient = createClient(clientUrl, clientAnonKey);
 
           const serverDb = await createInsforgeServer();
@@ -725,10 +729,7 @@ describe.skipIf(!canRunDbTests)(
       afterAll(async () => {
         if (directAppId) {
           const serverDb = await createInsforgeServer();
-          await serverDb.rpc("execute_app_ddl", {
-            app_id: directAppId,
-            query: `DROP TABLE IF EXISTS ${dynamicTableName};`,
-          });
+          await dropTestTable(serverDb, dynamicTableName);
           await serverDb.from("apps").delete().eq("id", directAppId);
         }
       });
@@ -860,6 +861,82 @@ describe.skipIf(!canRunDbTests)(
           await serverDb.from(dynamicTableName).delete().neq("title", "");
           await serverDb.from("apps").update({ published_config: null }).eq("id", directAppId);
         }
+      });
+    });
+
+    // =========================================================================
+    // Fix 6: SQL Injection & DDL Security Defenses
+    // =========================================================================
+    describe("Fix 6: SQL Injection & DDL Security Defenses", () => {
+      it("Malicious entity and field names (e.g. 'x text); DROP TABLE apps; --') do NOT drop core tables", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+        const supabase = await createInsforgeServer();
+        const maliciousEntity = "vuln_entity";
+        const maliciousFields = {
+          "x text); DROP TABLE apps; --": "string",
+        };
+
+        // Attempt syncAppSchema with malicious injection field name
+        const res = await syncAppSchema(testAppId, { [maliciousEntity]: maliciousFields }, userA);
+        expect(res).toBeDefined();
+
+        // Verify apps table is completely intact and unharmed
+        const { data: appsCheck, error: appsErr } = await supabase
+          .from("apps")
+          .select("id")
+          .eq("id", testAppId)
+          .maybeSingle();
+
+        expect(appsErr).toBeNull();
+        expect(appsCheck).not.toBeNull();
+        expect(appsCheck?.id).toBe(testAppId);
+
+        // Clean up the created test table if it was created
+        await dropTestTable(supabase, `app_${testAppId.replace(/-/g, "_")}_${maliciousEntity}`);
+      });
+
+      it("execute_app_ddl strictly forbids DROP TABLE statements", async () => {
+        const supabase = await createInsforgeServer();
+        const cleanId = testAppId.replace(/-/g, "_");
+
+        // Attempt DROP TABLE via execute_app_ddl
+        const { error } = await supabase.rpc("execute_app_ddl", {
+          app_id: testAppId,
+          query: `DROP TABLE IF EXISTS app_${cleanId}_items;`,
+        });
+
+        expect(error).not.toBeNull();
+        expect(error?.message).toMatch(/DROP TABLE is strictly forbidden in execute_app_ddl/i);
+      });
+
+      it("Multi-table drop injection 'app_<id>_items, apps' is strictly rejected and never drops apps", async () => {
+        const supabase = await createInsforgeServer();
+        const cleanId = testAppId.replace(/-/g, "_");
+        const maliciousTarget = `app_${cleanId}_items, apps`;
+
+        // 1. Attempt via execute_app_ddl
+        const { error: ddlErr } = await supabase.rpc("execute_app_ddl", {
+          app_id: testAppId,
+          query: `DROP TABLE ${maliciousTarget};`,
+        });
+        expect(ddlErr).not.toBeNull();
+
+        // 2. Attempt via test_teardown_drop_table
+        const { error: teardownErr } = await supabase.rpc("test_teardown_drop_table", {
+          target_table: maliciousTarget,
+        });
+        expect(teardownErr).not.toBeNull();
+        expect(teardownErr?.message).toMatch(/invalid table name format/i);
+
+        // 3. Confirm apps table still exists and is untouched
+        const { data: appsTable, error: checkErr } = await supabase
+          .from("apps")
+          .select("id")
+          .eq("id", testAppId)
+          .maybeSingle();
+
+        expect(checkErr).toBeNull();
+        expect(appsTable?.id).toBe(testAppId);
       });
     });
   });
