@@ -7,6 +7,7 @@ CREATE OR REPLACE FUNCTION test_teardown_drop_table(target_table text)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
 BEGIN
   -- Strict regex: ONLY allow a single valid namespaced app table identifier
