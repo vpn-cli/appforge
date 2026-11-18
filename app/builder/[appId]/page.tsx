@@ -23,6 +23,7 @@ import {
   Smartphone,
   PanelLeftClose,
   Sparkles,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -263,6 +264,7 @@ function BuilderContent() {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [authRequireMessage, setAuthRequireMessage] = useState<string | null>(
     null,
@@ -305,6 +307,17 @@ function BuilderContent() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (!showPublishDialog) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isPublishing) {
+        setShowPublishDialog(false);
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [showPublishDialog, isPublishing]);
 
   const handleToggleCopilot = useCallback(() => {
     setIsCopilotOpen((prev) => {
@@ -418,7 +431,7 @@ function BuilderContent() {
           type: "success",
           title: "App Published!",
           message:
-            "Your application has been deployed live with updated schema routes.",
+            "Your application is now live. Anyone with the link can view this app and its data.",
         });
       }
     } catch (e: unknown) {
@@ -436,6 +449,7 @@ function BuilderContent() {
       }
     } finally {
       setIsPublishing(false);
+      setShowPublishDialog(false);
     }
   };
 
@@ -618,7 +632,7 @@ function BuilderContent() {
 
           {/* Publish CTA: Primary pill button */}
           <Button
-            onClick={handlePublish}
+            onClick={() => setShowPublishDialog(true)}
             disabled={isPublishing}
             variant="primary"
             size="sm"
@@ -836,6 +850,69 @@ function BuilderContent() {
           </div>
         </section>
       </main>
+
+      {/* Publish Confirmation Dialog */}
+      {showPublishDialog && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => {
+            if (!isPublishing) setShowPublishDialog(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="publish-dialog-title"
+            className="bg-card border border-border rounded-2xl shadow-2xl max-w-md w-full p-6 text-left animate-in fade-in zoom-in duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-8 h-8 rounded-full bg-muted text-foreground flex items-center justify-center shrink-0">
+                <Globe className="w-4 h-4" />
+              </div>
+              <h2
+                id="publish-dialog-title"
+                className="text-[17px] font-semibold text-foreground"
+              >
+                Publish {appName}
+              </h2>
+            </div>
+
+            <div className="rounded-xl bg-warning-light border border-warning-border text-warning-text px-3.5 py-3 text-[13px] font-medium mb-4">
+              Anyone with the link can view this app and its data.
+            </div>
+
+            <p className="text-muted-foreground text-[13px] mb-5">
+              Your latest configuration and entity schemas will be deployed live at{" "}
+              <span className="font-mono text-foreground">/apps/{appId}</span>.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5">
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => setShowPublishDialog(false)}
+                disabled={isPublishing}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handlePublish}
+                disabled={isPublishing}
+              >
+                {isPublishing ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                ) : (
+                  <Play className="w-3.5 h-3.5 mr-1.5 fill-current" />
+                )}
+                Publish
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Auth Requirement Modal */}
       {authRequireMessage && (
