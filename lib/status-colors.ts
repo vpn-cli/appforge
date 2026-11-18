@@ -9,7 +9,25 @@ export const STATUS_COLOR_TONES = [
 
 export type StatusColorTone = (typeof STATUS_COLOR_TONES)[number];
 
-const VALID_TONE_SET: ReadonlySet<string> = new Set(STATUS_COLOR_TONES);
+export const STATUS_COLOR_ALIAS_MAP: Readonly<Record<string, StatusColorTone>> = {
+  // Canonical tones
+  success: "success",
+  warning: "warning",
+  danger: "danger",
+  info: "info",
+  neutral: "neutral",
+  violet: "violet",
+  // Common color aliases
+  green: "success",
+  red: "danger",
+  yellow: "warning",
+  amber: "warning",
+  orange: "warning",
+  blue: "info",
+  gray: "neutral",
+  grey: "neutral",
+  purple: "violet",
+};
 
 export const STATUS_KEYWORD_MAP: Readonly<Record<string, StatusColorTone>> = {
   // success
@@ -72,8 +90,35 @@ export const STATUS_PILL_CLASSES: Readonly<
   },
 };
 
-function isValidTone(value: unknown): value is StatusColorTone {
-  return typeof value === "string" && VALID_TONE_SET.has(value);
+/**
+ * Preprocesses a configured color tone string (canonical or alias).
+ * Returns undefined for unrecognized values so resolution falls back
+ * to keyword or hash mapping instead of failing validation.
+ */
+export function preprocessStatusColorTone(raw: unknown): StatusColorTone | undefined {
+  if (typeof raw !== "string") return undefined;
+  return STATUS_COLOR_ALIAS_MAP[raw.trim().toLowerCase()];
+}
+
+/**
+ * Normalizes a column `colors` record before Zod validation:
+ * - Maps canonical tones and color aliases (green, red, yellow/amber/orange, blue, gray/grey, purple)
+ * - Drops unrecognized values (e.g. "sparkly") so they fall back to keyword/hash resolution
+ */
+export function preprocessStatusColorsMap(
+  colors: unknown
+): Record<string, StatusColorTone> | undefined {
+  if (!colors || typeof colors !== "object" || Array.isArray(colors)) {
+    return undefined;
+  }
+  const normalized: Record<string, StatusColorTone> = {};
+  for (const [key, value] of Object.entries(colors as Record<string, unknown>)) {
+    const tone = preprocessStatusColorTone(value);
+    if (tone) {
+      normalized[key] = tone;
+    }
+  }
+  return normalized;
 }
 
 /**
@@ -91,27 +136,31 @@ function hashStatusString(input: string): number {
 
 /**
  * Resolves a DataTable status cell value into a semantic StatusColorTone:
- * 1) Explicit `colors` map from column config (exact key match, then case-insensitive)
+ * 1) Explicit `colors` map from column config (canonical or preprocessed color alias;
+ *    unrecognized tone values fall through rather than failing)
  * 2) Built-in case-insensitive keyword map
  * 3) Stable hash fallback into "neutral" or "violet"
  */
 export function resolveStatusColor(
   value: unknown,
-  explicitColors?: Record<string, StatusColorTone>
+  explicitColors?: Record<string, string>
 ): StatusColorTone {
   const raw = String(value ?? "").trim();
   const normalized = raw.toLowerCase();
 
-  // 1) Explicit colors map from column config
+  // 1) Explicit colors map from column config (with alias preprocessing)
   if (explicitColors && typeof explicitColors === "object") {
-    const exactMatch = explicitColors[raw];
-    if (isValidTone(exactMatch)) {
+    const exactMatch = preprocessStatusColorTone(explicitColors[raw]);
+    if (exactMatch) {
       return exactMatch;
     }
 
-    for (const [key, tone] of Object.entries(explicitColors)) {
-      if (key.trim().toLowerCase() === normalized && isValidTone(tone)) {
-        return tone;
+    for (const [key, rawTone] of Object.entries(explicitColors)) {
+      if (key.trim().toLowerCase() === normalized) {
+        const mappedTone = preprocessStatusColorTone(rawTone);
+        if (mappedTone) {
+          return mappedTone;
+        }
       }
     }
   }

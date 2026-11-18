@@ -44,7 +44,7 @@ describe("PART 1 — DataTable Status Colors", () => {
       expect(validateComponentNode(node).valid).toBe(true);
     });
 
-    it("rejects invalid color tones in column colors map", () => {
+    it("preprocesses color aliases like 'green' and never invalidates DataTable on unknown tones like 'sparkly'", () => {
       const node = {
         type: "DataTable",
         columns: [
@@ -52,14 +52,39 @@ describe("PART 1 — DataTable Status Colors", () => {
             key: "status",
             label: "Status",
             type: "status",
-            colors: { Active: "magenta" },
+            colors: {
+              Strong: "green",
+              Weak: "red",
+              Balanced: "amber",
+              Caution: "yellow",
+              Escalating: "orange",
+              Scheduled: "blue",
+              Archived: "gray",
+              Muted: "grey",
+              Legendary: "purple",
+              Glitter: "sparkly",
+            },
           },
         ],
-        data: [{ status: "Active" }],
+        data: [
+          { status: "Strong" },
+          { status: "Glitter" },
+        ],
       };
 
       const check = validateComponentNode(node);
-      expect(check.valid).toBe(false);
+      expect(check.valid).toBe(true);
+      expect(check.data.columns[0].colors).toEqual({
+        Strong: "success",
+        Weak: "danger",
+        Balanced: "warning",
+        Caution: "warning",
+        Escalating: "warning",
+        Scheduled: "info",
+        Archived: "neutral",
+        Muted: "neutral",
+        Legendary: "violet",
+      });
     });
   });
 
@@ -87,6 +112,41 @@ describe("PART 1 — DataTable Status Colors", () => {
       expect(resolveStatusColor("tier 1", explicitColors)).toBe("danger");
       expect(resolveStatusColor("CANARY", explicitColors)).toBe("warning");
       expect(resolveStatusColor("beta", explicitColors)).toBe("violet");
+    });
+
+    it("preprocesses color aliases (green, red, yellow/amber/orange, blue, gray/grey, purple) in explicit colors", () => {
+      const aliasColors: Record<string, string> = {
+        Go: "green",
+        Stop: "RED",
+        Slow: "yellow",
+        Warm: "amber",
+        Hot: "orange",
+        Cold: "blue",
+        Flat: "gray",
+        Dim: "grey",
+        Special: "purple",
+      };
+
+      expect(resolveStatusColor("Go", aliasColors)).toBe("success");
+      expect(resolveStatusColor("Stop", aliasColors)).toBe("danger");
+      expect(resolveStatusColor("Slow", aliasColors)).toBe("warning");
+      expect(resolveStatusColor("Warm", aliasColors)).toBe("warning");
+      expect(resolveStatusColor("Hot", aliasColors)).toBe("warning");
+      expect(resolveStatusColor("Cold", aliasColors)).toBe("info");
+      expect(resolveStatusColor("Flat", aliasColors)).toBe("neutral");
+      expect(resolveStatusColor("Dim", aliasColors)).toBe("neutral");
+      expect(resolveStatusColor("Special", aliasColors)).toBe("violet");
+    });
+
+    it("falls back to keyword or stable hash resolution when explicit tone is unrecognized (e.g. 'sparkly')", () => {
+      // Built-in keyword with bad explicit tone -> falls back to keyword map ("success")
+      expect(resolveStatusColor("Active", { Active: "sparkly" })).toBe("success");
+      expect(resolveStatusColor("Weak", { Weak: "sparkly" })).toBe("danger");
+
+      // Unknown status with bad explicit tone -> falls back to stable hash (neutral or violet)
+      const expectedHashTone = resolveStatusColor("Mystic");
+      expect(["neutral", "violet"]).toContain(expectedHashTone);
+      expect(resolveStatusColor("Mystic", { Mystic: "sparkly" })).toBe(expectedHashTone);
     });
   });
 

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TEMPLATES_DATA } from "@/lib/templates-data";
 import { TemplateThumbnail } from "./TemplateThumbnail";
 
-const FEATURED_TEMPLATES = TEMPLATES_DATA.filter((tpl) => tpl.id !== "blank");
+const FEATURED_TEMPLATES = TEMPLATES_DATA.filter((tpl) => tpl.id !== "blank").slice(0, 3);
 
 export function TemplatesStrip() {
   return (

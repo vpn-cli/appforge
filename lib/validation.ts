@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
+import { preprocessStatusColorsMap } from "./status-colors";
 
 /**
  * Cache Key Normalization:
@@ -69,7 +70,10 @@ export const DataTableColumnSchema = z.union([
     type: z
       .enum(["text", "number", "currency", "id", "code", "badge", "status", "avatar"])
       .optional(),
-    colors: z.record(z.string(), StatusColorToneSchema).optional(),
+    colors: z.preprocess(
+      preprocessStatusColorsMap,
+      z.record(z.string(), StatusColorToneSchema).optional()
+    ),
     align: z.enum(["left", "right", "center"]).optional(),
   }).passthrough(),
 ]);

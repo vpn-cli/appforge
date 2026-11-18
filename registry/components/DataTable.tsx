@@ -15,7 +15,7 @@ export interface ColumnSchema {
   key: string;
   label?: string;
   type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "status" | "avatar";
-  colors?: Record<string, StatusColorTone>;
+  colors?: Record<string, string>;
   align?: "left" | "right" | "center";
 }
 

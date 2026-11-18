@@ -38,6 +38,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth, SignInButton } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import { getAppConfig, saveAppConfig, publishAppConfig } from "@/actions/apps";
+import { TEMPLATES_DATA } from "@/lib/templates-data";
 
 const DEFAULT_EDITOR_WIDTH = 460;
 const MIN_EDITOR_WIDTH = 340;
@@ -271,6 +272,13 @@ function BuilderContent() {
     appId === "demo" || appId.startsWith("template-") || appId === "mock-new-id";
 
   const [configStr, setConfigStr] = useState(() => {
+    const templateParam = searchParams.get("template");
+    const matchedTemplate = TEMPLATES_DATA.find(
+      (t) => t.id === templateParam || appId === `template-${t.id}` || appId === t.id
+    );
+    if (matchedTemplate) {
+      return JSON.stringify(matchedTemplate.config, null, 2);
+    }
     if (appId.includes("template-blank")) {
       return JSON.stringify({ app: "Untitled Template", pages: [] }, null, 2);
     }
