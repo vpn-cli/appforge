@@ -21,6 +21,10 @@ BEGIN
               IF tbl_name IS NOT NULL THEN
                   EXECUTE 'ALTER TABLE ' || quote_ident(tbl_name) || ' ENABLE ROW LEVEL SECURITY;';
                   
+                  -- NOTE: Native Clerk JWKS auth is not configured in Supabase PostgREST.
+                  -- Authenticated operations use service_role with Next.js Clerk auth() checks.
+                  -- Owner policy is commented out below:
+                  /*
                   EXECUTE format(
                     'CREATE POLICY %I ON %I FOR ALL TO authenticated USING (
                        EXISTS (SELECT 1 FROM apps WHERE id = %L::uuid AND user_id = (select auth.jwt()->>''sub''))
@@ -29,6 +33,7 @@ BEGIN
                      );',
                     'owner_policy_' || tbl_name, tbl_name, app_id, app_id
                   );
+                  */
 
                   EXECUTE format(
                     'CREATE POLICY %I ON %I FOR SELECT TO anon, authenticated USING (

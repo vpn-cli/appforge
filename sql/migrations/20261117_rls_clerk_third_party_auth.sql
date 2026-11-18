@@ -1,5 +1,8 @@
 -- Migration: 20261117_rls_clerk_third_party_auth.sql
--- Enables native Third-Party Auth (Clerk) with optimized (select auth.jwt()->>'sub') RLS policies.
+-- Security Model: Server-only DB access via service_role with Next.js Clerk auth() ownership checks.
+-- Postgres RLS is active to block anonymous writes and restrict public reads solely to published apps.
+-- NOTE: Native Clerk Third-Party Auth (JWKS token validation) is not configured in Supabase PostgREST.
+-- Authenticated owner policies are commented out below; all authenticated operations are server-mediated.
 
 -- 1. Performance Indexes for RLS InitPlan lookups
 CREATE INDEX IF NOT EXISTS apps_user_id_idx ON apps(user_id);
@@ -7,11 +10,16 @@ CREATE INDEX IF NOT EXISTS app_schemas_app_id_idx ON app_schemas(app_id);
 
 -- 2. Secure Core Tables: apps
 ALTER TABLE apps ENABLE ROW LEVEL SECURITY;
+
+-- NOTE: Commented out because all DB access uses service_role; direct PostgREST calls with Clerk JWTs
+-- fail with PGRST301 without Supabase Dashboard JWKS configuration.
+/*
 DROP POLICY IF EXISTS "apps_owner_policy" ON apps;
 CREATE POLICY "apps_owner_policy" ON apps
   FOR ALL TO authenticated
   USING (user_id = (select auth.jwt()->>'sub'))
   WITH CHECK (user_id = (select auth.jwt()->>'sub'));
+*/
 
 DROP POLICY IF EXISTS "apps_public_read_policy" ON apps;
 CREATE POLICY "apps_public_read_policy" ON apps
@@ -23,6 +31,9 @@ GRANT SELECT ON apps TO anon;
 
 -- 3. Secure Core Tables: app_schemas
 ALTER TABLE app_schemas ENABLE ROW LEVEL SECURITY;
+
+-- NOTE: Commented out because all DB access uses service_role with server-side Clerk auth() checks.
+/*
 DROP POLICY IF EXISTS "app_schemas_owner_policy" ON app_schemas;
 CREATE POLICY "app_schemas_owner_policy" ON app_schemas
   FOR ALL TO authenticated
@@ -40,6 +51,7 @@ CREATE POLICY "app_schemas_owner_policy" ON app_schemas
         AND apps.user_id = (select auth.jwt()->>'sub')
     )
   );
+*/
 
 DROP POLICY IF EXISTS "app_schemas_public_read_policy" ON app_schemas;
 CREATE POLICY "app_schemas_public_read_policy" ON app_schemas
@@ -76,7 +88,8 @@ BEGIN
             EXECUTE 'DROP POLICY IF EXISTS ' || quote_ident('owner_policy_' || tbl.tablename) || ' ON public.' || quote_ident(tbl.tablename) || ';';
             EXECUTE 'DROP POLICY IF EXISTS ' || quote_ident('public_read_policy_' || tbl.tablename) || ' ON public.' || quote_ident(tbl.tablename) || ';';
 
-            -- Create owner full CRUD policy wrapped in (select auth.jwt()->>'sub')
+            -- Owner full CRUD policy commented out (handled via service_role in Next.js Server Actions)
+            /*
             EXECUTE format(
                 'CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (
                     EXISTS (SELECT 1 FROM apps WHERE id = %L::uuid AND user_id = (select auth.jwt()->>''sub''))
@@ -88,6 +101,7 @@ BEGIN
                 app_rec.id,
                 app_rec.id
             );
+            */
 
             -- Create public read policy (if published)
             EXECUTE format(
@@ -129,6 +143,8 @@ BEGIN
               IF tbl_name IS NOT NULL THEN
                   EXECUTE 'ALTER TABLE ' || quote_ident(tbl_name) || ' ENABLE ROW LEVEL SECURITY;';
                   
+                  -- Owner policy commented out: authenticated operations use service_role with Next.js Clerk checks
+                  /*
                   EXECUTE format(
                     'CREATE POLICY %I ON %I FOR ALL TO authenticated USING (
                        EXISTS (SELECT 1 FROM apps WHERE id = %L::uuid AND user_id = (select auth.jwt()->>''sub''))
@@ -137,6 +153,7 @@ BEGIN
                      );',
                     'owner_policy_' || tbl_name, tbl_name, app_id, app_id
                   );
+                  */
 
                   EXECUTE format(
                     'CREATE POLICY %I ON %I FOR SELECT TO anon, authenticated USING (

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { AppThumbnail } from "@/components/dashboard/AppThumbnail";
 import { MoreHorizontal, ExternalLink, Settings2, Edit3, Trash2 } from "lucide-react";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -39,10 +38,7 @@ export function formatRelativeTime(dateStr: string): string {
 
 export function AppCard({ app, onRename, onDelete }: Props) {
   const router = useRouter();
-  const { user } = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const userInitial = (user?.firstName?.[0] || user?.username?.[0] || "U").toUpperCase();
 
   const isPublished = app.status === "Published";
   const appConfig = app.config || app.published_config;
@@ -85,7 +81,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
   return (
     <div
       onClick={handleCardClick}
-      className="group cursor-pointer rounded-2xl bg-card dark:bg-[#14141A] border border-border dark:border-white/10 hover:border-slate-400/50 dark:hover:border-white/20 overflow-hidden transition-all duration-200 flex flex-col relative select-none hover:-translate-y-0.5 hover:shadow-lg"
+      className="group cursor-pointer rounded-2xl bg-card border border-border hover:border-border-strong overflow-hidden transition-all duration-200 flex flex-col relative select-none hover:-translate-y-0.5 hover:shadow-lg"
       role="link"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -207,7 +203,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
           </p>
         </div>
 
-        {/* Footer row: Page & entity counts, "edited by" avatar, relative time */}
+        {/* Footer row: Page & entity counts, relative time */}
         <div className="flex items-center justify-between pt-3 border-t border-border/40 dark:border-white/5 text-[12px] text-muted-foreground">
           {/* Page & entity counts */}
           <div className="flex items-center gap-1.5 font-mono text-[12px] text-muted-foreground">
@@ -216,15 +212,10 @@ export function AppCard({ app, onRename, onDelete }: Props) {
             <span>{entitiesCount} {entitiesCount === 1 ? "entity" : "entities"}</span>
           </div>
 
-          {/* "Edited by" avatar + relative time */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-200 text-[9px] font-semibold flex items-center justify-center shrink-0 border border-slate-300/60 dark:border-white/10 shadow-2xs">
-              {userInitial}
-            </span>
-            <span className="text-muted-foreground text-[12px]">
-              {formatRelativeTime(app.updated_at)}
-            </span>
-          </div>
+          {/* Relative time */}
+          <span className="text-muted-foreground text-[12px]">
+            {formatRelativeTime(app.updated_at)}
+          </span>
         </div>
       </div>
     </div>

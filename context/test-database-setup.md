@@ -55,8 +55,8 @@ To run a completely hermetic local database on developer machines with Docker in
 
 ## GitHub Actions CI Pipeline
 
-In `.github/workflows/production.yml`, the `test-suite` job binds to GitHub Actions secrets:
-- If `TEST_SUPABASE_URL` is set in repository secrets, CI runs against the dedicated test database.
-- The test suite executes real queries (creating temporary test apps, validating cross-tenant boundaries, and cleaning up test records in `afterAll`).
-- Cross-tenant tests assert that user B receives 404 / 401 on user A's apps, verifying database integrity.
+In `.github/workflows/production.yml`, the `test-suite` job binds strictly to GitHub Actions secrets:
+- CI **fails immediately** if `TEST_SUPABASE_URL`, `TEST_SUPABASE_ANON_KEY`, or `TEST_SUPABASE_SERVICE_ROLE_KEY` are missing.
+- Tests against the production database (`upljqampxcmhqjszatrp`) are hard-blocked by both workflow pre-checks and test runner guards.
+- All integration tests execute against the dedicated test project, verifying server-mediated tenant isolation and anonymous RLS lockdown.
 

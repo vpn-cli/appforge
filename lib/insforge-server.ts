@@ -2,16 +2,16 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function createInsforgeServer() {
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceRoleKey = process.env.TEST_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceRoleKey) {
     throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY is required for server database operations. Missing or empty service role key."
+      "SUPABASE_SERVICE_ROLE_KEY (or TEST_SUPABASE_SERVICE_ROLE_KEY) is required for server database operations. Missing or empty service role key."
     );
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_INSFORGE_URL;
+  const supabaseUrl = process.env.TEST_SUPABASE_URL || process.env.NEXT_PUBLIC_INSFORGE_URL;
   if (!supabaseUrl) {
-    throw new Error("NEXT_PUBLIC_INSFORGE_URL is missing.");
+    throw new Error("NEXT_PUBLIC_INSFORGE_URL (or TEST_SUPABASE_URL) is missing.");
   }
 
   let cookieStore: Awaited<ReturnType<typeof cookies>> | null = null;

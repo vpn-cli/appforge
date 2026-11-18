@@ -252,7 +252,6 @@ Authentication is natively enforced using **Clerk**.
 | `UPSTASH_KAFKA_REST_USERNAME` | Yes | `default` | Security cluster identifier verifying event payloads. |
 | `UPSTASH_KAFKA_REST_PASSWORD` | Yes | `XXXX...` | Security hash authorizing push topics. |
 | `NEXT_PUBLIC_SENTRY_DSN` | Optional | `https://xx@sentry.io/xx`| Application telemetry monitoring pipeline sink configurations |
-| `ADMIN_BYPASS_KEY` | Optional | `super_secret_string` | Testing parameter to circumnavigate explicit production server checks. |
 
 *(All secrets are kept secure within `.env.local` locally and mapped securely out into the Vercel variables GUI in prod.)*
 
@@ -363,6 +362,7 @@ The enterprise pipeline heavily restricts branches. It is comprised strictly of 
 ---
 
 ## Known Limitations / TODO
+- **Security & Database Access Model**: Server-only DB access with app-level ownership checks; RLS blocks anonymous key access only. Native Clerk Third-Party Auth (JWKS token validation) is not configured in Supabase PostgREST. All database queries and mutations from authenticated users execute server-side in Next.js Server Actions and Route Handlers using the Supabase Service Role key (`SUPABASE_SERVICE_ROLE_KEY`), with tenant isolation verified by Clerk `auth()` (`eq('user_id', userId)`). Postgres Row-Level Security (RLS) is active strictly to block anonymous key access (`anon`), restricting public reads solely to published applications (`published_config IS NOT NULL`). Direct authenticated PostgREST calls with Clerk JWTs return `PGRST301` without Supabase Dashboard JWKS configuration.
 - **TODO / Verify (React Testing Layer):** There is currently no active e2e testing interface. Adding `Playwright` to strictly verify DOM layout alignment output from generic JSON structures would guarantee a vastly more secure build layer.
 - **TODO / Verify:** AI Provider Failover Logic is extremely simplistic. Migrating to a complex load-balancer tracking API quota exhaustions heavily per key natively rather than sequential cascading fallbacks.
 - **Functional Limitation (Publishing):** Guests cannot natively host simulated domains in full isolation. They require immediate `auth.protect()` transitions.

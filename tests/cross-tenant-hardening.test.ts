@@ -21,13 +21,18 @@ import { EventPublisher } from "@/lib/event-queue";
 import fs from "fs";
 import path from "path";
 
-// Runs whenever database credentials are present (CI secrets, .env.local, or .env.test)
-const isDbConfigured = Boolean(
-  (process.env.NEXT_PUBLIC_INSFORGE_URL || process.env.TEST_SUPABASE_URL) &&
-  (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.TEST_SUPABASE_SERVICE_ROLE_KEY)
+// SAFETY GUARD: Integration tests require a dedicated test database (TEST_SUPABASE_URL).
+// Direct execution against production project 'upljqampxcmhqjszatrp' is strictly prohibited.
+const testDbUrl = process.env.TEST_SUPABASE_URL;
+const testServiceKey = process.env.TEST_SUPABASE_SERVICE_ROLE_KEY;
+const isLiveDemoDb = Boolean(
+  (testDbUrl && testDbUrl.includes("upljqampxcmhqjszatrp")) ||
+  (!testDbUrl && process.env.NEXT_PUBLIC_INSFORGE_URL?.includes("upljqampxcmhqjszatrp"))
 );
 
-describe.skipIf(!isDbConfigured)(
+const canRunDbTests = Boolean(testDbUrl && testServiceKey && !isLiveDemoDb);
+
+describe.skipIf(!canRunDbTests)(
   "PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)",
   () => {
   const userA = "tenant_user_a_" + Date.now();
@@ -518,10 +523,9 @@ describe.skipIf(!isDbConfigured)(
     beforeAll(async () => {
       try {
         const { createClient } = await import("@supabase/supabase-js");
-        directClient = createClient(
-          process.env.NEXT_PUBLIC_INSFORGE_URL!,
-          process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!
-        );
+        const clientUrl = process.env.TEST_SUPABASE_URL || process.env.NEXT_PUBLIC_INSFORGE_URL!;
+        const clientAnonKey = process.env.TEST_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!;
+        directClient = createClient(clientUrl, clientAnonKey);
 
         const serverDb = await createInsforgeServer();
         const { data, error } = await serverDb
@@ -574,8 +578,8 @@ describe.skipIf(!isDbConfigured)(
       }
     });
 
-    it("Direct Postgres query on apps table returns zero rows for User A's private app", async () => {
-      // Querying Postgres directly with unprivileged client completely bypassing Next.js
+    it("Anonymous client query on apps table returns zero rows for private app", async () => {
+      // Querying Postgres directly with unprivileged anonymous client (bypassing Next.js)
       const { data, error } = await directClient
         .from("apps")
         .select("id, name, config")
@@ -585,15 +589,16 @@ describe.skipIf(!isDbConfigured)(
       expect(data).toEqual([]); // Zero rows returned by Postgres RLS
     });
 
-    it("Direct Postgres write on apps table is denied by RLS policy", async () => {
+    it("Anonymous client write on apps table is denied by RLS policy (error 42501)", async () => {
       const { error } = await directClient
         .from("apps")
         .insert({ name: "Malicious Direct Insert", user_id: userB } as any);
 
-      expect(error).toBeDefined(); // RLS policy blocks unauthorized insert
+      expect(error).not.toBeNull();
+      expect(error?.code).toBe("42501");
     });
 
-    it("Direct Postgres query on app_schemas table returns zero rows for User A's app", async () => {
+    it("Anonymous client query on app_schemas table returns zero rows for private app", async () => {
       const { data, error } = await directClient
         .from("app_schemas")
         .select("*")
@@ -603,17 +608,17 @@ describe.skipIf(!isDbConfigured)(
       expect(data).toEqual([]); // Zero rows returned by Postgres RLS
     });
 
-    it("the anon key with no token reads an UNPUBLISHED app's table → 0 rows", async () => {
+    it("Anonymous client reads an UNPUBLISHED app's dynamic table → 0 rows", async () => {
       const { data, error } = await directClient
         .from(dynamicTableName)
         .select("*");
 
-      // PostgREST/Postgres evaluates RLS: private app tables return 0 rows
+      // PostgREST/Postgres evaluates RLS: private app tables return 0 rows to anonymous clients
       expect(error).toBeNull();
       expect(data).toEqual([]);
     });
 
-    it("Direct Postgres write on dynamic per-app table is strictly denied by RLS", async () => {
+    it("Anonymous client write on dynamic per-app table is strictly denied by RLS (error 42501)", async () => {
       const { data, error } = await directClient
         .from(dynamicTableName)
         .insert({ title: "Injected directly into dynamic table" } as any)
@@ -621,11 +626,11 @@ describe.skipIf(!isDbConfigured)(
 
       // Postgres denies insert directly: error code 42501 (insufficient privilege)
       expect(error).not.toBeNull();
-      expect(error?.code).toBeDefined();
+      expect(error?.code).toBe("42501");
       expect(data).toBeNull();
     });
 
-    it("Positive Control: the anon key CAN read dynamic table when app is published", async () => {
+    it("Positive Control: Anonymous client CAN read dynamic table when app is published", async () => {
       const serverDb = await createInsforgeServer();
       try {
         // Publish the app
@@ -637,7 +642,7 @@ describe.skipIf(!isDbConfigured)(
         // Insert a test row via serverDb (service_role)
         await serverDb.from(dynamicTableName).insert({ title: "Public Record 1" });
 
-        // Anon client reads dynamic table
+        // Anonymous client reads dynamic table
         const { data, error } = await directClient
           .from(dynamicTableName)
           .select("title");
