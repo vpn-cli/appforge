@@ -80,7 +80,16 @@ describe(
         }
         testAppId = data.id;
 
-        // Register a schema record for entity 'items' in app_schemas
+        // Register a schema record and provision physical table for entity 'items'
+        const { error: ddlError } = await supabase.rpc("execute_app_ddl", {
+          app_id: testAppId,
+          entity_name: "items",
+          fields: { name: "string" },
+        });
+        if (ddlError) {
+          throw new Error(`Failed to provision test 'items' table: ${ddlError.message}`);
+        }
+
         await supabase.from("app_schemas").upsert(
           {
             app_id: testAppId,
@@ -322,13 +331,13 @@ describe(
           try {
             await createAppFromTemplate("directory");
           } catch (redirectErr: any) {
-            // Next.js redirect throws NEXT_REDIRECT with target URL in digest/message
-            const urlStr = redirectErr?.message || redirectErr?.digest || "";
+            // Next.js redirect throws NEXT_REDIRECT with target URL in digest (message is "NEXT_REDIRECT")
+            const urlStr = `${redirectErr?.digest || ""} ${redirectErr?.message || ""}`;
             const match = urlStr.match(/\/builder\/([0-9a-f-]{36})/i);
             if (match) createdAppId = match[1];
           }
 
-          expect(createdAppId).toBeDefined();
+          expect(createdAppId).not.toBeNull();
           dynamicTableName = `app_${createdAppId!.replace(/-/g, "_")}_employees`;
 
           // Verify schema was recorded in app_schemas
@@ -546,8 +555,8 @@ describe(
       it("GET /api/proxy returns 404 when app has no entities registered for the requested entity", async () => {
         (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
 
-        const req = new Request(`http://localhost:3000/api/proxy/${testAppId}/completely_unregistered_entity`, { method: "GET" });
-        const res = await GET(req, { params: Promise.resolve({ appId: testAppId, entity: "completely_unregistered_entity" }) });
+        const req = new Request(`http://localhost:3000/api/proxy/${testAppId}/unregistered_entity`, { method: "GET" });
+        const res = await GET(req, { params: Promise.resolve({ appId: testAppId, entity: "unregistered_entity" }) });
 
         expect(res.status).toBe(404);
         const body = await res.json();
@@ -729,15 +738,16 @@ describe(
         }
       });
 
-      it("Anonymous client query on apps table returns zero rows for private app", async () => {
+      it("Anonymous client query on apps table is denied with 42501 under full anon lockdown", async () => {
         // Querying Postgres directly with unprivileged anonymous client (bypassing Next.js)
         const { data, error } = await directClient
           .from("apps")
           .select("id, name, config")
           .eq("id", directAppId);
 
-        expect(error).toBeNull();
-        expect(data).toEqual([]); // Zero rows returned by Postgres RLS
+        expect(error).not.toBeNull();
+        expect(error?.code).toBe("42501");
+        expect(data).toBeNull();
       });
 
       it("Anonymous client write on apps table is denied by RLS policy (error 42501)", async () => {
@@ -749,39 +759,43 @@ describe(
         expect(error?.code).toBe("42501");
       });
 
-      it("Anonymous client query on app_schemas table returns zero rows for private app", async () => {
+      it("Anonymous client query on app_schemas table is denied with 42501 under full anon lockdown", async () => {
         const { data, error } = await directClient
           .from("app_schemas")
           .select("*")
           .eq("app_id", directAppId);
 
-        expect(error).toBeNull();
-        expect(data).toEqual([]); // Zero rows returned by Postgres RLS
+        expect(error).not.toBeNull();
+        expect(error?.code).toBe("42501");
+        expect(data).toBeNull();
       });
 
-      it("anon on an unpublished app → 0 rows (dynamic table, apps, app_schemas)", async () => {
-        // 1. Dynamic table returns 0 rows to anon
+      it("anon on an unpublished app is denied with 42501 (dynamic table, apps, app_schemas)", async () => {
+        // 1. Dynamic table denies anon with 42501
         const { data: dynData, error: dynError } = await directClient
           .from(dynamicTableName)
           .select("*");
-        expect(dynError).toBeNull();
-        expect(dynData).toEqual([]);
+        expect(dynError).not.toBeNull();
+        expect(dynError?.code).toBe("42501");
+        expect(dynData).toBeNull();
 
-        // 2. apps row for unpublished app returns 0 rows to anon
+        // 2. apps table denies anon with 42501
         const { data: appData, error: appError } = await directClient
           .from("apps")
           .select("id, name")
           .eq("id", directAppId);
-        expect(appError).toBeNull();
-        expect(appData).toEqual([]);
+        expect(appError).not.toBeNull();
+        expect(appError?.code).toBe("42501");
+        expect(appData).toBeNull();
 
-        // 3. app_schemas row for unpublished app returns 0 rows to anon
+        // 3. app_schemas table denies anon with 42501
         const { data: schemaData, error: schemaError } = await directClient
           .from("app_schemas")
           .select("*")
           .eq("app_id", directAppId);
-        expect(schemaError).toBeNull();
-        expect(schemaData).toEqual([]);
+        expect(schemaError).not.toBeNull();
+        expect(schemaError?.code).toBe("42501");
+        expect(schemaData).toBeNull();
       });
 
       it("owner on own rows → success (insert and read via legitimate owner context)", async () => {
@@ -905,19 +919,20 @@ describe(
         await dropTestTable(supabase, `app_${testAppId.replace(/-/g, "_")}_${maliciousEntity}`);
       });
 
-      it("Legacy execute_app_ddl 2-argument overload strictly forbids DROP TABLE in expand phase", async () => {
+      it("Legacy execute_app_ddl 2-argument overload is permanently removed in contract phase (Migration B)", async () => {
         const supabase = await createInsforgeServer();
         const cleanId = testAppId.replace(/-/g, "_");
 
-        // Attempt raw query DROP TABLE call on legacy execute_app_ddl overload
+        // Attempt raw query DROP TABLE call on removed legacy execute_app_ddl overload
         const { error } = await (supabase as any).rpc("execute_app_ddl", {
           app_id: testAppId,
           query: `DROP TABLE IF EXISTS app_${cleanId}_items;`,
         });
 
-        // Postgres rejects the call because DROP TABLE is strictly forbidden in execute_app_ddl
+        // PostgREST rejects the call because Migration B dropped the legacy 2-arg overload
         expect(error).not.toBeNull();
-        expect(error?.message).toMatch(/DROP TABLE is strictly forbidden/i);
+        expect(error?.code).toBe("PGRST202");
+        expect(error?.message).toMatch(/Could not find the function public\.execute_app_ddl/i);
       });
 
       it("Multi-table drop injection 'app_<id>_items, apps' is strictly rejected and never drops apps", async () => {
