@@ -79,11 +79,22 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
         }
 
         const cleanFieldName = String(fieldName).replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
-        if (!cleanFieldName || !COLUMN_IDENTIFIER_RE.test(cleanFieldName)) continue;
+        if (!cleanFieldName || !COLUMN_IDENTIFIER_RE.test(cleanFieldName)) {
+          return {
+            success: false,
+            message: `Invalid column name "${fieldName}". Must be alphanumeric/underscore only.`,
+          };
+        }
         if (cleanFieldName === 'id' || cleanFieldName === 'created_at') continue;
 
-        const stringType = typeof rawType === "string" ? rawType.toLowerCase() : "string";
-        const pgType = COLUMN_TYPE_WHITELIST[stringType] || "TEXT";
+        const stringType = typeof rawType === "string" ? rawType.toLowerCase() : "";
+        const pgType = COLUMN_TYPE_WHITELIST[stringType];
+        if (!pgType) {
+          return {
+            success: false,
+            message: `Invalid or unknown type "${rawType}" for field "${fieldName}". Allowed types are string, number, boolean, date.`,
+          };
+        }
 
         sanitizedFields[cleanFieldName] = pgType;
       }
@@ -99,7 +110,7 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
 
     if (ddlError) {
       console.error("[syncAppSchema] Failed DDL execution:", ddlError);
-      return { success: false, message: `Failed to create tables: ${ddlError.message}` };
+      return { success: false, message: ddlError.message };
     }
 
     // Upsert a row in app_schemas after successful DDL using consistent validEntityName

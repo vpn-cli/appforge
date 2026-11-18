@@ -190,7 +190,7 @@ export async function createAppFromTemplate(templateId: string) {
   // Determine template initial configuration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let initialConfig: any = { "app": `New ${templateId} App`, "pages": [] };
-  
+
   if (templateId === "directory") {
     initialConfig = {
       "app": "Employee Directory",
@@ -198,14 +198,18 @@ export async function createAppFromTemplate(templateId: string) {
       "pages": [{
         "components": [
           { "type": "Header", "title": "Employee Directory", "subtitle": "Search and manage personnel globally.", "size": "lg" },
-          { "type": "Grid", "columns": 3, "gap": 4, "items": [
+          {
+            "type": "Grid", "columns": 3, "gap": 4, "items": [
               { "type": "Statistic", "label": "Total Employees", "value": "142", "trend": "up", "trendValue": "+12%" },
               { "type": "Statistic", "label": "Departments", "value": "8" },
               { "type": "Statistic", "label": "Open Roles", "value": "24", "trend": "up", "trendValue": "+4" }
-          ]},
-          { "type": "Card", "title": "Directory Database", "content": [
+            ]
+          },
+          {
+            "type": "Card", "title": "Directory Database", "content": [
               { "type": "DataTable", "entity": "employees", "columns": ["name", "role", "department", "email"] }
-          ]}
+            ]
+          }
         ]
       }]
     };
@@ -216,12 +220,14 @@ export async function createAppFromTemplate(templateId: string) {
       "pages": [{
         "components": [
           { "type": "Header", "title": "Sales Analytics CRM", "subtitle": "Q3 Performance Metrics and Pipeline", "size": "lg" },
-          { "type": "Grid", "columns": 4, "gap": 4, "items": [
+          {
+            "type": "Grid", "columns": 4, "gap": 4, "items": [
               { "type": "Statistic", "label": "Total Pipeline", "value": "$1.2M", "trend": "up", "trendValue": "+18%" },
               { "type": "Statistic", "label": "Active Leads", "value": "84", "trend": "down", "trendValue": "-5%" },
               { "type": "Statistic", "label": "Conversion Rate", "value": "12.5%", "trend": "up", "trendValue": "+2.1%" },
               { "type": "Statistic", "label": "Closed Won", "value": "42 Deals" }
-          ]},
+            ]
+          },
           { "type": "Header", "title": "Recent Opportunities", "size": "md" },
           { "type": "DataTable", "entity": "leads", "columns": ["company", "contact", "value", "status"] }
         ]
@@ -320,7 +326,10 @@ export async function saveAppConfig(appId: string, configStr: string) {
     );
     if (!syncRes.success) {
       console.warn("Schema Sync Warning:", syncRes.message);
-      // We purposefully do not throw an error here to prevent blocking the UI save success entirely
+      return {
+        success: false,
+        error: syncRes.message,
+      };
     }
   }
 
@@ -376,6 +385,10 @@ export async function publishAppConfig(appId: string, configStr: string) {
     const syncRes = await syncAppSchema(appId, targetEntities, userId);
     if (!syncRes.success) {
       console.warn("Schema Sync Warning in publishAppConfig:", syncRes.message);
+      return {
+        success: false,
+        error: syncRes.message,
+      };
     }
   }
 
@@ -445,7 +458,7 @@ export async function renameApp(appId: string, newName: string) {
 
 export async function getAppConfig(appId: string) {
   if (appId.startsWith("template-") || appId.startsWith("mock-")) return null;
-  
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
