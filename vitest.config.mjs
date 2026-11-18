@@ -3,7 +3,6 @@ import path from "path";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.test" });
-dotenv.config({ path: ".env.local" });
 
 export default defineConfig({
   test: {
