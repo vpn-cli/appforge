@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { createInsforgeServer } from "@/lib/insforge-server";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const ENTITY_RE = /^[a-z][a-z0-9_]{0,40}$/;
+const ENTITY_MAX_LENGTH = 22;
+const ENTITY_RE = /^[a-z][a-z0-9_]{0,21}$/;
 
 export type AccessMode = "read" | "write";
 
@@ -26,7 +27,10 @@ export async function authorizeAppAccess(
     return { error: NextResponse.json({ error: "Invalid app id" }, { status: 400 }) };
   }
 
-  // 2. Sanitize and validate entity name
+  // 2. Sanitize and validate entity name (max 22 chars to fit 63-char Postgres identifier limit)
+  if (entity.length > ENTITY_MAX_LENGTH) {
+    return { error: NextResponse.json({ error: `Invalid entity: maximum length is ${ENTITY_MAX_LENGTH} characters` }, { status: 400 }) };
+  }
   const cleanEntity = entity.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase();
   if (!ENTITY_RE.test(cleanEntity)) {
     return { error: NextResponse.json({ error: "Invalid entity" }, { status: 400 }) };

@@ -14,7 +14,11 @@ const COLUMN_TYPE_WHITELIST: Record<string, string> = {
   timestamptz: "TIMESTAMPTZ",
 };
 
-const IDENTIFIER_RE = /^[a-zA-Z0-9_]{1,63}$/;
+// Postgres limit 63 - 41 prefix chars ("app_<uuid>_") = 22 max entity chars
+const ENTITY_MAX_LENGTH = 22;
+const COLUMN_MAX_LENGTH = 63;
+const ENTITY_IDENTIFIER_RE = /^[a-zA-Z0-9_]{1,22}$/;
+const COLUMN_IDENTIFIER_RE = /^[a-zA-Z0-9_]{1,63}$/;
 
 export async function syncAppSchema(appId: string, entities: unknown, userId: string | null) {
   const supabase = await createInsforgeServer();
@@ -34,9 +38,22 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
   }
 
   for (const [entityName, fields] of Object.entries(entities)) {
+    // Enforce 22-char entity name length limit to prevent silent truncation & collision
+    if (entityName.length > ENTITY_MAX_LENGTH) {
+      return {
+        success: false,
+        message: `Entity name "${entityName}" exceeds maximum length of ${ENTITY_MAX_LENGTH} characters.`,
+      };
+    }
+
     // Sanitize entity name
     const validEntityName = entityName.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
-    if (!validEntityName || !IDENTIFIER_RE.test(validEntityName)) continue;
+    if (!validEntityName || !ENTITY_IDENTIFIER_RE.test(validEntityName)) {
+      return {
+        success: false,
+        message: `Invalid entity name "${entityName}". Must be alphanumeric/underscore only.`,
+      };
+    }
 
     // Verify ownership and write authorization before executing structural DDL.
     // skipEntityCheck is explicitly used here because the entity table is about to be created/synced.
@@ -49,50 +66,40 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
       };
     }
 
-    const cleanAppId = appId.replace(/-/g, "_");
-    const sanitizedTableName = `app_${cleanAppId}_${validEntityName}`;
-
     // Process fields with strict identifier validation and type whitelisting
     const sanitizedFields: Record<string, string> = {};
-    const columnDefinitions: string[] = [
-      `"id" UUID PRIMARY KEY DEFAULT gen_random_uuid()`,
-      `"created_at" TIMESTAMPTZ DEFAULT NOW()`
-    ];
 
     if (fields && typeof fields === "object") {
       for (const [fieldName, rawType] of Object.entries(fields as Record<string, unknown>)) {
+        if (fieldName.length > COLUMN_MAX_LENGTH) {
+          return {
+            success: false,
+            message: `Column name "${fieldName}" exceeds maximum length of ${COLUMN_MAX_LENGTH} characters.`,
+          };
+        }
+
         const cleanFieldName = String(fieldName).replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
-        if (!cleanFieldName || !IDENTIFIER_RE.test(cleanFieldName)) continue;
+        if (!cleanFieldName || !COLUMN_IDENTIFIER_RE.test(cleanFieldName)) continue;
         if (cleanFieldName === 'id' || cleanFieldName === 'created_at') continue;
 
         const stringType = typeof rawType === "string" ? rawType.toLowerCase() : "string";
         const pgType = COLUMN_TYPE_WHITELIST[stringType] || "TEXT";
 
         sanitizedFields[cleanFieldName] = pgType;
-        // Identifiers quoted safely with double quotes (equivalent to format('%I'))
-        columnDefinitions.push(`"${cleanFieldName}" ${pgType}`);
       }
     }
 
-    // Try structured RPC call first: execute_app_ddl(app_id, entity_name, fields)
-    const { error: structuredErr } = await supabase.rpc('execute_app_ddl', {
+    // Execute structured RPC call: execute_app_ddl(app_id, entity_name, fields)
+    // No raw query string, no string concatenation, no string blacklists
+    const { error: ddlError } = await supabase.rpc('execute_app_ddl', {
       app_id: appId,
       entity_name: validEntityName,
-      fields: sanitizedFields
+      fields: sanitizedFields,
     });
 
-    if (structuredErr) {
-      // Fallback to safely parameterized single CREATE TABLE statement if structured overload isn't deployed yet
-      const safeDdl = `CREATE TABLE IF NOT EXISTS "${sanitizedTableName}" (${columnDefinitions.join(', ')});`;
-      const { error: fallbackErr } = await supabase.rpc('execute_app_ddl', {
-        app_id: appId,
-        query: safeDdl
-      });
-
-      if (fallbackErr) {
-        console.error("[syncAppSchema] Failed DDL execution:", fallbackErr);
-        return { success: false, message: `Failed to create tables: ${fallbackErr.message}` };
-      }
+    if (ddlError) {
+      console.error("[syncAppSchema] Failed DDL execution:", ddlError);
+      return { success: false, message: `Failed to create tables: ${ddlError.message}` };
     }
 
     // Upsert a row in app_schemas after successful DDL using consistent validEntityName

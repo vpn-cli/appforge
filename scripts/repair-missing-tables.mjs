@@ -185,27 +185,24 @@ async function run() {
       }
     }
 
-    const ddl = `CREATE TABLE IF NOT EXISTS ${missing.physicalTableName} (${columns.join(", ")});`;
-    const rlsDdl = `ALTER TABLE ${missing.physicalTableName} ENABLE ROW LEVEL SECURITY;`;
-    const policyDdl = `CREATE POLICY public_read_policy_${missing.physicalTableName} ON ${missing.physicalTableName} FOR SELECT TO anon, authenticated USING (EXISTS (SELECT 1 FROM apps WHERE id = '${missing.appId}'::uuid AND published_config IS NOT NULL));`;
-    const grantAuthDdl = `GRANT ALL ON ${missing.physicalTableName} TO authenticated;`;
-    const grantAnonDdl = `GRANT SELECT ON ${missing.physicalTableName} TO anon;`;
-
     console.log(`\n• App ID: ${missing.appId} (${missing.app ? missing.app.name : "Orphaned App"})`);
+    console.log(`  Entity: ${missing.entityName}`);
     console.log(`  Table: ${missing.physicalTableName}`);
-    console.log(`  Planned DDL:\n    ${ddl}\n    ${rlsDdl}\n    ${policyDdl}\n    ${grantAuthDdl}\n    ${grantAnonDdl}`);
+    console.log(`  Fields:`, missing.fields);
+    console.log(`  Planned Action: Structured execute_app_ddl(app_id, entity_name, fields) with RLS lockdown`);
 
     if (isExecute) {
       try {
-        console.log(`  [Executing DDL via execute_app_ddl RPC...]`);
+        console.log(`  [Executing DDL via structured execute_app_ddl RPC...]`);
         const { error: rpcErr } = await supabase.rpc("execute_app_ddl", {
           app_id: missing.appId,
-          query: ddl,
+          entity_name: missing.entityName,
+          fields: missing.fields || {},
         });
         if (rpcErr) {
           console.error(`  ❌ Failed to create table ${missing.physicalTableName}:`, rpcErr.message);
         } else {
-          console.log(`  ✅ Successfully provisioned ${missing.physicalTableName} with RLS policies.`);
+          console.log(`  ✅ Successfully provisioned ${missing.physicalTableName} with RLS lockdown.`);
         }
       } catch (execErr) {
         console.error(`  ❌ Exception provisioning ${missing.physicalTableName}:`, execErr.message || execErr);
