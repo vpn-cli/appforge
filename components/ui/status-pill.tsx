@@ -8,19 +8,21 @@ const statusPillVariants = cva(
     variants: {
       variant: {
         published:
-          "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-500/30",
+          "bg-status-success-bg text-status-success-text border border-status-success-border",
         draft:
-          "bg-black/5 text-muted-foreground border border-black/10 dark:bg-white/5 dark:text-muted-foreground dark:border-white/10",
+          "bg-status-neutral-bg text-status-neutral-text border border-status-neutral-border",
         active:
-          "bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-500/40",
+          "bg-status-success-bg text-status-success-text border border-status-success-border",
         idle:
-          "bg-black/5 text-muted-foreground border border-black/10 dark:bg-white/5 dark:text-muted-foreground dark:border-white/10",
+          "bg-status-info-bg text-status-info-text border border-status-info-border",
+        info:
+          "bg-status-info-bg text-status-info-text border border-status-info-border",
         warning:
-          "bg-amber-500/10 text-amber-700 border border-amber-500/20 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500/30",
+          "bg-status-warning-bg text-status-warning-text border border-status-warning-border",
         error:
-          "bg-rose-500/10 text-rose-700 border border-rose-500/20 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-500/30",
+          "bg-status-danger-bg text-status-danger-text border border-status-danger-border",
         neutral:
-          "bg-muted text-foreground border border-border",
+          "bg-status-neutral-bg text-status-neutral-text border border-status-neutral-border",
       },
     },
     defaultVariants: {
@@ -30,13 +32,14 @@ const statusPillVariants = cva(
 );
 
 const dotColors: Record<string, string> = {
-  published: "bg-emerald-500",
-  draft: "bg-muted-foreground/60",
-  active: "bg-emerald-500 animate-pulse",
-  idle: "bg-muted-foreground/50",
-  warning: "bg-amber-500",
-  error: "bg-rose-500",
-  neutral: "bg-foreground/60",
+  published: "bg-[var(--status-success-dot)]",
+  draft: "bg-[var(--status-neutral-dot)]",
+  active: "bg-[var(--status-success-dot)] animate-pulse",
+  idle: "bg-[var(--status-info-dot)]",
+  info: "bg-[var(--status-info-dot)]",
+  warning: "bg-[var(--status-warning-dot)]",
+  error: "bg-[var(--status-danger-dot)]",
+  neutral: "bg-[var(--status-neutral-dot)]",
 };
 
 export interface StatusPillProps

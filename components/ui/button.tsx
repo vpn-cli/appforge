@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-medium whitespace-nowrap transition-all duration-200 outline-none select-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none cursor-pointer [&_svg]:pointer-events-none [&_svg]:shrink-0 active:scale-[0.98]",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-medium whitespace-nowrap transition-all duration-200 outline-none select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(109,91,240,0.45)] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none cursor-pointer [&_svg]:pointer-events-none [&_svg]:shrink-0 active:scale-[0.98]",
   {
     variants: {
       variant: {
@@ -18,11 +18,11 @@ const buttonVariants = cva(
         outline:
           "btn-pill-secondary",
         ghost:
-          "rounded-full text-foreground/80 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.98]",
+          "rounded-full text-brand-link hover:text-brand-link hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.98]",
         destructive:
           "rounded-full bg-destructive text-white hover:opacity-90 shadow-xs active:scale-[0.98]",
         link:
-          "text-accent underline-offset-4 hover:underline rounded-none active:scale-100",
+          "text-brand-link underline-offset-4 hover:underline rounded-none active:scale-100",
       },
       size: {
         lg: "h-11 px-[22px] text-[15px] gap-2 [&_svg:not([class*='size-'])]:size-4",

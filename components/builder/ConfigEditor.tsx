@@ -19,44 +19,61 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
     setMounted(true);
   }, []);
 
+  const getCssColor = (varName: string, fallbackWithoutHash: string = "000000"): string => {
+    if (typeof window !== "undefined") {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      if (val) return val;
+    }
+    return `#${fallbackWithoutHash}`;
+  };
+
+  const getRuleColor = (varName: string, fallbackWithoutHash: string = "000000"): string => {
+    const raw = getCssColor(varName, fallbackWithoutHash);
+    let hex = raw.replace(/^#/, "");
+    if (hex.length === 3) {
+      hex = hex.split("").map((c) => c + c).join("");
+    }
+    return hex;
+  };
+
   const defineThemes = (monaco: Monaco) => {
     monaco.editor.defineTheme('appforge-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: '', foreground: 'EDEDEA' },
-        { token: 'string.key.json', foreground: '8FA8FF' },
-        { token: 'string.value.json', foreground: 'D9C27A' },
-        { token: 'string', foreground: 'D9C27A' },
-        { token: 'number', foreground: 'FCD34D' },
-        { token: 'keyword.json', foreground: '34D399' },
-        { token: 'delimiter', foreground: '94A3B8' },
-        { token: 'delimiter.bracket', foreground: 'C4B5FD' },
-        { token: 'delimiter.colon', foreground: '94A3B8' },
-        { token: 'delimiter.comma', foreground: '94A3B8' },
+        { token: '', foreground: getRuleColor('--editor-fg-dark', 'F2F2F7') },
+        { token: 'string.key.json', foreground: getRuleColor('--editor-key-dark', 'ADA6FC') },
+        { token: 'string.value.json', foreground: getRuleColor('--editor-val-dark', 'FBBF24') },
+        { token: 'string', foreground: getRuleColor('--editor-val-dark', 'FBBF24') },
+        { token: 'number', foreground: getRuleColor('--editor-num-dark', '60A5FA') },
+        { token: 'keyword.json', foreground: getRuleColor('--editor-kw-dark', '4ADE80') },
+        { token: 'delimiter', foreground: getRuleColor('--editor-delim-dark', 'A9A9BD') },
+        { token: 'delimiter.bracket', foreground: getRuleColor('--editor-bracket-dark', '8B7FF8') },
+        { token: 'delimiter.colon', foreground: getRuleColor('--editor-delim-dark', 'A9A9BD') },
+        { token: 'delimiter.comma', foreground: getRuleColor('--editor-delim-dark', 'A9A9BD') },
       ],
       colors: {
-        'editor.background': '#14141A',
-        'editor.foreground': '#EDEDEA',
-        'editorCursor.foreground': '#EDEDEA',
-        'editor.selectionBackground': '#8AB4F84D',
-        'editor.inactiveSelectionBackground': '#8AB4F826',
-        'editor.selectionHighlightBackground': '#8AB4F833',
-        'editorLineNumber.foreground': '#EDEDEA59',
-        'editorLineNumber.activeForeground': '#EDEDEAB3',
-        'editor.lineHighlightBackground': '#FFFFFF08',
-        'editor.lineHighlightBorder': '#00000000',
-        'editorGutter.background': '#14141A',
-        'editorOverviewRuler.border': '#00000000',
-        'editorOverviewRuler.background': '#14141A',
-        'editorIndentGuide.background': '#FFFFFF0D',
-        'editorIndentGuide.activeBackground': '#FFFFFF1F',
-        'editorIndentGuide.background1': '#FFFFFF0D',
-        'editorIndentGuide.activeBackground1': '#FFFFFF1F',
-        'scrollbarSlider.background': '#FFFFFF14',
-        'scrollbarSlider.hoverBackground': '#FFFFFF26',
-        'scrollbarSlider.activeBackground': '#FFFFFF33',
-        'widget.shadow': '#00000000',
+        'editor.background': getCssColor('--editor-bg-dark', '16161F'),
+        'editor.foreground': getCssColor('--editor-fg-dark', 'F2F2F7'),
+        'editorCursor.foreground': getCssColor('--editor-fg-dark', 'F2F2F7'),
+        'editor.selectionBackground': getCssColor('--editor-selection-dark', '8B7FF840'),
+        'editor.inactiveSelectionBackground': getCssColor('--editor-selection-inactive-dark', '8B7FF820'),
+        'editor.selectionHighlightBackground': getCssColor('--editor-selection-highlight-dark', '8B7FF828'),
+        'editorLineNumber.foreground': getCssColor('--editor-line-number-dark', '6B6B82'),
+        'editorLineNumber.activeForeground': getCssColor('--editor-line-number-active-dark', 'F2F2F7'),
+        'editor.lineHighlightBackground': getCssColor('--editor-line-highlight-dark', 'FFFFFF08'),
+        'editor.lineHighlightBorder': getCssColor('--editor-transparent', '00000000'),
+        'editorGutter.background': getCssColor('--editor-bg-dark', '16161F'),
+        'editorOverviewRuler.border': getCssColor('--editor-transparent', '00000000'),
+        'editorOverviewRuler.background': getCssColor('--editor-bg-dark', '16161F'),
+        'editorIndentGuide.background': getCssColor('--editor-indent-guide-dark', 'FFFFFF0D'),
+        'editorIndentGuide.activeBackground': getCssColor('--editor-indent-guide-active-dark', 'FFFFFF1F'),
+        'editorIndentGuide.background1': getCssColor('--editor-indent-guide-dark', 'FFFFFF0D'),
+        'editorIndentGuide.activeBackground1': getCssColor('--editor-indent-guide-active-dark', 'FFFFFF1F'),
+        'scrollbarSlider.background': getCssColor('--editor-scrollbar-dark', 'FFFFFF14'),
+        'scrollbarSlider.hoverBackground': getCssColor('--editor-scrollbar-hover-dark', 'FFFFFF26'),
+        'scrollbarSlider.activeBackground': getCssColor('--editor-scrollbar-active-dark', 'FFFFFF33'),
+        'widget.shadow': getCssColor('--editor-transparent', '00000000'),
       },
     });
 
@@ -64,39 +81,39 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
       base: 'vs',
       inherit: true,
       rules: [
-        { token: '', foreground: '111110' },
-        { token: 'string.key.json', foreground: '2B6CB0' },
-        { token: 'string.value.json', foreground: '8A7A1F' },
-        { token: 'string', foreground: '8A7A1F' },
-        { token: 'number', foreground: 'B45309' },
-        { token: 'keyword.json', foreground: '059669' },
-        { token: 'delimiter', foreground: '475569' },
-        { token: 'delimiter.bracket', foreground: '6D28D9' },
-        { token: 'delimiter.colon', foreground: '475569' },
-        { token: 'delimiter.comma', foreground: '475569' },
+        { token: '', foreground: getRuleColor('--editor-fg-light', '17171F') },
+        { token: 'string.key.json', foreground: getRuleColor('--editor-key-light', '5B45E0') },
+        { token: 'string.value.json', foreground: getRuleColor('--editor-val-light', 'D97706') },
+        { token: 'string', foreground: getRuleColor('--editor-val-light', 'D97706') },
+        { token: 'number', foreground: getRuleColor('--editor-num-light', '2563EB') },
+        { token: 'keyword.json', foreground: getRuleColor('--editor-kw-light', '16A34A') },
+        { token: 'delimiter', foreground: getRuleColor('--editor-delim-light', '55556B') },
+        { token: 'delimiter.bracket', foreground: getRuleColor('--editor-bracket-light', '4B37BF') },
+        { token: 'delimiter.colon', foreground: getRuleColor('--editor-delim-light', '55556B') },
+        { token: 'delimiter.comma', foreground: getRuleColor('--editor-delim-light', '55556B') },
       ],
       colors: {
-        'editor.background': '#FFFFFF',
-        'editor.foreground': '#111110',
-        'editorCursor.foreground': '#111110',
-        'editor.selectionBackground': '#1D4ED84D',
-        'editor.inactiveSelectionBackground': '#1D4ED826',
-        'editor.selectionHighlightBackground': '#1D4ED833',
-        'editorLineNumber.foreground': '#11111059',
-        'editorLineNumber.activeForeground': '#111110B3',
-        'editor.lineHighlightBackground': '#0000000A',
-        'editor.lineHighlightBorder': '#00000000',
-        'editorGutter.background': '#FFFFFF',
-        'editorOverviewRuler.border': '#00000000',
-        'editorOverviewRuler.background': '#FFFFFF',
-        'editorIndentGuide.background': '#0000000D',
-        'editorIndentGuide.activeBackground': '#0000001F',
-        'editorIndentGuide.background1': '#0000000D',
-        'editorIndentGuide.activeBackground1': '#0000001F',
-        'scrollbarSlider.background': '#00000014',
-        'scrollbarSlider.hoverBackground': '#00000026',
-        'scrollbarSlider.activeBackground': '#00000033',
-        'widget.shadow': '#00000000',
+        'editor.background': getCssColor('--editor-bg-light', 'FFFFFF'),
+        'editor.foreground': getCssColor('--editor-fg-light', '17171F'),
+        'editorCursor.foreground': getCssColor('--editor-fg-light', '17171F'),
+        'editor.selectionBackground': getCssColor('--editor-selection-light', '6D5BF040'),
+        'editor.inactiveSelectionBackground': getCssColor('--editor-selection-inactive-light', '6D5BF020'),
+        'editor.selectionHighlightBackground': getCssColor('--editor-selection-highlight-light', '6D5BF028'),
+        'editorLineNumber.foreground': getCssColor('--editor-line-number-light', '9A9AB0'),
+        'editorLineNumber.activeForeground': getCssColor('--editor-line-number-active-light', '17171F'),
+        'editor.lineHighlightBackground': getCssColor('--editor-line-highlight-light', '0000000A'),
+        'editor.lineHighlightBorder': getCssColor('--editor-transparent', '00000000'),
+        'editorGutter.background': getCssColor('--editor-bg-light', 'FFFFFF'),
+        'editorOverviewRuler.border': getCssColor('--editor-transparent', '00000000'),
+        'editorOverviewRuler.background': getCssColor('--editor-bg-light', 'FFFFFF'),
+        'editorIndentGuide.background': getCssColor('--editor-indent-guide-light', '0000000D'),
+        'editorIndentGuide.activeBackground': getCssColor('--editor-indent-guide-active-light', '0000001F'),
+        'editorIndentGuide.background1': getCssColor('--editor-indent-guide-light', '0000000D'),
+        'editorIndentGuide.activeBackground1': getCssColor('--editor-indent-guide-active-light', '0000001F'),
+        'scrollbarSlider.background': getCssColor('--editor-scrollbar-light', '00000014'),
+        'scrollbarSlider.hoverBackground': getCssColor('--editor-scrollbar-hover-light', '00000026'),
+        'scrollbarSlider.activeBackground': getCssColor('--editor-scrollbar-active-light', '00000033'),
+        'widget.shadow': getCssColor('--editor-transparent', '00000000'),
       },
     });
   };

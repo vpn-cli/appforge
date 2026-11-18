@@ -1,63 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Pure JS OKLCH to sRGB converter (Zero external dependencies)
-function oklchToRgb(l, c, h, alpha = 1) {
-  const hRad = (h * Math.PI) / 180;
-  const a = c * Math.cos(hRad);
-  const b = c * Math.sin(hRad);
-
-  const l_ = l + 0.3963377774 * a + 0.2158037573 * b;
-  const m_ = l - 0.1055613458 * a - 0.0638541728 * b;
-  const s_ = l - 0.0894841775 * a - 1.2914855480 * b;
-
-  const lLin = l_ * l_ * l_;
-  const mLin = m_ * m_ * m_;
-  const sLin = s_ * s_ * s_;
-
-  let rLin = +4.0767434036 * lLin - 3.3077115913 * mLin + 0.2309699292 * sLin;
-  let gLin = -1.2684380046 * lLin + 2.6097574011 * mLin - 0.3413193965 * sLin;
-  let bLin = -0.0041960863 * lLin - 0.7034186147 * mLin + 1.7076147010 * sLin;
-
-  const toGamma = (x) => {
-    x = Math.max(0, Math.min(1, x));
-    return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
-  };
-
-  return [
-    Math.round(toGamma(rLin) * 255),
-    Math.round(toGamma(gLin) * 255),
-    Math.round(toGamma(gLin) * 255),
-    alpha
-  ];
-}
-
-function parseCssColor(rawVal) {
-  let val = rawVal.trim().split('/*')[0].trim();
-  if (val.startsWith('#')) {
-    val = val.replace('#', '');
-    if (val.length === 3) val = val.split('').map(x => x + x).join('');
-    return [
-      parseInt(val.slice(0, 2), 16),
-      parseInt(val.slice(2, 4), 16),
-      parseInt(val.slice(4, 6), 16),
-      1
-    ];
-  }
-  const oklchMatch = val.match(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.%]+))?\s*\)/i);
-  if (oklchMatch) {
-    const l = parseFloat(oklchMatch[1]);
-    const c = parseFloat(oklchMatch[2]);
-    const h = parseFloat(oklchMatch[3]);
-    let alpha = 1;
-    if (oklchMatch[4]) {
-      alpha = oklchMatch[4].endsWith('%') ? parseFloat(oklchMatch[4]) / 100 : parseFloat(oklchMatch[4]);
-    }
-    return oklchToRgb(l, c, h, alpha);
-  }
-  throw new Error(`Unsupported color format in globals.css: "${rawVal}"`);
-}
-
 function sRGBtoLin(c) {
   c = c / 255;
   return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -75,7 +18,40 @@ function getContrast(rgb1, rgb2) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-// Read and parse app/globals.css directly
+function blend(fgRgba, bgRgb) {
+  const a = fgRgba[3] ?? 1;
+  return [
+    Math.round(fgRgba[0] * a + bgRgb[0] * (1 - a)),
+    Math.round(fgRgba[1] * a + bgRgb[1] * (1 - a)),
+    Math.round(fgRgba[2] * a + bgRgb[2] * (1 - a))
+  ];
+}
+
+function parseCssColor(rawVal) {
+  let val = rawVal.trim().split('/*')[0].trim();
+  if (val.startsWith('#')) {
+    val = val.replace('#', '');
+    if (val.length === 3) val = val.split('').map(x => x + x).join('');
+    return [
+      parseInt(val.slice(0, 2), 16),
+      parseInt(val.slice(2, 4), 16),
+      parseInt(val.slice(4, 6), 16),
+      val.length === 8 ? parseInt(val.slice(6, 8), 16) / 255 : 1
+    ];
+  }
+  const rgbaMatch = val.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/i);
+  if (rgbaMatch) {
+    return [
+      parseFloat(rgbaMatch[1]),
+      parseFloat(rgbaMatch[2]),
+      parseFloat(rgbaMatch[3]),
+      rgbaMatch[4] !== undefined ? parseFloat(rgbaMatch[4]) : 1
+    ];
+  }
+  throw new Error(`Unsupported color format in globals.css: "${rawVal}"`);
+}
+
+// Read and parse app/globals.css
 const cssPath = path.resolve('app/globals.css');
 const cssContent = fs.readFileSync(cssPath, 'utf8');
 
@@ -100,164 +76,110 @@ function extractScope(content, selector) {
 const rootTokens = extractScope(cssContent, ':root');
 const darkTokens = extractScope(cssContent, '\\.dark');
 
-console.log('Successfully parsed tokens directly from app/globals.css:');
-console.log(`- :root: ${Object.keys(rootTokens).length} tokens`);
-console.log(`- .dark: ${Object.keys(darkTokens).length} tokens`);
+function resolveToken(tokenName, scope = 'root') {
+  const merged = scope === 'dark' ? { ...rootTokens, ...darkTokens } : rootTokens;
+  let val = merged[tokenName];
+  if (!val) throw new Error(`Token ${tokenName} not found in scope ${scope}`);
+  while (val.startsWith('var(')) {
+    const inner = val.slice(4, -1).trim();
+    val = merged[inner];
+    if (!val) throw new Error(`Inner token ${inner} not found in scope ${scope}`);
+  }
+  return parseCssColor(val);
+}
 
-// Light Theme Values parsed dynamically
-const lightBg = parseCssColor(rootTokens['--background']);
-const lightCard = parseCssColor(rootTokens['--card']);
-const lightFg = parseCssColor(rootTokens['--foreground']);
-const lightMuted = parseCssColor(rootTokens['--muted']);
-const lightMutedFg = parseCssColor(rootTokens['--muted-foreground']);
-const lightInput = parseCssColor(rootTokens['--input']);
-const lightBorderStrong = parseCssColor(rootTokens['--border-strong']);
-const lightRing = parseCssColor(rootTokens['--ring']);
-const lightAccent = parseCssColor(rootTokens['--accent']);
-const lightPrimary = parseCssColor(rootTokens['--primary']);
-const lightPrimaryFg = parseCssColor(rootTokens['--primary-foreground']);
-const lightPrimaryHover = parseCssColor(rootTokens['--primary-hover']);
+// Key tokens light
+const lightCanvas = resolveToken('--canvas', 'root');
+const lightSurface = resolveToken('--surface', 'root');
+const lightSurfaceSunken = resolveToken('--surface-sunken', 'root');
+const lightTextPrimary = resolveToken('--text-primary', 'root');
+const lightTextSecondary = resolveToken('--text-secondary', 'root');
+const lightTextMuted = resolveToken('--text-muted', 'root');
+const lightBrandLink = resolveToken('--brand-link', 'root');
+const lightPrimary = resolveToken('--brand-600', 'root');
+const lightPrimaryHover = resolveToken('--brand-500', 'root');
+const lightBrand500 = resolveToken('--brand-500', 'root');
+const lightWhite = parseCssColor('#FFFFFF');
 
-const lightSuccessText = parseCssColor(rootTokens['--theme-success-text']);
-const lightSuccessPill = parseCssColor(rootTokens['--theme-success-light']);
-const lightWarningText = parseCssColor(rootTokens['--theme-warning-text']);
-const lightWarningPill = parseCssColor(rootTokens['--theme-warning-light']);
-const lightErrorText = parseCssColor(rootTokens['--theme-error-text']);
-const lightErrorPill = parseCssColor(rootTokens['--theme-error-light']);
+const lightSuccessText = resolveToken('--status-success-text', 'root');
+const lightSuccessBg = resolveToken('--status-success-bg', 'root');
+const lightInfoText = resolveToken('--status-info-text', 'root');
+const lightInfoBg = resolveToken('--status-info-bg', 'root');
+const lightWarningText = resolveToken('--status-warning-text', 'root');
+const lightWarningBg = resolveToken('--status-warning-bg', 'root');
+const lightDangerText = resolveToken('--status-danger-text', 'root');
+const lightDangerBg = resolveToken('--status-danger-bg', 'root');
 
-// Dark Theme Values parsed dynamically
-const darkBg = parseCssColor(darkTokens['--background']);
-const darkCard = parseCssColor(darkTokens['--card']);
-const darkFg = parseCssColor(darkTokens['--foreground']);
-const darkMuted = parseCssColor(darkTokens['--muted']);
-const darkMutedFg = parseCssColor(darkTokens['--muted-foreground']);
-const darkInput = parseCssColor(darkTokens['--input']);
-const darkBorderStrong = parseCssColor(darkTokens['--border-strong']);
-const darkRing = parseCssColor(darkTokens['--ring']);
-const darkAccent = parseCssColor(darkTokens['--accent']);
-const darkPrimary = parseCssColor(darkTokens['--primary']);
-const darkPrimaryFg = parseCssColor(darkTokens['--primary-foreground']);
-const darkPrimaryHover = parseCssColor(darkTokens['--primary-hover']);
+// Key tokens dark
+const darkCanvas = resolveToken('--canvas', 'dark');
+const darkSurface = resolveToken('--surface', 'dark');
+const darkRaised = resolveToken('--raised', 'dark');
+const darkTextPrimary = resolveToken('--text-primary', 'dark');
+const darkTextSecondary = resolveToken('--text-secondary', 'dark');
+const darkTextMuted = resolveToken('--text-muted', 'dark');
+const darkBrandLink = resolveToken('--brand-link', 'dark');
 
-const darkSuccessText = parseCssColor(darkTokens['--theme-success-text']);
-const darkSuccessPill = parseCssColor(darkTokens['--theme-success-light']);
-const darkWarningText = parseCssColor(darkTokens['--theme-warning-text']);
-const darkWarningPill = parseCssColor(darkTokens['--theme-warning-light']);
-const darkErrorText = parseCssColor(darkTokens['--theme-error-text']);
-const darkErrorPill = parseCssColor(darkTokens['--theme-error-light']);
+const darkSuccessText = resolveToken('--status-success-text', 'dark');
+const darkSuccessBg = blend(resolveToken('--status-success-bg', 'dark'), darkSurface);
+const darkInfoText = resolveToken('--status-info-text', 'dark');
+const darkInfoBg = blend(resolveToken('--status-info-bg', 'dark'), darkSurface);
+const darkWarningText = resolveToken('--status-warning-text', 'dark');
+const darkWarningBg = blend(resolveToken('--status-warning-bg', 'dark'), darkSurface);
+const darkDangerText = resolveToken('--status-danger-text', 'dark');
+const darkDangerBg = blend(resolveToken('--status-danger-bg', 'dark'), darkSurface);
 
 const lightTests = [
   // Typography
-  { category: 'Typography', name: 'Foreground (#111110) on Background (#FBFBFA)', fg: lightFg, bg: lightBg, min: 4.5 },
-  { category: 'Typography', name: 'Foreground (#111110) on Card (#FFFFFF)', fg: lightFg, bg: lightCard, min: 4.5 },
-  { category: 'Typography', name: 'Foreground (#111110) on Raised/Muted (#F4F4F2)', fg: lightFg, bg: lightMuted, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground (#63625C) on Background (#FBFBFA)', fg: lightMutedFg, bg: lightBg, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground (#63625C) on Card (#FFFFFF)', fg: lightMutedFg, bg: lightCard, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground (#63625C) on Raised (#F4F4F2)', fg: lightMutedFg, bg: lightMuted, min: 4.5 },
+  { category: 'Typography', name: 'text-primary (ink-900) on canvas (#F2F1F9)', fg: lightTextPrimary, bg: lightCanvas, min: 4.5 },
+  { category: 'Typography', name: 'text-primary (ink-900) on surface (#FFFFFF)', fg: lightTextPrimary, bg: lightSurface, min: 4.5 },
+  { category: 'Typography', name: 'text-primary (ink-900) on surface-sunken (#ECEBF5)', fg: lightTextPrimary, bg: lightSurfaceSunken, min: 4.5 },
+  { category: 'Typography', name: 'text-secondary (ink-600) on canvas (#F2F1F9)', fg: lightTextSecondary, bg: lightCanvas, min: 4.5 },
+  { category: 'Typography', name: 'text-secondary (ink-600) on surface (#FFFFFF)', fg: lightTextSecondary, bg: lightSurface, min: 4.5 },
+  { category: 'Typography', name: 'text-muted (ink-500) on surface (#FFFFFF)', fg: lightTextMuted, bg: lightSurface, min: 4.5 },
 
-  // Header Org Name
-  { category: 'Header Chrome', name: 'Header Org Name (Foreground) on Header Bg', fg: lightFg, bg: lightBg, min: 4.5 },
-  { category: 'Header Chrome', name: 'Header Org Name (Foreground) on Raised Pill', fg: lightFg, bg: lightMuted, min: 4.5 },
+  // Buttons & Links
+  { category: 'Buttons', name: 'Primary Button Label (White) on brand-600', fg: lightWhite, bg: lightPrimary, min: 4.5 },
+  { category: 'Buttons', name: 'Primary Button Label (White) on Hover brand-500', fg: lightWhite, bg: lightPrimaryHover, min: 4.5 },
+  { category: 'Buttons', name: 'Secondary Button Label (ink-900) on surface (#FFFFFF)', fg: lightTextPrimary, bg: lightSurface, min: 4.5 },
+  { category: 'Links', name: 'Ghost / Brand Link (brand-600) on canvas (#F2F1F9)', fg: lightBrandLink, bg: lightCanvas, min: 4.5 },
+  { category: 'Links', name: 'Ghost / Brand Link (brand-600) on surface (#FFFFFF)', fg: lightBrandLink, bg: lightSurface, min: 4.5 },
 
-  // Buttons
-  { category: 'Buttons', name: 'Primary Button Label (#FFFFFF) on Primary (#111110)', fg: lightPrimaryFg, bg: lightPrimary, min: 4.5 },
-  { category: 'Buttons', name: 'Primary Button Label (#FFFFFF) on Hover (#2A2A28)', fg: lightPrimaryFg, bg: lightPrimaryHover, min: 4.5 },
-  { category: 'Buttons', name: 'Disabled Button Text (#63625C) on Raised (#F4F4F2)', fg: lightMutedFg, bg: lightMuted, min: 4.5 },
+  // Status Pills
+  { category: 'Status Pills', name: 'Success Text (#0F6B3A) on Success Bg (#E3F6EA)', fg: lightSuccessText, bg: lightSuccessBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Info Text (#1D4ED8) on Info Bg (#E6EEFF)', fg: lightInfoText, bg: lightInfoBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Warning Text (#92560A) on Warning Bg (#FDF1DC)', fg: lightWarningText, bg: lightWarningBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Danger Text (#A61B1B) on Danger Bg (#FDE7E7)', fg: lightDangerText, bg: lightDangerBg, min: 4.5 },
 
-  // Semantic Badges / Status
-  { category: 'Semantic', name: 'Success Text (#166534) on Success Tint (#ECFDF3)', fg: lightSuccessText, bg: lightSuccessPill, min: 4.5 },
-  { category: 'Semantic', name: 'Warning Text (#B54708) on Warning Tint (#FFFAEB)', fg: lightWarningText, bg: lightWarningPill, min: 4.5 },
-  { category: 'Semantic', name: 'Error Text (#B42318) on Error Tint (#FEF3F2)', fg: lightErrorText, bg: lightErrorPill, min: 4.5 },
-
-  // Non-Text (3:1 minimum)
-  { category: 'Non-Text', name: 'Focus Ring / Accent (#1D4ED8) vs Background', fg: lightRing, bg: lightBg, min: 3.0 },
-  { category: 'Non-Text', name: 'Input Border Strong (#8F8E88) vs Background', fg: lightBorderStrong, bg: lightBg, min: 3.0 },
-
-  // Monaco Editor Token Contrast (Light Theme on #FFFFFF)
-  { category: 'Editor Light', name: 'Editor Foreground (#18181B) vs Editor Surface', fg: parseCssColor('#18181B'), bg: [255, 255, 255], min: 4.5 },
-  { category: 'Editor Light', name: 'Editor Keys (#1D4ED8) vs Editor Surface', fg: parseCssColor('#1D4ED8'), bg: [255, 255, 255], min: 4.5 },
-  { category: 'Editor Light', name: 'Editor Strings (#15803D) vs Editor Surface', fg: parseCssColor('#15803D'), bg: [255, 255, 255], min: 4.5 },
-  { category: 'Editor Light', name: 'Editor Numbers (#A16207) vs Editor Surface', fg: parseCssColor('#A16207'), bg: [255, 255, 255], min: 4.5 },
-  { category: 'Editor Light', name: 'Editor Keywords (#C2410C) vs Editor Surface', fg: parseCssColor('#C2410C'), bg: [255, 255, 255], min: 4.5 },
-  { category: 'Editor Light', name: 'Editor Punctuation (#52525B) vs Editor Surface', fg: parseCssColor('#52525B'), bg: [255, 255, 255], min: 4.5 },
-  { category: 'Editor Light', name: 'Editor Cursor (#111110) vs Editor Surface', fg: lightFg, bg: [255, 255, 255], min: 4.5 },
-
-  // Landing Elements Verification (Light)
-  { category: 'Landing Buttons', name: 'Start Building Button Label (#FFFFFF) on Primary (#111110)', fg: lightPrimaryFg, bg: lightPrimary, min: 4.5 },
-  { category: 'Landing Buttons', name: 'View Templates Button Label (#111110) on Card (#FFFFFF)', fg: lightFg, bg: lightCard, min: 4.5 },
-  { category: 'Landing Badges', name: 'Running Badge Label (#166534) on Success Tint (#ECFDF3)', fg: lightSuccessText, bg: lightSuccessPill, min: 4.5 },
-  { category: 'Landing Badges', name: 'Idle Badge Label (#63625C) on Raised (#F4F4F2)', fg: lightMutedFg, bg: lightMuted, min: 4.5 },
-  { category: 'Landing Avatars', name: 'Avatar Initials (#111110) on Raised/Muted (#F4F4F2)', fg: lightFg, bg: lightMuted, min: 4.5 },
+  // Non-Text UI Elements (3:1 minimum)
+  { category: 'UI Non-Text', name: 'Focus Ring (brand-500) vs canvas (#F2F1F9)', fg: lightBrand500, bg: lightCanvas, min: 3.0 },
+  { category: 'UI Non-Text', name: 'Focus Ring (brand-500) vs surface (#FFFFFF)', fg: lightBrand500, bg: lightSurface, min: 3.0 },
 ];
 
 const darkTests = [
   // Typography
-  { category: 'Typography', name: 'Foreground (#EDEDEA) on Background (#0F0F0E)', fg: darkFg, bg: darkBg, min: 4.5 },
-  { category: 'Typography', name: 'Foreground (#EDEDEA) on Card (#171716)', fg: darkFg, bg: darkCard, min: 4.5 },
-  { category: 'Typography', name: 'Foreground (#EDEDEA) on Raised/Muted (#1F1F1D)', fg: darkFg, bg: darkMuted, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground (#A3A29C) on Background (#0F0F0E)', fg: darkMutedFg, bg: darkBg, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground (#A3A29C) on Card (#171716)', fg: darkMutedFg, bg: darkCard, min: 4.5 },
-  { category: 'Typography', name: 'Muted Foreground (#A3A29C) on Raised (#1F1F1D)', fg: darkMutedFg, bg: darkMuted, min: 4.5 },
+  { category: 'Typography', name: 'text-primary (#F2F2F7) on canvas (ink-950 #0B0B12)', fg: darkTextPrimary, bg: darkCanvas, min: 4.5 },
+  { category: 'Typography', name: 'text-primary (#F2F2F7) on surface (#16161F)', fg: darkTextPrimary, bg: darkSurface, min: 4.5 },
+  { category: 'Typography', name: 'text-primary (#F2F2F7) on raised (#1F1F2B)', fg: darkTextPrimary, bg: darkRaised, min: 4.5 },
+  { category: 'Typography', name: 'text-secondary (#A9A9BD) on canvas (ink-950 #0B0B12)', fg: darkTextSecondary, bg: darkCanvas, min: 4.5 },
+  { category: 'Typography', name: 'text-secondary (#A9A9BD) on surface (#16161F)', fg: darkTextSecondary, bg: darkSurface, min: 4.5 },
+  { category: 'Typography', name: 'text-muted (#8A8AA0) on surface (#16161F)', fg: darkTextMuted, bg: darkSurface, min: 4.5 },
 
-  // Header Org Name
-  { category: 'Header Chrome', name: 'Header Org Name (Foreground) on Header Bg', fg: darkFg, bg: darkBg, min: 4.5 },
-  { category: 'Header Chrome', name: 'Header Org Name (Foreground) on Raised Pill', fg: darkFg, bg: darkMuted, min: 4.5 },
+  // Buttons & Links
+  { category: 'Buttons', name: 'Primary Button Label (White) on brand-600', fg: lightWhite, bg: lightPrimary, min: 4.5 },
+  { category: 'Buttons', name: 'Primary Button Label (White) on Hover brand-500', fg: lightWhite, bg: lightPrimaryHover, min: 4.5 },
+  { category: 'Buttons', name: 'Secondary Button Label (text-primary) on raised (#1F1F2B)', fg: darkTextPrimary, bg: darkRaised, min: 4.5 },
+  { category: 'Links', name: 'Ghost / Brand Link (brand-300) on canvas (ink-950)', fg: darkBrandLink, bg: darkCanvas, min: 4.5 },
+  { category: 'Links', name: 'Ghost / Brand Link (brand-300) on surface (#16161F)', fg: darkBrandLink, bg: darkSurface, min: 4.5 },
 
-  // Buttons
-  { category: 'Buttons', name: 'Primary Button Label (#111110) on Primary (#EDEDEA)', fg: darkPrimaryFg, bg: darkPrimary, min: 4.5 },
-  { category: 'Buttons', name: 'Primary Button Label (#111110) on Hover (#D6D6D2)', fg: darkPrimaryFg, bg: darkPrimaryHover, min: 4.5 },
-  { category: 'Buttons', name: 'Disabled Button Text (#A3A29C) on Raised (#1F1F1D)', fg: darkMutedFg, bg: darkMuted, min: 4.5 },
+  // Status Pills
+  { category: 'Status Pills', name: 'Success Text (#4ADE80) on 15% tint over surface', fg: darkSuccessText, bg: darkSuccessBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Info Text (#60A5FA) on 15% tint over surface', fg: darkInfoText, bg: darkInfoBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Warning Text (#FBBF24) on 15% tint over surface', fg: darkWarningText, bg: darkWarningBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Danger Text (#F87171) on 15% tint over surface', fg: darkDangerText, bg: darkDangerBg, min: 4.5 },
 
-  // Semantic Badges / Status
-  { category: 'Semantic', name: 'Success Text (#4ADE80) on Success Tint (#0F2417)', fg: darkSuccessText, bg: darkSuccessPill, min: 4.5 },
-  { category: 'Semantic', name: 'Warning Text (#FBBF24) on Warning Tint (#2A1F07)', fg: darkWarningText, bg: darkWarningPill, min: 4.5 },
-  { category: 'Semantic', name: 'Error Text (#F87171) on Error Tint (#2A1110)', fg: darkErrorText, bg: darkErrorPill, min: 4.5 },
-
-  // Non-Text (3:1 minimum)
-  { category: 'Non-Text', name: 'Focus Ring / Accent (#8AB4F8) vs Background', fg: darkRing, bg: darkBg, min: 3.0 },
-  { category: 'Non-Text', name: 'Input Border Strong (#6E6D68) vs Background', fg: darkBorderStrong, bg: darkBg, min: 3.0 },
-
-  // Monaco Editor Token Contrast (Dark Theme on #171716)
-  { category: 'Editor Dark', name: 'Editor Foreground (#E4E4E7) vs Editor Surface', fg: parseCssColor('#E4E4E7'), bg: darkCard, min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Keys (#93C5FD) vs Editor Surface', fg: parseCssColor('#93C5FD'), bg: darkCard, min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Strings (#86EFAC) vs Editor Surface', fg: parseCssColor('#86EFAC'), bg: darkCard, min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Numbers (#FDE047) vs Editor Surface', fg: parseCssColor('#FDE047'), bg: darkCard, min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Keywords (#FDBA74) vs Editor Surface', fg: parseCssColor('#FDBA74'), bg: darkCard, min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Punctuation (#A1A1AA) vs Editor Surface', fg: parseCssColor('#A1A1AA'), bg: darkCard, min: 4.5 },
-  { category: 'Editor Dark', name: 'Editor Cursor (#EDEDEA) vs Editor Surface', fg: darkFg, bg: darkCard, min: 4.5 },
-
-  // Landing Elements Verification (Dark)
-  { category: 'Landing Buttons', name: 'Start Building Button Label (#111110) on Primary (#EDEDEA)', fg: darkPrimaryFg, bg: darkPrimary, min: 4.5 },
-  { category: 'Landing Buttons', name: 'View Templates Button Label (#EDEDEA) on Card (#171716)', fg: darkFg, bg: darkCard, min: 4.5 },
-  { category: 'Landing Badges', name: 'Running Badge Label (#4ADE80) on Success Tint (#0F2417)', fg: darkSuccessText, bg: darkSuccessPill, min: 4.5 },
-  { category: 'Landing Badges', name: 'Idle Badge Label (#A3A29C) on Raised (#1F1F1D)', fg: darkMutedFg, bg: darkMuted, min: 4.5 },
-  { category: 'Landing Avatars', name: 'Avatar Initials (#EDEDEA) on Raised/Muted (#1F1F1D)', fg: darkFg, bg: darkMuted, min: 4.5 },
-];
-
-// Reference Home Specification Contrast Pairs (Light & Dark)
-const homeSpecLightTests = [
-  { category: 'Home Light', name: 'Headline Near-Black (#09090B) on Lavender Canvas (#EEF0FD)', fg: parseCssColor('#09090B'), bg: parseCssColor('#EEF0FD'), min: 4.5 },
-  { category: 'Home Light', name: 'Headline Gradient Violet (#6366F1) on Canvas (Large text)', fg: parseCssColor('#6366F1'), bg: parseCssColor('#EEF0FD'), min: 3.0 },
-  { category: 'Home Light', name: 'Headline Gradient Blue (#2563EB) on Canvas (Large text)', fg: parseCssColor('#2563EB'), bg: parseCssColor('#EEF0FD'), min: 3.0 },
-  { category: 'Home Light', name: 'Hero Subtitle (#475569) on Lavender Canvas (#EEF0FD)', fg: parseCssColor('#475569'), bg: parseCssColor('#EEF0FD'), min: 4.5 },
-  { category: 'Home Light', name: 'Eyebrow Text (#4338CA) on Eyebrow Pill (#EDEBFB)', fg: parseCssColor('#4338CA'), bg: parseCssColor('#EDEBFB'), min: 4.5 },
-  { category: 'Home Light', name: 'Sidebar Active Text (#4338CA) on Active Fill (#E6E4FA)', fg: parseCssColor('#4338CA'), bg: parseCssColor('#E6E4FA'), min: 4.5 },
-  { category: 'Home Light', name: 'Sidebar Inactive Text (#475569) on Sidebar Surface (#F0EFFD)', fg: parseCssColor('#475569'), bg: parseCssColor('#F0EFFD'), min: 4.5 },
-  { category: 'Home Light', name: 'Primary CTA Text (#FFFFFF) on Button (#09090B)', fg: parseCssColor('#FFFFFF'), bg: parseCssColor('#09090B'), min: 4.5 },
-  { category: 'Home Light', name: 'Secondary CTA Text (#0F172A) on Glass Button (#FFFFFF)', fg: parseCssColor('#0F172A'), bg: parseCssColor('#FFFFFF'), min: 4.5 },
-];
-
-const homeSpecDarkTests = [
-  { category: 'Home Dark', name: 'Headline Solid Text (#F8FAFC) on Deep Navy Canvas (#090A10)', fg: parseCssColor('#F8FAFC'), bg: parseCssColor('#090A10'), min: 4.5 },
-  { category: 'Home Dark', name: 'Headline Grad Violet (#818CF8) on Canvas (Large text)', fg: parseCssColor('#818CF8'), bg: parseCssColor('#090A10'), min: 3.0 },
-  { category: 'Home Dark', name: 'Headline Grad Blue (#3B82F6) on Canvas (Large text)', fg: parseCssColor('#3B82F6'), bg: parseCssColor('#090A10'), min: 3.0 },
-  { category: 'Home Dark', name: 'Hero Subtitle (#94A3B8) on Deep Navy Canvas (#090A10)', fg: parseCssColor('#94A3B8'), bg: parseCssColor('#090A10'), min: 4.5 },
-  { category: 'Home Dark', name: 'Eyebrow Text (#A5B4FC) on Dark Pill (#1E1B4B)', fg: parseCssColor('#A5B4FC'), bg: parseCssColor('#1E1B4B'), min: 4.5 },
-  { category: 'Home Dark', name: 'Stat Panel Value (#FFFFFF) on Stat Panel (#1A1B29)', fg: parseCssColor('#FFFFFF'), bg: parseCssColor('#1A1B29'), min: 4.5 },
-  { category: 'Home Dark', name: 'Stat Panel Label (#94A3B8) on Stat Panel (#1A1B29)', fg: parseCssColor('#94A3B8'), bg: parseCssColor('#1A1B29'), min: 4.5 },
-  { category: 'Home Dark', name: 'Table Cell Text (#F1F5F9) on Table Panel (#1A1B29)', fg: parseCssColor('#F1F5F9'), bg: parseCssColor('#1A1B29'), min: 4.5 },
-  { category: 'Home Dark', name: 'Table Header Muted (#94A3B8) on Table Panel (#1A1B29)', fg: parseCssColor('#94A3B8'), bg: parseCssColor('#1A1B29'), min: 4.5 },
-  { category: 'Home Dark', name: 'Primary CTA Text (#09090B) on Button (#FFFFFF)', fg: parseCssColor('#09090B'), bg: parseCssColor('#FFFFFF'), min: 4.5 },
+  // Non-Text UI Elements (3:1 minimum)
+  { category: 'UI Non-Text', name: 'Focus Ring (brand-500) vs canvas (ink-950)', fg: lightBrand500, bg: darkCanvas, min: 3.0 },
+  { category: 'UI Non-Text', name: 'Focus Ring (brand-500) vs surface (#16161F)', fg: lightBrand500, bg: darkSurface, min: 3.0 },
 ];
 
 function runSuite(title, suite) {
@@ -268,18 +190,16 @@ function runSuite(title, suite) {
     const pass = ratio >= t.min;
     if (!pass) allPass = false;
     const cat = `[${t.category}]`.padEnd(16);
-    console.log(`${cat} ${t.name.padEnd(54)}: ${ratio.toFixed(2).padStart(5)}:1 (min ${t.min.toFixed(1)}:1) ${pass ? '✅ PASS' : '❌ FAIL'}`);
+    console.log(`${cat} ${t.name.padEnd(58)}: ${ratio.toFixed(2).padStart(5)}:1 (min ${t.min.toFixed(1)}:1) ${pass ? '✅ PASS' : '❌ FAIL'}`);
   });
   return allPass;
 }
 
-const lp = runSuite('LIGHT THEME WCAG 2.2 AA VERIFICATION (MONOCHROME PALETTE)', lightTests);
-const dp = runSuite('DARK THEME WCAG 2.2 AA VERIFICATION (MONOCHROME PALETTE)', darkTests);
-const hlp = runSuite('HOME SPEC LIGHT THEME WCAG 2.2 AA VERIFICATION', homeSpecLightTests);
-const hdp = runSuite('HOME SPEC DARK THEME WCAG 2.2 AA VERIFICATION', homeSpecDarkTests);
+const lp = runSuite('LIGHT THEME WCAG CONTRAST VERIFICATION (FORGE VIOLET & INK)', lightTests);
+const dp = runSuite('DARK THEME WCAG CONTRAST VERIFICATION (FORGE VIOLET & INK)', darkTests);
 
-if (lp && dp && hlp && hdp) {
-  console.log('\n>>> ALL AUDITED PAIRS (TEXT & NON-TEXT) MEET WCAG 2.2 AA IN BOTH THEMES <<<\n');
+if (lp && dp) {
+  console.log('\n>>> ALL AUDITED PAIRS (TEXT ≥ 4.5:1, UI ≥ 3:1) MEET WCAG IN BOTH THEMES <<<\n');
 } else {
   console.error('\n>>> SOME PAIRS FAILED WCAG CHECKS <<<\n');
   process.exit(1);

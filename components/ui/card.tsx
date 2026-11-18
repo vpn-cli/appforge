@@ -9,7 +9,7 @@ function Card({
     <div
       data-slot="card"
       className={cn(
-        "rounded-2xl bg-card dark:bg-[#121217] border border-border dark:border-white/10 text-card-foreground transition-all duration-200 overflow-hidden",
+        "rounded-2xl bg-card border border-border text-card-foreground transition-all duration-200 overflow-hidden",
         className
       )}
       {...props}

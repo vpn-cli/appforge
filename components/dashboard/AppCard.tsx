@@ -68,7 +68,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
       }
       entitiesCount = Math.max(1, foundEntities.size || 2);
     }
-  } catch {}
+  } catch { }
 
   const handleCardClick = (e: React.MouseEvent) => {
     // If the click is inside the overflow menu or button, don't navigate
@@ -110,11 +110,10 @@ export function AppCard({ app, onRename, onDelete }: Props) {
 
             {/* Overflow Menu Trigger: Kebab on hover */}
             <div
-              className={`relative shrink-0 transition-opacity duration-150 ${
-                isMenuOpen
+              className={`relative shrink-0 transition-opacity duration-150 ${isMenuOpen
                   ? "opacity-100"
                   : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100"
-              }`}
+                }`}
               data-no-navigate
             >
               <IconButton

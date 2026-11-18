@@ -22,7 +22,7 @@ export function HomeTopBar() {
   const orgInitial = (orgName?.[0] || "V").toUpperCase();
 
   const navSegments = [
-    { label: "Dashboard", href: "/dashboard" },
+    { label: "Apps", href: "/dashboard" },
     { label: "Builder", href: "/builder/demo" },
     { label: "Templates", href: "/templates" },
   ];
@@ -66,13 +66,16 @@ export function HomeTopBar() {
               <Link
                 key={seg.label}
                 href={seg.href}
-                className={`px-4 py-1.5 rounded-full text-[15px] font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-full text-[15px] font-medium transition-all inline-flex items-center gap-1.5 ${
                   isActive
-                    ? "bg-white text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.08)] dark:bg-white/[0.12] dark:text-white dark:shadow-none"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-surface text-brand-link shadow-[0_2px_8px_rgba(23,23,31,0.08)] dark:bg-white/[0.12] dark:shadow-none font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {seg.label}
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-link shrink-0" />
+                )}
+                <span>{seg.label}</span>
               </Link>
             );
           })}
@@ -84,14 +87,14 @@ export function HomeTopBar() {
           <ThemeToggle />
 
           {/* Org Switcher pill (avatar + name + chevron) - 15px weight 500 */}
-          <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 h-9 rounded-full glass-2-nested text-slate-800 dark:text-slate-200 select-none">
-            <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-semibold text-[12px] flex items-center justify-center shrink-0">
+          <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 h-9 rounded-full glass-2-nested text-foreground select-none">
+            <span className="w-6 h-6 rounded-full bg-brand-600 text-white font-semibold text-[12px] flex items-center justify-center shrink-0">
               {orgInitial}
             </span>
-            <span className="truncate max-w-[160px] font-medium text-[15px] text-slate-800 dark:text-slate-200">
+            <span className="truncate max-w-[160px] font-medium text-[15px] text-foreground">
               {orgName}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" strokeWidth={1.75} />
+            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" strokeWidth={1.75} />
           </div>
 
           {/* User Avatar (36px) */}
@@ -132,16 +135,16 @@ export function HomeTopBar() {
       {mobileMenuOpen && (
         <div className="sm:hidden mt-2 p-3 rounded-2xl glass-1 border border-white/80 dark:border-white/10 flex flex-col gap-1 shadow-lg">
           {navSegments.map((seg) => {
-            const isActive = pathname === seg.href || (pathname === "/" && seg.label === "Dashboard");
+            const isActive = pathname === seg.href || (pathname === "/" && seg.label === "Apps");
             return (
               <Link
                 key={seg.label}
                 href={seg.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-2 rounded-xl text-[15px] font-medium transition-colors ${
+                className={`px-3 py-2 rounded-xl text-[15px] font-medium transition-colors inline-flex items-center gap-2 ${
                   isActive
-                    ? "bg-white text-slate-900 shadow-xs dark:bg-white/10 dark:text-white"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-white/5"
+                    ? "bg-surface text-brand-link shadow-xs dark:bg-white/10 font-semibold"
+                    : "text-muted-foreground hover:bg-white/50 dark:hover:bg-white/5 hover:text-foreground"
                 }`}
               >
                 {seg.label}

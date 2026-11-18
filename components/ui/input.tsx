@@ -8,9 +8,9 @@ const inputVariants = cva(
     variants: {
       variant: {
         default:
-          "h-9 px-3.5 rounded-full border border-border bg-card dark:bg-[#121217] text-[14px] focus:border-accent dark:focus:border-accent focus:ring-1 focus:ring-accent",
+          "h-9 px-3.5 rounded-full border border-border bg-card text-[14px] focus:border-brand-500 focus:ring-2 focus:ring-brand-500/40 focus:ring-offset-2 focus:ring-offset-background",
         hero:
-          "h-14 px-5 rounded-[20px] glass-1 text-[15px] focus:ring-2 focus:ring-accent/40",
+          "h-14 px-5 rounded-[20px] glass-1 text-[15px] focus:ring-2 focus:ring-brand-500/40 focus:ring-offset-2 focus:ring-offset-background",
         ghost:
           "bg-transparent border-0 text-[15px] focus:outline-none",
       },

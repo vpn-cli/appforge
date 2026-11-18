@@ -48,6 +48,8 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <head>
+          <link rel="preload" href="/hero-ribbon.webp" as="image" type="image/webp" />
+          <link rel="preload" href="/hero-ribbon-dark.webp" as="image" type="image/webp" />
           <script
             dangerouslySetInnerHTML={{
               __html: `

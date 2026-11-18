@@ -189,8 +189,8 @@ export function DataTable({
 
       if (isRunning) {
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse shrink-0" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
             {String(value)}
           </span>
         );
@@ -198,8 +198,8 @@ export function DataTable({
 
       if (isIdle) {
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#818CF8]/15 text-[#818CF8] border border-[#818CF8]/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#818CF8] shrink-0" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
             {String(value)}
           </span>
         );
@@ -278,7 +278,7 @@ export function DataTable({
         aria-label="Data Table"
         className={`w-full overflow-x-auto ${
           variant === "dark-panel"
-            ? "border border-white/10 bg-[#161724]/90 rounded-xl shadow-inner text-slate-100"
+            ? "border border-border bg-card/90 rounded-xl shadow-inner text-foreground"
             : `border border-border bg-card ${effectiveState === "degraded" ? "rounded-b-lg" : "rounded-lg"}`
         } ${
           isInteractive
@@ -289,7 +289,7 @@ export function DataTable({
         <table className="w-full text-xs text-left border-collapse">
           {/* Header Row */}
           <thead>
-            <tr className={variant === "dark-panel" ? "border-b border-white/10 bg-[#141420]/60" : "border-b border-border bg-muted/40"}>
+            <tr className={variant === "dark-panel" ? "border-b border-border bg-surface-sunken/60" : "border-b border-border bg-muted/40"}>
               {normalizedCols.map((col, idx) => (
                 <th
                   key={idx}

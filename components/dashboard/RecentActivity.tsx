@@ -15,7 +15,7 @@ export function RecentActivity({ apps = [] }: { apps?: AppData[] }) {
   const hasEvents = realEvents.length > 0;
 
   return (
-    <aside className="w-full h-full rounded-2xl bg-card dark:bg-[#14141A] border border-border dark:border-white/10 p-5 shadow-xs flex flex-col">
+    <aside className="w-full h-full rounded-2xl bg-card border border-border p-5 shadow-xs flex flex-col">
       <div className="flex items-center justify-between pb-3 mb-4 border-b border-border/50 dark:border-white/5 shrink-0">
         <h2 className="text-[15px] font-semibold text-foreground flex items-center gap-2">
           <Activity className="w-4 h-4 text-muted-foreground" />

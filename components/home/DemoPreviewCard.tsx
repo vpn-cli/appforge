@@ -106,7 +106,7 @@ export function DemoPreviewCard() {
       {/* Content Body: Metric Card + Floating Rows Table (No dead gap above metric card) */}
       <div className="mt-3.5 flex flex-col gap-3 flex-1 justify-start min-w-0 relative z-10">
         {/* Metric Card: Deepened gradient ensuring >= 4.5:1 text contrast with white */}
-        <div className="rounded-2xl bg-gradient-to-r from-[#5B60C8] via-[#6B71D4] to-[#8A82E3] dark:from-[#3B3A8C] dark:to-[#5B4FB8] border border-white/60 dark:border-white/15 text-white p-4 relative overflow-hidden shadow-[0_4px_16px_-4px_rgba(91,96,200,0.30)] dark:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.5)] select-none shrink-0">
+        <div className="rounded-2xl metric-card-gradient border border-white/60 dark:border-white/15 text-white p-4 relative overflow-hidden shadow-sm select-none shrink-0">
           {/* Confined chart to the right 45% of the card, strictly below the icon */}
           <div
             className="absolute right-0 bottom-0 w-[45%] h-[52px] pointer-events-none opacity-40 dark:opacity-30"
@@ -121,8 +121,8 @@ export function DemoPreviewCard() {
             >
               <defs>
                 <linearGradient id="metricChartGrad" x1="0" y1="0" x2="0" y2="60" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="white" stopOpacity="0.5" />
+                  <stop offset="100%" stopColor="white" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
               <path
@@ -131,7 +131,7 @@ export function DemoPreviewCard() {
               />
               <path
                 d="M0 45 C 40 40, 80 18, 130 25 C 165 30, 185 10, 200 5"
-                stroke="#FFFFFF"
+                stroke="white"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 opacity="0.9"

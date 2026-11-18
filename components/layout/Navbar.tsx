@@ -54,10 +54,10 @@ export function Navbar() {
         animate="show"
         className="hidden md:flex items-center gap-6"
       >
-        {["Dashboard", "Builder", "Templates"].map((text) => (
+        {["Apps", "Builder", "Templates"].map((text) => (
           <motion.div key={text} variants={item}>
             <Link 
-              href={text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
+              href={text === "Apps" ? "/dashboard" : text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
               className="relative text-muted-foreground text-sm font-medium hover:text-foreground transition-colors group px-1 py-2"
             >
               {text}
@@ -124,10 +124,10 @@ export function Navbar() {
             className="absolute top-full left-0 w-full bg-background border-border shadow-md border-b flex flex-col md:hidden overflow-hidden origin-top z-40"
           >
             <div className="p-4 flex flex-col gap-3">
-              {["Dashboard", "Builder", "Templates"].map((text) => (
+              {["Apps", "Builder", "Templates"].map((text) => (
                 <Link 
                   key={text}
-                  href={text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
+                  href={text === "Apps" ? "/dashboard" : text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="text-foreground text-sm font-medium p-3 hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border/50"
                 >

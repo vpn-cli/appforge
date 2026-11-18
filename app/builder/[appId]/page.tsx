@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
 import { CopilotFloatingPill } from "@/components/builder/CopilotFloatingPill";
 import { LivePreview } from "@/components/builder/LivePreview";
@@ -122,7 +122,7 @@ const defaultMockConfig = JSON.stringify(
 
 type ViewportMode = "desktop" | "tablet" | "mobile";
 
-export default function BuilderPage() {
+function BuilderContent() {
   const params = useParams();
   const appId = (params?.appId as string) || "demo";
   const searchParams = useSearchParams();
@@ -439,7 +439,10 @@ export default function BuilderPage() {
     }
   };
 
-  const handleApplyCopilotComponents = (newComponents: unknown[]) => {
+  const handleApplyCopilotComponents = (
+    newComponents: unknown[],
+    newAppName?: string,
+  ) => {
     try {
       interface PageSchema {
         components: unknown[];
@@ -457,6 +460,25 @@ export default function BuilderPage() {
         currentConfig = JSON.parse(configStr || "{}");
       } catch {
         console.warn("Editor JSON invalid. Falling back to base template.");
+      }
+
+      // Sync the "app" field: either use explicit newAppName or infer from Header component
+      let appTitleToUse = newAppName?.trim();
+      if (!appTitleToUse && Array.isArray(newComponents)) {
+        const headerComp = newComponents.find(
+          (c) =>
+            c &&
+            typeof c === "object" &&
+            (c as Record<string, unknown>).type === "Header" &&
+            typeof (c as Record<string, unknown>).title === "string",
+        ) as { title?: string } | undefined;
+        if (headerComp?.title && headerComp.title.trim()) {
+          appTitleToUse = headerComp.title.trim();
+        }
+      }
+
+      if (appTitleToUse) {
+        currentConfig.app = appTitleToUse;
       }
 
       if (!currentConfig.pages || currentConfig.pages.length === 0)
@@ -496,7 +518,30 @@ export default function BuilderPage() {
   const handleStreamEnd = () => setIsGenerating(false);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background overflow-hidden text-foreground antialiased select-none">
+    <div className="flex flex-col h-screen w-full bg-background overflow-hidden text-foreground antialiased select-none relative">
+      {/* Background treatment: same canvas and washes at half strength */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 overflow-hidden z-0 select-none"
+      >
+        <div className="dark:hidden absolute -top-32 -left-20 w-[580px] h-[580px] rounded-full bg-[radial-gradient(circle_at_center,var(--brand-100)_0%,rgba(242,241,249,0)_70%)] blur-[70px] opacity-40" />
+        <div className="dark:hidden absolute top-[200px] -right-20 w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle_at_center,var(--wash-blue)_0%,rgba(242,241,249,0)_70%)] blur-[80px] opacity-40" />
+        <div
+          className="dark:hidden absolute inset-0 bg-[radial-gradient(rgba(23,23,31,0.02)_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none"
+          style={{
+            maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
+            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
+          }}
+        />
+        <div className="hidden dark:block absolute -top-[120px] left-1/2 -translate-x-1/2 w-[55vw] h-[35vh] max-w-[900px] rounded-full bg-[radial-gradient(ellipse_60%_35%_at_50%_25%,rgba(109,91,240,0.09)_0%,rgba(91,69,224,0.02)_50%,transparent_70%)] blur-[100px] pointer-events-none" />
+        <div
+          className="hidden dark:block absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.02)_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none"
+          style={{
+            maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
+            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
+          }}
+        />
+      </div>
       {/* =========================================================================
           TOP APPLICATION TOOLBAR (h-14, 56px) - Glass top bar
           Sans breadcrumb with App Name, Copilot ⌘K toggle, Save Draft, Publish
@@ -850,5 +895,13 @@ export default function BuilderPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function BuilderPage() {
+  return (
+    <Suspense fallback={<div className="h-screen w-full bg-background" />}>
+      <BuilderContent />
+    </Suspense>
   );
 }

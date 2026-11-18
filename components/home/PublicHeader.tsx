@@ -8,12 +8,12 @@ import { SignInButton, SignUpButton } from "@clerk/nextjs";
 
 export function PublicHeader() {
   return (
-    <header className="h-[72px] max-w-[1240px] mx-auto px-6 w-full flex items-center justify-between border-b border-[#9390C8]/20 dark:border-white/10 relative z-30 transition-colors">
+    <header className="h-[72px] max-w-[1240px] mx-auto px-6 w-full flex items-center justify-between border-b border-border relative z-30 transition-colors">
       <Link href="/" className="flex items-center gap-2.5 outline-none group">
-        <div className="w-8 h-8 rounded-lg bg-indigo-600/10 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-          <AppForgeLogo size={20} className="text-indigo-600 dark:text-indigo-400" />
+        <div className="w-8 h-8 rounded-lg bg-brand-500/10 dark:bg-brand-400/20 flex items-center justify-center text-brand-link">
+          <AppForgeLogo size={20} className="text-brand-link" />
         </div>
-        <span className="font-semibold text-lg tracking-tight text-slate-900 dark:text-slate-100">
+        <span className="font-semibold text-lg tracking-tight text-foreground">
           AppForge
         </span>
       </Link>

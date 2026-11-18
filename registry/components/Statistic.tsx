@@ -114,7 +114,7 @@ export function Statistic({
   if (isPanel) {
     return (
       <div
-        className={`@container relative overflow-hidden rounded-xl bg-[#161724]/90 p-5 sm:p-6 text-white border border-white/10 shadow-inner min-w-0 min-h-[160px] flex flex-col justify-between ${className}`}
+        className={`@container relative overflow-hidden rounded-xl bg-card/90 p-5 sm:p-6 text-foreground border border-border shadow-inner min-w-0 min-h-[160px] flex flex-col justify-between ${className}`}
       >
         {/* Soft filled area chart wave behind the number matching reference sweeping curve */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
@@ -126,13 +126,13 @@ export function Statistic({
           >
             <defs>
               <linearGradient id="purpleAreaWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#818CF8" stopOpacity="0.45" />
-                <stop offset="50%" stopColor="#6366F1" stopOpacity="0.20" />
-                <stop offset="100%" stopColor="#312E81" stopOpacity="0" />
+                <stop offset="0%" stopColor="var(--brand-400)" stopOpacity="0.45" />
+                <stop offset="50%" stopColor="var(--brand-500)" stopOpacity="0.20" />
+                <stop offset="100%" stopColor="var(--brand-800)" stopOpacity="0" />
               </linearGradient>
               <linearGradient id="backWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#A855F7" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#4F46E5" stopOpacity="0" />
+                <stop offset="0%" stopColor="var(--brand-300)" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="var(--brand-600)" stopOpacity="0" />
               </linearGradient>
               <filter id="purpleGlow" x="-20%" y="-20%" width="140%" height="140%">
                 <feGaussianBlur stdDeviation="4" result="blur" />
@@ -152,7 +152,7 @@ export function Statistic({
             {/* Glowing crest line */}
             <path
               d="M 140 145 C 220 145, 270 110, 320 85 C 360 65, 390 80, 430 50 C 460 25, 485 30, 500 40"
-              stroke="#C7D2FE"
+              stroke="var(--brand-200)"
               strokeWidth="2.5"
               strokeOpacity="0.9"
               fill="none"
@@ -162,29 +162,29 @@ export function Statistic({
         </div>
 
         <div className="relative z-10 flex flex-col justify-between h-full gap-4">
-          {/* Header row with indigo dot and label */}
+          {/* Header row with brand dot and label */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#818CF8] shadow-[0_0_8px_#818CF8]" />
-              <p className="text-xs sm:text-sm font-medium text-slate-300 tracking-tight truncate">
+              <span className="w-2 h-2 rounded-full bg-brand-400 shadow-[0_0_8px_var(--brand-400)]" />
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground tracking-tight truncate">
                 {effectiveLabel}
               </p>
             </div>
             {icon === "users" || isPanel ? (
-              <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 flex items-center justify-center shrink-0 shadow-sm">
-                <Users className="w-4 h-4 text-indigo-300" strokeWidth={1.75} />
+              <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-400/30 text-brand-link flex items-center justify-center shrink-0 shadow-sm">
+                <Users className="w-4 h-4 text-brand-link" strokeWidth={1.75} />
               </div>
             ) : null}
           </div>
 
           {/* Value and Growth pill: 52px bold number */}
           <div className="flex items-center gap-3.5">
-            <h3 className="text-4xl sm:text-[52px] font-bold tracking-tight text-white leading-none tabular-nums">
+            <h3 className="text-4xl sm:text-[52px] font-bold tracking-tight text-foreground leading-none tabular-nums">
               {effectiveValue}
             </h3>
 
             {trendStrValue && (
-              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 shrink-0 select-none">
+              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-status-success-bg text-status-success-text border border-status-success-border shrink-0 select-none">
                 <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2.2} />
                 <span>{trendStrValue}</span>
               </div>

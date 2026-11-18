@@ -21,18 +21,32 @@
 
 ---
 
-## 2. Model Performance & Validity Comparison
+## 2. Independent Model Evaluation Records
 
-| Model | Evaluated (N) | Node Validity % | Full Layout Pass % | First Render p50 (TTFT) | First Render p95 (TTFT) | Full Layout p50 | Full Layout p95 | Avg Tokens / Prompt |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Groq (`openai/gpt-oss-120b`)** *(Excl. 429s)* | 59 (8 rate-limited excluded) | **92.8%** (141/152) | **81.4%** (48/59) | *INVALID\** | *INVALID\** | *INVALID\** | *INVALID\** | ~1,250 |
-| **Groq (`openai/gpt-oss-120b`)** *(Raw All)* | 67 (429s counted as fail) | **92.8%** (141/152) | **71.6%** (48/67) | *INVALID\** | *INVALID\** | *INVALID\** | *INVALID\** | ~1,250 |
-| **Groq (`openai/gpt-oss-20b`)** *(Full)* | 100 | **87.7% (old type-only check)\*\*** | **68.0%** (68/100) | **1,620 ms** | **2,917 ms** | **1,956 ms** | **3,341 ms** | **1,749** |
-| **Gemini (`gemini-2.5-flash`)** *(Free Tier)* | 100 (1 valid)\*\*\* | **100.0%** (2/2) | **1.0%** (1/100) | *INVALID\*\*\** | *INVALID\*\*\** | *INVALID\*\*\** | *INVALID\*\*\** | Quota Blocked |
+> [!IMPORTANT]
+> **Non-Comparative Data Notice:** The datasets below must NOT be compared side-by-side. Groq 120b was evaluated using strict per-component Zod schemas (`lib/validation.ts`), whereas Groq 20b was evaluated under an obsolete type-only string check (`commit 975e62a~1`). Because raw completions were not preserved in full, 20b cannot be back-scored. Each model's results are presented strictly as independent historical artifacts.
 
-*\*Note on 120b Latency: Marked INVALID per protocol. In the original evaluation run, `streamText` internal retries and outer backoff sleep delays on 429 rate limits were captured inside the overall attempt timer (inflating recorded durations to 63–92 seconds for rate-limited prompts). Because individual per-chunk or per-attempt timestamps were not preserved, model inference time cannot be isolated mathematically from retry sleep.*  
-*\*\*Note on 20b Validity: Results files do NOT store full raw model output (only a 150-character `rawOutputPreview`). Because historical completions were not saved in full, 20b cannot be re-scored post-hoc against the current per-component Zod schemas (`lib/validation.ts`), so its validity score is strictly marked as the historical "old type-only check".*  
-*\*\*\*Note on Gemini Latency: Marked INVALID per protocol. Gemini hit Google AI Studio's Free Tier quota (20 requests/day) and recorded artificial delay before quota blocking. No valid latency metrics can be inferred from a single rate-blocked attempt. Per strict instructions, all further eval runs on the live app's keys are suspended.*
+### 2.1 Groq (`openai/gpt-oss-120b`) — Per-Component Zod Schema Suite
+* **Validation Standard:** Strict per-component Zod schemas (`HeaderSchema`, `StatisticSchema`, `DataTableSchema`, `CardSchema`, `GridSchema`, `ButtonActionSchema`).
+* **Total Prompts Attempted:** 67 (interrupted by sliding-window rate limits at `sett-07`)
+* **Completed Prompts (Excluding 429 Rate Limits):** 59 prompts
+* **Full Layout Pass Rate (Excluding 429s):** **81.4%** (48 pass / 59 completed)
+* **Full Layout Pass Rate (Raw with 429s as Fail):** **71.6%** (48 pass / 67 attempted)
+* **Node Validity Rate:** **92.8%** (141 valid / 152 total component nodes evaluated across non-429 prompts)
+* **Latency (TTFT & Duration):** Marked **INVALID** per evaluation protocol (exponential retry backoff sleep inflated attempt timers).
+
+### 2.2 Groq (`openai/gpt-oss-20b`) — Legacy Unvalidated Run (Old Type-Only Check)
+* **Validation Standard:** Legacy type-only string check (`z.object({ type: z.string() })` prior to `commit 975e62a`).
+* **Total Prompts Evaluated:** 100 prompts
+* **Reported Node Validity %:** **87.7% (old type-only check)** — Not evaluated against component schemas.
+* **Reported Full Layout Pass %:** **68.0%** (68/100) — Historical unvalidated metric.
+* **Latency Profile:** First Render p50: 1,620 ms | p95: 2,917 ms; Full Layout p50: 1,956 ms | p95: 3,341 ms; Avg Tokens: 1,749.
+
+### 2.3 Gemini (`gemini-2.5-flash`) — Free Tier Quota Aborted Run
+* **Validation Standard:** Evaluated with default dynamic thinking budget.
+* **Total Prompts Attempted:** 100 (Hard quota cut off after prompt 1; 99 rejected with 429 quota exhaustion).
+* **Completed Valid Layouts:** 1 (`dash-04`: 2 valid nodes, 100% node validity, 1.0% pass rate).
+* **Latency Profile:** Marked **INVALID** due to quota delays and artificial hold time.
 
 ---
 
@@ -51,6 +65,9 @@ A node is considered **Valid** if and only if:
    * `CardSchema` / `GridSchema`: Recursively validates that all child `content`, `footer`, or `items` are themselves valid component nodes.
 
 $$\text{Node Validity \%} = \left(\frac{\sum \text{Valid Component Nodes}}{\sum \text{Total Evaluated Component Nodes}}\right) \times 100$$
+
+> [!NOTE]
+> **Refusal Node Contribution:** Prompts that result in a plain text refusal (such as `form-02` and `form-03`) emit 0 AST component nodes. They contribute exactly **0 valid nodes and 0 total nodes** to the aggregate node validity fraction. Refusals do not dilute or inflate the node validity percentage of parsed component nodes, but count strictly as failures for Full Layout Pass %.
 
 ### Full Layout Pass %
 A benchmark prompt achieves a **Full Layout Pass** if and only if all three of the following criteria are met:
@@ -121,11 +138,11 @@ Between the intermediate chat update and the committed dataset, the reported 120
 * **Prompt `form-02`:**
   * **Input:** `"Build a customer feedback and NPS survey form with rating scale and text comments"`
   * **Recorded Refusal Output:** `"I’m sorry, but I can’t help with that...."`
-  * **Analysis:** Triggered an automated safety/policy filter on user feedback/PII collection within the model's system boundary.
+  * **Root Cause (Hypothesis, untested):** Suspected false-positive safety classifier trigger on customer feedback / PII collection within the model's system boundary.
 * **Prompt `form-03`:**
   * **Input:** `"Create a multi-tier SaaS checkout billing form with credit card fields and tax address"`
   * **Recorded Refusal Output:** `"I’m sorry, but I can’t fulfill that request...."`
-  * **Analysis:** The phrase `"credit card fields"` directly tripped Groq / OpenAI PCI-DSS financial credential guardrails. *(Note: The 1,117 ms TTFT of this single refusal was previously mistakenly cited as the overall 120b median).*
+  * **Root Cause (Hypothesis, untested):** Suspected trigger on PCI-DSS / financial payment data guardrails caused by the phrase `"credit card fields"`. *(Note: The 1,117 ms TTFT of this single refusal was previously mistakenly cited as the overall 120b median).*
 
 ### Complete 67-Prompt Status Table
 

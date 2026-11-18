@@ -16,11 +16,11 @@ const CODE_RAW_BASE = `{
   }]
 }`;
 
-const keyStyle = "text-[#2B6CB0] dark:text-[#8FA8FF] font-medium";
-const strStyle = "text-[#8A7A1F] dark:text-[#D9C27A]";
-const punctStyle = "text-slate-600 dark:text-slate-400";
-const bracketStyle = "text-violet-700 dark:text-violet-300 font-medium";
-const boolStyle = "text-emerald-600 dark:text-emerald-400 font-medium";
+const keyStyle = "token-key font-medium";
+const strStyle = "token-string";
+const punctStyle = "token-punct";
+const bracketStyle = "token-bracket font-medium";
+const boolStyle = "token-bool font-medium";
 
 function renderTypedTokens(text: string) {
   if (!text) return null;
@@ -88,9 +88,9 @@ export function DemoCodeCard() {
         <div className="flex items-center gap-3">
           {/* Traffic lights */}
           <div className="flex items-center gap-1.5" aria-hidden="true">
-            <span className="w-3 h-3 rounded-full bg-[#EF4444]/90 shadow-xs" />
-            <span className="w-3 h-3 rounded-full bg-[#F59E0B]/90 shadow-xs" />
-            <span className="w-3 h-3 rounded-full bg-[#10B981]/90 shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-rose-500/90 shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-amber-500/90 shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-emerald-500/90 shadow-xs" />
           </div>
 
           {/* File tab: app.config.json with a chevron */}
@@ -124,22 +124,22 @@ export function DemoCodeCard() {
         </Button>
       </div>
 
-      {/* Code Editor Body: Compact 9-line version, line-height 25px */}
-      <div className="my-2.5 font-mono text-[14px] leading-[25px] select-text flex gap-3.5 flex-1 overflow-x-auto items-start pt-0.5 relative z-10">
+      {/* Code Editor Body: Compact 9-line version, vertically balanced */}
+      <div className="my-auto font-mono text-[14px] leading-[28px] select-text flex gap-3.5 flex-1 overflow-x-auto items-center relative z-10">
         {/* Line numbers at 35% opacity */}
         <div
           className="flex flex-col text-right text-slate-900/35 dark:text-slate-100/35 select-none font-mono pr-3 border-r border-slate-300/40 dark:border-white/10 shrink-0 font-normal"
           aria-hidden="true"
         >
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-            <span key={num} className="leading-[25px]">
+            <span key={num} className="leading-[28px]">
               {num}
             </span>
           ))}
         </div>
 
         {/* Code lines */}
-        <div className="font-mono leading-[25px] whitespace-pre flex-1">
+        <div className="font-mono leading-[28px] whitespace-pre flex-1">
           {/* Line 1 */}
           <div className={bracketStyle}>{"{"}</div>
 

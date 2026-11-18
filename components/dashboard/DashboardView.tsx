@@ -183,7 +183,7 @@ export function DashboardView({ initialApps }: Props) {
       {/* Delete Confirmation Modal */}
       {appToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-card dark:bg-[#14141A] border border-border dark:border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in-95 duration-150">
             <h2 className="text-[17px] font-semibold text-foreground mb-1.5">
               Delete application?
             </h2>
