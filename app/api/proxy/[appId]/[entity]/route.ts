@@ -6,6 +6,29 @@ type RouteParams = {
   params: Promise<{ appId: string; entity: string }>;
 };
 
+/**
+ * Normalizes request payload keys to lowercase alphanumeric/underscore,
+ * matching PostgreSQL column normalization in execute_app_ddl and actions/schema.ts.
+ */
+function normalizePayload(payload: unknown): Record<string, unknown> | Record<string, unknown>[] {
+  if (Array.isArray(payload)) {
+    return payload.map((item) =>
+      typeof item === "object" && item !== null
+        ? (normalizePayload(item) as Record<string, unknown>)
+        : {}
+    );
+  }
+  if (typeof payload === "object" && payload !== null) {
+    const normalized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(payload as Record<string, unknown>)) {
+      const cleanKey = key.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase();
+      normalized[cleanKey || key.toLowerCase()] = value;
+    }
+    return normalized;
+  }
+  return {};
+}
+
 export async function GET(request: Request, { params }: RouteParams) {
   const { appId, entity } = await params;
   
@@ -17,7 +40,8 @@ export async function GET(request: Request, { params }: RouteParams) {
 
   const url = new URL(request.url);
   const limit = Math.min(Math.max(1, parseInt(url.searchParams.get("limit") || "100", 10)), 1000);
-  const orderBy = url.searchParams.get("order") || "created_at";
+  const rawOrderBy = url.searchParams.get("order") || "created_at";
+  const orderBy = rawOrderBy.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase() || "created_at";
   const ascending = url.searchParams.get("ascending") === "true";
 
   const { data, error } = await supabase
@@ -52,15 +76,16 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (authResult.error) return authResult.error;
 
   const { tableName } = authResult;
-  let body: Record<string, unknown>;
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  const normalizedBody = normalizePayload(body);
   const supabase = await createInsforgeServer();
-  const { data, error } = await supabase.from(tableName).insert(body).select().single();
+  const { data, error } = await supabase.from(tableName).insert(normalizedBody).select().single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
@@ -76,23 +101,28 @@ export async function PUT(request: Request, { params }: RouteParams) {
   if (authResult.error) return authResult.error;
 
   const { tableName } = authResult;
-  let body: Record<string, unknown>;
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  const normalized = normalizePayload(body);
+  const normalizedBody = (Array.isArray(normalized) ? normalized[0] : normalized) || {};
   const url = new URL(request.url);
-  const id = url.searchParams.get("id") || (body.id as string | undefined);
+  const id = url.searchParams.get("id") || (normalizedBody.id as string | undefined);
   if (!id) {
     return NextResponse.json({ error: "Missing record id to update" }, { status: 400 });
   }
 
+  // Remove primary key from update payload to prevent reassigning primary key column
+  const { id: _unusedId, ...updateFields } = normalizedBody;
+
   const supabase = await createInsforgeServer();
   const { data, error } = await supabase
     .from(tableName)
-    .update(body)
+    .update(updateFields)
     .eq("id", id)
     .select()
     .single();
