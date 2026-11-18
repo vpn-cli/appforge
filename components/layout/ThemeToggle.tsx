@@ -1,30 +1,29 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconButton } from "@/components/ui/icon-button";
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
-    // Initialize state from DOM (which was set by our layout script)
-    const isDarkMode = document.documentElement.classList.contains("dark");
-    setIsDark(isDarkMode);
   }, []);
 
+  const isDark = resolvedTheme === "dark";
+
   const applyTheme = (nextDark: boolean) => {
-    setIsDark(nextDark);
+    const nextTheme = nextDark ? "dark" : "light";
+    setTheme(nextTheme);
     if (nextDark) {
       document.documentElement.classList.add("dark");
-      window.localStorage.setItem("theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
-      window.localStorage.setItem("theme", "light");
     }
   };
 
