@@ -29,7 +29,9 @@ export async function createInsforgeServer() {
     supabaseUrl = process.env.NEXT_PUBLIC_INSFORGE_URL;
 
     if (!serviceRoleKey) {
-      throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for server database operations. Missing or empty service role key.");
+      throw new Error(
+        "FATAL: SUPABASE_SERVICE_ROLE_KEY is required for server database operations. Fallback to anon key is permanently disabled."
+      );
     }
     if (!supabaseUrl) {
       throw new Error("NEXT_PUBLIC_INSFORGE_URL is missing.");
