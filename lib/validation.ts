@@ -113,7 +113,7 @@ export const ComponentSchemas: Record<string, z.ZodTypeAny> = {
 };
 
 export const ComponentNodeSchema: z.ZodType<any> = z.lazy(() =>
-  z.discriminatedUnion("type", [
+  z.union([
     HeaderSchema,
     StatisticSchema,
     DataTableSchema,

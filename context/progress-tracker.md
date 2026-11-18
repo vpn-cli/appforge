@@ -24,6 +24,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [x] 05 Dashboard Logic
 - [x] 05b Dashboard UI Revamp (Two Directions exploration: Linear Studio vs Vercel Workspace, 16:10 live registry app thumbnails, AppShell, prompt-first generation, right-column activity rail)
 - [x] 19 Copilot Multi-Provider Streaming & Resilience Hardening (Groq primary with Gemini fallback, strict pre-first-chunk failover semantics preventing model concatenation, per-component Zod schemas with safe fallback node for invalid ASTs, prompt cache key normalization, 100-prompt generation evaluation harness with resumable retry-after backoffs, and EVALS.md report)
+- [x] 19b Benchmark Audit & RLS Verification Protocol (Recomputed Groq 120b metrics excluding 429 rate limits: 81.4% layout pass [48/59] and 92.8% node validity [141/152]; marked 20b validity as historical type-only check due to 150-char rawOutputPreview; investigated form-02 and form-03 refusals; removed duplicate failover tests bringing unit suite to 24 tests; guarded live demo database against automated integration tests and authored tests/rls-postgres.test.ts for separate test project with User B Clerk token verification)
 
 ### Phase 3 — App Builder
 - [x] 06 Builder Layout

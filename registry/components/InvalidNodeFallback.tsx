@@ -3,7 +3,7 @@ import { AlertTriangle } from "lucide-react";
 
 export interface InvalidNodeFallbackProps {
   type: string;
-  issues?: Array<{ path?: (string | number)[]; message: string }>;
+  issues?: Array<{ path?: string | (string | number)[]; message: string }>;
   rawNode?: unknown;
 }
 
@@ -19,17 +19,22 @@ export function InvalidNodeFallback({ type, issues = [], rawNode }: InvalidNodeF
       </p>
       {issues.length > 0 && (
         <ul className="space-y-1 pl-4 list-disc text-muted-foreground text-[11px]">
-          {issues.map((iss, idx) => (
-            <li key={idx}>
-              <span className="font-semibold text-foreground/80">
-                {iss.path && iss.path.length > 0 ? iss.path.join(".") : "node"}:
-              </span>{" "}
-              {iss.message}
-            </li>
-          ))}
+          {issues.map((iss, idx) => {
+            const pathStr = iss.path
+              ? Array.isArray(iss.path)
+                ? iss.path.join(".")
+                : String(iss.path)
+              : "node";
+            return (
+              <li key={idx}>
+                <span className="font-semibold text-foreground/80">{pathStr}:</span>{" "}
+                {iss.message}
+              </li>
+            );
+          })}
         </ul>
       )}
-      {process.env.NODE_ENV !== "production" && rawNode && (
+      {process.env.NODE_ENV !== "production" && Boolean(rawNode) && (
         <details className="mt-2 pt-2 border-t border-border/40 text-[11px] text-muted-foreground cursor-pointer">
           <summary className="font-sans text-[11px] text-muted-foreground hover:text-foreground">
             Inspect raw payload

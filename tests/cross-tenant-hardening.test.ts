@@ -18,8 +18,17 @@ import {
 import { syncAppSchema } from "@/actions/schema";
 import { GET, POST, PUT, DELETE } from "@/app/api/proxy/[appId]/[entity]/route";
 import { EventPublisher } from "@/lib/event-queue";
+import fs from "fs";
+import path from "path";
 
-describe("PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)", () => {
+// SAFETY GUARD: Prevent running mutative integration tests against the live demo database.
+// Requires .env.test (separate test project) or explicit ALLOW_LIVE_DB_TESTS=true flag.
+const isTestDbConfigured = fs.existsSync(path.resolve(process.cwd(), ".env.test"));
+const allowLiveDb = process.env.ALLOW_LIVE_DB_TESTS === "true";
+
+describe.skipIf(!isTestDbConfigured && !allowLiveDb)(
+  "PHASE 1 — Security Hardening & Cross-Tenant Isolation (Real Queries)",
+  () => {
   const userA = "tenant_user_a_" + Date.now();
   const userB = "tenant_user_b_" + Date.now();
   let testAppId: string;

@@ -238,6 +238,15 @@ Statistic Typography: font-sans tabular-nums font-bold text-foreground clamp(1.1
 Trend Arrow & Color: Arrow follows sign (+ up, - down). Color defaults to neutral (text-muted-foreground) unless explicit sentiment ("positive" -> text-success-text | "negative" -> text-error-text) is passed.
 ```
 
+**Safe Invalid Node Fallback (`registry/components/InvalidNodeFallback.tsx`)**
+```text
+Container: w-full my-2 p-3.5 rounded-xl border border-warning/30 bg-warning/5 dark:bg-warning/10 text-foreground text-xs font-mono shadow-2xs
+Header: flex items-center gap-2 text-warning font-semibold text-[13px] mb-1 (AlertTriangle icon + <type />)
+Description: text-[12px] text-muted-foreground font-sans mb-2
+Issues List: list-disc pl-4 space-y-1 text-muted-foreground text-[11px] with bold path
+Inspect Raw: collapsible details summary 'Inspect raw payload' with select-all code pre (dev mode only)
+```
+
 ### Builder Workspace & Corner-Anchored Copilot Pill
 ```text
 Builder Top Bar: h-14 border-b border-border/80 dark:border-white/10 glass-1 shrink-0 flex items-center justify-between px-4 sm:px-6 z-20

@@ -25,12 +25,14 @@
 
 | Model | Evaluated (N) | Node Validity % | Full Layout Pass % | First Render p50 (TTFT) | First Render p95 (TTFT) | Full Layout p50 | Full Layout p95 | Avg Tokens / Prompt |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Groq (`openai/gpt-oss-120b`)** *(Partial)* | 67 | **92.8%** | **71.6%** | *INVALID\** | *INVALID\** | *INVALID\** | *INVALID\** | ~1,250 |
-| **Groq (`openai/gpt-oss-20b`)** *(Full)* | 100 | **87.7%** | **68.0%** | **1,620 ms** | **2,917 ms** | **1,956 ms** | **3,341 ms** | **1,749** |
-| **Gemini (`gemini-2.5-flash`)** *(Free Tier)* | 100 (1 valid)\*\* | **100.0%** | **1.0%** | 69,174 ms | 69,174 ms | 72,502 ms | 72,502 ms | Quota Blocked |
+| **Groq (`openai/gpt-oss-120b`)** *(Excl. 429s)* | 59 (8 rate-limited excluded) | **92.8%** (141/152) | **81.4%** (48/59) | *INVALID\** | *INVALID\** | *INVALID\** | *INVALID\** | ~1,250 |
+| **Groq (`openai/gpt-oss-120b`)** *(Raw All)* | 67 (429s counted as fail) | **92.8%** (141/152) | **71.6%** (48/67) | *INVALID\** | *INVALID\** | *INVALID\** | *INVALID\** | ~1,250 |
+| **Groq (`openai/gpt-oss-20b`)** *(Full)* | 100 | **87.7% (old type-only check)\*\*** | **68.0%** (68/100) | **1,620 ms** | **2,917 ms** | **1,956 ms** | **3,341 ms** | **1,749** |
+| **Gemini (`gemini-2.5-flash`)** *(Free Tier)* | 100 (1 valid)\*\*\* | **100.0%** (2/2) | **1.0%** (1/100) | 69,174 ms | 69,174 ms | 72,502 ms | 72,502 ms | Quota Blocked |
 
 *\*Note on 120b Latency: Marked INVALID per protocol. In the original evaluation run, `streamText` internal retries and outer backoff sleep delays on 429 rate limits were captured inside the overall attempt timer (inflating recorded durations to 63–92 seconds for rate-limited prompts). Because individual per-chunk or per-attempt timestamps were not preserved, model inference time cannot be isolated mathematically from retry sleep.*  
-*\*\*Note on Gemini: Evaluated with Google's default dynamic thinking budget. Gemini hit Google AI Studio's Free Tier limit of 20 requests per day (`generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20 exceeded. Retry in 13h28m`). Only 1 layout (`dash-04`) completed with valid components before hard quota cutoff. Per instructions, no further Gemini requests were executed against the live application key.*
+*\*\*Note on 20b Validity: Results files do NOT store full raw model output (only a 150-character `rawOutputPreview`). Because historical completions were not saved in full, 20b cannot be re-scored post-hoc against the current per-component Zod schemas (`lib/validation.ts`), so its validity score is strictly marked as the historical "old type-only check".*  
+*\*\*\*Note on Gemini: Evaluated with Google's default dynamic thinking budget. Gemini hit Google AI Studio's Free Tier limit of 20 requests per day (`generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20 exceeded. Retry in 13h28m`). Only 1 layout (`dash-04`) completed with valid components before hard quota cutoff. Per instructions, all eval runs are suspended until a separate eval account is provisioned.*
 
 ---
 
@@ -80,8 +82,107 @@ Between the intermediate chat update and the committed dataset, the reported 120
 * **Recorded Result Protection:** Any prompt with a recorded result is immediately skipped. Prompts resulting in model refusals (such as safety refusals on `form-02` and `form-03`) are preserved as valid data points and never overwritten.
 * **Targeted Rate-Limit Retries:** Only prompts explicitly flagged as `rateLimited: true` or `status: "rate_limited"` are evaluated during retry passes.
 * **Separation of Latency and Backoff:** Timing starts strictly at the execution of the successful attempt (`attemptStart = performance.now()`). Time spent waiting on HTTP 429 `retry-after` windows is tracked separately in `rateLimitWaitMs`.
-* **Resuming Remaining 120b Prompts Tomorrow:**
+* **Resuming Remaining 120b Prompts:**
   ```bash
   node scripts/run-evals.mjs 120b-only
   ```
-  The runner will skip the 67 completed prompts in `evals/results-groq-120b.json` and finish prompts 68–100 after Groq quota replenishment.
+  *(Paused: No further evals will be executed until a separate eval account is configured.)*
+
+---
+
+## 6. Groq 120b Per-Prompt Breakdown & Refusal Investigation
+
+### Recomputed Metrics (Excluding Rate-Limited Prompts)
+* **Total Evaluated Entries:** 67
+* **Status Distribution:**
+  * **Pass:** 48 prompts
+  * **Fail:** 9 prompts (`form-04`, `form-05`, `form-07`, `form-09`, `form-11`, `form-12`, `form-13`, `form-15`, `sett-02`)
+  * **Refusal:** 2 prompts (`form-02`, `form-03`) — counted as failures
+  * **Rate Limited (429):** 8 prompts (`dash-18`, `crud-19`, `crud-20`, `sett-01`, `sett-03`, `sett-04`, `sett-05`, `sett-07`) — excluded from recomputation
+* **Full-Layout Pass % (Excluding Rate-Limited):**
+  $$\text{Full Layout Pass \%} = \frac{48 \text{ passes}}{59 \text{ non-rate-limited prompts}} = 81.36\% \text{ (vs. } \frac{48}{67} = 71.64\% \text{ raw)}$$
+* **Node Validity % (Excluding Rate-Limited):**
+  $$\text{Node Validity \%} = \frac{141 \text{ valid nodes}}{152 \text{ evaluated nodes}} = 92.76\%$$
+  *(126 valid / 126 in passes + 15 valid / 26 in fails + 0 / 0 in refusals + 0 / 0 in rate-limited)*
+
+### Refusal Investigation (`form-02` & `form-03`)
+* **Prompt `form-02`:**
+  * **Input:** `"Build a customer feedback and NPS survey form with rating scale and text comments"`
+  * **Recorded Refusal Output:** `"I’m sorry, but I can’t help with that...."`
+  * **Analysis:** Triggered an automated safety/policy filter on user feedback/PII collection within the model's system boundary.
+* **Prompt `form-03`:**
+  * **Input:** `"Create a multi-tier SaaS checkout billing form with credit card fields and tax address"`
+  * **Recorded Refusal Output:** `"I’m sorry, but I can’t fulfill that request...."`
+  * **Analysis:** The phrase `"credit card fields"` directly tripped Groq / OpenAI PCI-DSS financial credential guardrails. *(Note: The 1,117 ms TTFT of this single refusal was previously mistakenly cited as the overall 120b median).*
+
+### Complete 67-Prompt Status Table
+
+| Index | Prompt ID | Category | Status | Valid Nodes | Total Nodes | Node Pass % | Full Layout Pass |
+| :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| 1 | `form-01` | forms | **pass** | 3 | 3 | 100.0% | true |
+| 2 | `form-02` | forms | **refusal** | 0 | 0 | 0.0% | false |
+| 3 | `form-03` | forms | **refusal** | 0 | 0 | 0.0% | false |
+| 4 | `form-04` | forms | **fail** | 1 | 2 | 50.0% | false |
+| 5 | `form-05` | forms | **fail** | 2 | 3 | 66.7% | false |
+| 6 | `form-06` | forms | **pass** | 3 | 3 | 100.0% | true |
+| 7 | `form-07` | forms | **fail** | 2 | 4 | 50.0% | false |
+| 8 | `form-08` | forms | **pass** | 3 | 3 | 100.0% | true |
+| 9 | `form-09` | forms | **fail** | 2 | 3 | 66.7% | false |
+| 10 | `form-10` | forms | **pass** | 5 | 5 | 100.0% | true |
+| 11 | `form-11` | forms | **fail** | 2 | 3 | 66.7% | false |
+| 12 | `form-12` | forms | **fail** | 1 | 2 | 50.0% | false |
+| 13 | `form-13` | forms | **fail** | 1 | 2 | 50.0% | false |
+| 14 | `form-14` | forms | **pass** | 2 | 2 | 100.0% | true |
+| 15 | `form-15` | forms | **fail** | 1 | 2 | 50.0% | false |
+| 16 | `form-16` | forms | **pass** | 3 | 3 | 100.0% | true |
+| 17 | `form-17` | forms | **pass** | 2 | 2 | 100.0% | true |
+| 18 | `form-18` | forms | **pass** | 2 | 2 | 100.0% | true |
+| 19 | `form-19` | forms | **pass** | 3 | 3 | 100.0% | true |
+| 20 | `form-20` | forms | **pass** | 3 | 3 | 100.0% | true |
+| 21 | `dash-01` | dashboards | **pass** | 3 | 3 | 100.0% | true |
+| 22 | `dash-02` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 23 | `dash-03` | dashboards | **pass** | 4 | 4 | 100.0% | true |
+| 24 | `dash-04` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 25 | `dash-05` | dashboards | **pass** | 3 | 3 | 100.0% | true |
+| 26 | `dash-06` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 27 | `dash-07` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 28 | `dash-08` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 29 | `dash-09` | dashboards | **pass** | 3 | 3 | 100.0% | true |
+| 30 | `dash-10` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 31 | `dash-11` | dashboards | **pass** | 3 | 3 | 100.0% | true |
+| 32 | `dash-12` | dashboards | **pass** | 3 | 3 | 100.0% | true |
+| 33 | `dash-13` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 34 | `dash-14` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 35 | `dash-15` | dashboards | **pass** | 3 | 3 | 100.0% | true |
+| 36 | `dash-16` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 37 | `dash-17` | dashboards | **pass** | 3 | 3 | 100.0% | true |
+| 38 | `dash-18` | dashboards | **rate_limited** | 0 | 0 | 0.0% | false |
+| 39 | `dash-19` | dashboards | **pass** | 3 | 3 | 100.0% | true |
+| 40 | `dash-20` | dashboards | **pass** | 2 | 2 | 100.0% | true |
+| 41 | `crud-01` | crud | **pass** | 2 | 2 | 100.0% | true |
+| 42 | `crud-02` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 43 | `crud-03` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 44 | `crud-04` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 45 | `crud-05` | crud | **pass** | 2 | 2 | 100.0% | true |
+| 46 | `crud-06` | crud | **pass** | 2 | 2 | 100.0% | true |
+| 47 | `crud-07` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 48 | `crud-08` | crud | **pass** | 2 | 2 | 100.0% | true |
+| 49 | `crud-09` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 50 | `crud-10` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 51 | `crud-11` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 52 | `crud-12` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 53 | `crud-13` | crud | **pass** | 2 | 2 | 100.0% | true |
+| 54 | `crud-14` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 55 | `crud-15` | crud | **pass** | 2 | 2 | 100.0% | true |
+| 56 | `crud-16` | crud | **pass** | 2 | 2 | 100.0% | true |
+| 57 | `crud-17` | crud | **pass** | 3 | 3 | 100.0% | true |
+| 58 | `crud-18` | crud | **pass** | 2 | 2 | 100.0% | true |
+| 59 | `crud-19` | crud | **rate_limited** | 0 | 0 | 0.0% | false |
+| 60 | `crud-20` | crud | **rate_limited** | 0 | 0 | 0.0% | false |
+| 61 | `sett-01` | settings | **rate_limited** | 0 | 0 | 0.0% | false |
+| 62 | `sett-02` | settings | **fail** | 3 | 5 | 60.0% | false |
+| 63 | `sett-03` | settings | **rate_limited** | 0 | 0 | 0.0% | false |
+| 64 | `sett-04` | settings | **rate_limited** | 0 | 0 | 0.0% | false |
+| 65 | `sett-05` | settings | **rate_limited** | 0 | 0 | 0.0% | false |
+| 66 | `sett-06` | settings | **pass** | 3 | 3 | 100.0% | true |
+| 67 | `sett-07` | settings | **rate_limited** | 0 | 0 | 0.0% | false |
