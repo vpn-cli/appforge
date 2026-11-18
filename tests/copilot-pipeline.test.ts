@@ -280,4 +280,164 @@ describe("PHASE 2 — Copilot Pipeline & Failover Hardening", () => {
       expect(mockStreamTextFn).toHaveBeenCalledTimes(1);
     });
   });
+
+  // =========================================================================
+  // 4. Automated Failover Tests with Stubbed Providers
+  // =========================================================================
+  describe("Automated Failover Tests with Stubbed Providers", () => {
+    it("(a) 429 before the first chunk -> Gemini serves the full response", async () => {
+      // Stub Provider 1 (Groq) to throw a 429 rate limit error before any chunks
+      mockStreamTextFn.mockImplementationOnce(() => {
+        return {
+          textStream: {
+            [Symbol.asyncIterator]() {
+              return {
+                async next() {
+                  const err: any = new Error("Rate limit reached for model `openai/gpt-oss-120b`: 429 Too Many Requests");
+                  err.statusCode = 429;
+                  throw err;
+                },
+              };
+            },
+          },
+        };
+      });
+
+      // Stub Provider 2 (Gemini) to stream the full response successfully
+      mockStreamTextFn.mockImplementationOnce(() => {
+        const fullGeminiResponse = [
+          '[{"type":"Header","title":"Gemini Recovered Dashboard"},',
+          '{"type":"Statistic","label":"Uptime","value":"99.9%"}]',
+        ];
+        let idx = 0;
+        return {
+          textStream: {
+            [Symbol.asyncIterator]() {
+              return {
+                async next() {
+                  if (idx < fullGeminiResponse.length) {
+                    return { done: false, value: fullGeminiResponse[idx++] };
+                  }
+                  return { done: true, value: undefined };
+                },
+              };
+            },
+          },
+        };
+      });
+
+      const failoverSpy = vi.fn();
+      const providers: CopilotProvider[] = [
+        { name: "Groq", model: {} as any },
+        { name: "Gemini", model: {} as any },
+      ];
+
+      const stream = createCopilotStream(
+        {
+          prompt: "Generate an executive dashboard",
+          providers,
+          systemPrompt: "sys",
+        },
+        { onFailover: failoverSpy }
+      );
+
+      const reader = stream.getReader();
+      const decoder = new TextDecoder();
+      let streamOutput = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        streamOutput += decoder.decode(value);
+      }
+
+      // Verifies:
+      // 1. Failover was triggered from Groq to Gemini due to pre-first-chunk 429
+      expect(failoverSpy).toHaveBeenCalledTimes(1);
+      expect(failoverSpy).toHaveBeenCalledWith("Groq", "Gemini", expect.objectContaining({ statusCode: 429 }));
+      // 2. Gemini served the full response cleanly
+      expect(streamOutput).toBe(
+        '[{"type":"Header","title":"Gemini Recovered Dashboard"},{"type":"Statistic","label":"Uptime","value":"99.9%"}]'
+      );
+      // 3. Both provider streams were engaged in order
+      expect(mockStreamTextFn).toHaveBeenCalledTimes(2);
+    });
+
+    it("(b) error after the first chunk -> no failover, the stream ends with an error event, no mixed output", async () => {
+      // Stub Provider 1 (Groq): emits chunk 1 successfully, then throws mid-stream error on chunk 2
+      mockStreamTextFn.mockImplementationOnce(() => {
+        let chunkIndex = 0;
+        return {
+          textStream: {
+            [Symbol.asyncIterator]() {
+              return {
+                async next() {
+                  chunkIndex++;
+                  if (chunkIndex === 1) {
+                    return { done: false, value: '[{"type":"Header","title":"Primary Header"}' };
+                  }
+                  throw new Error("Mid-stream socket disconnection");
+                },
+              };
+            },
+          },
+        };
+      });
+
+      // Stub Provider 2 (Gemini): should NEVER be called or leaked
+      const mockGeminiStream = vi.fn();
+      mockStreamTextFn.mockImplementationOnce(mockGeminiStream);
+
+      const failoverSpy = vi.fn();
+      const midStreamErrorSpy = vi.fn();
+      const providers: CopilotProvider[] = [
+        { name: "Groq", model: {} as any },
+        { name: "Gemini", model: {} as any },
+      ];
+
+      const stream = createCopilotStream(
+        {
+          prompt: "Generate settings view",
+          providers,
+          systemPrompt: "sys",
+        },
+        {
+          onFailover: failoverSpy,
+          onMidStreamError: midStreamErrorSpy,
+        }
+      );
+
+      const reader = stream.getReader();
+      const decoder = new TextDecoder();
+      let clientReceivedChunks = "";
+      let errorThrownToClient: Error | null = null;
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          clientReceivedChunks += decoder.decode(value);
+        }
+      } catch (err: any) {
+        errorThrownToClient = err;
+      }
+
+      // Verifies:
+      // 1. Client only received chunk 1 before the mid-stream crash
+      expect(clientReceivedChunks).toBe('[{"type":"Header","title":"Primary Header"}');
+      // 2. No mixed output from Gemini (Gemini was NEVER invoked)
+      expect(mockGeminiStream).not.toHaveBeenCalled();
+      expect(mockStreamTextFn).toHaveBeenCalledTimes(1);
+      // 3. Failover hook was NOT called (locked out once chunk 1 is enqueued)
+      expect(failoverSpy).not.toHaveBeenCalled();
+      // 4. Mid-stream error hook was triggered
+      expect(midStreamErrorSpy).toHaveBeenCalledWith(
+        "Groq",
+        expect.objectContaining({ message: "Mid-stream socket disconnection" })
+      );
+      // 5. Stream terminated with an error event to the client
+      expect(errorThrownToClient).toBeDefined();
+      expect(errorThrownToClient?.message).toContain("Stream failed mid-way on Groq");
+    });
+  });
 });

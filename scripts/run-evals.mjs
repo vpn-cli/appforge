@@ -111,8 +111,12 @@ function extractRetryAfterMs(err) {
   return 8000;
 }
 
+/**
+ * Evaluates a single prompt.
+ * Latency timing begins strictly at the start of this attempt.
+ */
 async function evalSinglePrompt(item, providerName, model) {
-  const start = performance.now();
+  const attemptStart = performance.now();
   let firstChunkTime = null;
   let rawText = "";
   let streamError = null;
@@ -141,8 +145,9 @@ async function evalSinglePrompt(item, providerName, model) {
     }
 
     const end = performance.now();
-    const ttftMs = firstChunkTime ? Math.round(firstChunkTime - start) : Math.round(end - start);
-    const durationMs = Math.round(end - start);
+    // Timing starts strictly at the attempt that succeeded:
+    const ttftMs = firstChunkTime ? Math.round(firstChunkTime - attemptStart) : Math.round(end - attemptStart);
+    const durationMs = Math.round(end - attemptStart);
 
     if (!rawText.trim()) {
       throw new Error("Empty output stream received from provider.");
@@ -156,6 +161,8 @@ async function evalSinglePrompt(item, providerName, model) {
     const inputTokens = usage?.inputTokens || 0;
     const outputTokens = usage?.outputTokens || 0;
     const totalTokens = usage?.totalTokens || (inputTokens + outputTokens);
+    const thinkingTokens = usage?.outputTokenDetails?.reasoningTokens || 0;
+    const textTokens = usage?.outputTokenDetails?.textTokens || Math.max(0, outputTokens - thinkingTokens);
 
     const astArray = extractJsonArray(rawText);
     const isValidArray = Array.isArray(astArray) && astArray.length > 0;
@@ -190,46 +197,23 @@ async function evalSinglePrompt(item, providerName, model) {
       inputTokens,
       outputTokens,
       totalTokens,
+      thinkingTokens,
+      textTokens,
       totalNodes,
       validNodes,
       nodePassRate: Math.round(nodePassRate * 10) / 10,
       hasHeader,
       fullLayoutPass,
       success: true,
+      rateLimited: false,
+      status: "completed",
       rawOutputPreview: rawText.slice(0, 150) + "...",
     };
   } catch (err) {
     const end = performance.now();
     const effectiveErr = streamError || err;
     const retryAfterMs = extractRetryAfterMs(effectiveErr);
-    return {
-      id: item.id,
-      category: item.category,
-      prompt: item.prompt,
-      provider: providerName,
-      ttftMs: null,
-      durationMs: Math.round(end - start),
-      inputTokens: 0,
-      outputTokens: 0,
-      totalTokens: 0,
-      totalNodes: 0,
-      validNodes: 0,
-      nodePassRate: 0,
-      hasHeader: false,
-      fullLayoutPass: false,
-      success: false,
-      error: effectiveErr.message || String(effectiveErr),
-      retryAfterMs,
-    };
-  }
-}
-
-async function evalWithRetry(item, providerName, model, maxRetries = 15) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const res = await evalSinglePrompt(item, providerName, model);
-    if (res.success && res.totalNodes > 0) return res;
-
-    const errMsg = (res.error || "").toLowerCase();
+    const errMsg = (effectiveErr.message || String(effectiveErr)).toLowerCase();
     const isRateLimit =
       errMsg.includes("rate_limit") ||
       errMsg.includes("429") ||
@@ -237,20 +221,64 @@ async function evalWithRetry(item, providerName, model, maxRetries = 15) {
       errMsg.includes("tpd") ||
       errMsg.includes("tokens per") ||
       errMsg.includes("503") ||
-      errMsg.includes("overloaded");
+      errMsg.includes("overloaded") ||
+      errMsg.includes("quota");
 
-    if (isRateLimit && attempt < maxRetries) {
+    return {
+      id: item.id,
+      category: item.category,
+      prompt: item.prompt,
+      provider: providerName,
+      ttftMs: null,
+      durationMs: Math.round(end - attemptStart),
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0,
+      thinkingTokens: 0,
+      textTokens: 0,
+      totalNodes: 0,
+      validNodes: 0,
+      nodePassRate: 0,
+      hasHeader: false,
+      fullLayoutPass: false,
+      success: false,
+      rateLimited: isRateLimit,
+      status: isRateLimit ? "rate_limited" : "failed",
+      error: effectiveErr.message || String(effectiveErr),
+      retryAfterMs,
+    };
+  }
+}
+
+/**
+ * Resumable retry harness:
+ * Separates wait time spent on 429s into `rateLimitWaitMs`.
+ * Timing of successful response begins at the attempt that succeeds.
+ */
+async function evalWithRetry(item, providerName, model, maxRetries = 15) {
+  let rateLimitWaitMs = 0;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const res = await evalSinglePrompt(item, providerName, model);
+    if (res.success && res.totalNodes > 0) {
+      res.rateLimitWaitMs = rateLimitWaitMs;
+      return res;
+    }
+
+    if (res.rateLimited && attempt < maxRetries) {
       const waitMs = res.retryAfterMs || 8000;
+      rateLimitWaitMs += waitMs;
       process.stdout.write(` [429: wait ${Math.ceil(waitMs / 1000)}s per header (retry ${attempt}/${maxRetries})] `);
       await new Promise((r) => setTimeout(r, waitMs));
       continue;
     }
 
-    if (attempt < 3 && !isRateLimit) {
+    if (attempt < 3 && !res.rateLimited) {
       await new Promise((r) => setTimeout(r, 1500 * attempt));
       continue;
     }
 
+    res.rateLimitWaitMs = rateLimitWaitMs;
     return res;
   }
 }
@@ -266,7 +294,7 @@ function percentile(arr, p) {
   return Math.round(sorted[lower] * (1 - weight) + sorted[upper] * weight);
 }
 
-function summarize(results, modelLabel) {
+function summarize(results, modelLabel, isLatencyInvalid = false) {
   const successful = results.filter((r) => r.success && r.totalNodes > 0);
   const count = results.length;
   const succCount = successful.length;
@@ -274,6 +302,7 @@ function summarize(results, modelLabel) {
   const ttfts = successful.map((r) => r.ttftMs).filter((v) => typeof v === "number" && v > 0);
   const durations = successful.map((r) => r.durationMs).filter((v) => typeof v === "number" && v > 0);
   const totalTokensArr = successful.map((r) => r.totalTokens).filter((v) => typeof v === "number" && v > 0);
+  const thinkingTokensArr = successful.map((r) => r.thinkingTokens).filter((v) => typeof v === "number" && v > 0);
 
   const totalNodes = successful.reduce((acc, r) => acc + r.totalNodes, 0);
   const totalValidNodes = successful.reduce((acc, r) => acc + r.validNodes, 0);
@@ -288,17 +317,24 @@ function summarize(results, modelLabel) {
       ? Math.round(totalTokensArr.reduce((a, b) => a + b, 0) / totalTokensArr.length)
       : 0;
 
+  const avgThinkingTokens =
+    thinkingTokensArr.length > 0
+      ? Math.round(thinkingTokensArr.reduce((a, b) => a + b, 0) / thinkingTokensArr.length)
+      : 0;
+
   return {
     model: modelLabel,
     sampleSize: count,
     successCount: succCount,
     nodeValidationPassRate: nodePassRate,
     fullLayoutPassRate: fullLayoutPassRate,
-    firstRenderP50Ms: percentile(ttfts, 0.5),
-    firstRenderP95Ms: percentile(ttfts, 0.95),
-    fullLayoutP50Ms: percentile(durations, 0.5),
-    fullLayoutP95Ms: percentile(durations, 0.95),
+    latencyValid: !isLatencyInvalid,
+    firstRenderP50Ms: isLatencyInvalid ? "INVALID" : percentile(ttfts, 0.5),
+    firstRenderP95Ms: isLatencyInvalid ? "INVALID" : percentile(ttfts, 0.95),
+    fullLayoutP50Ms: isLatencyInvalid ? "INVALID" : percentile(durations, 0.5),
+    fullLayoutP95Ms: isLatencyInvalid ? "INVALID" : percentile(durations, 0.95),
     avgTokensPerPrompt: avgTokens,
+    avgThinkingTokens: avgThinkingTokens,
     totalComponentsEvaluated: totalNodes,
     validComponentsEvaluated: totalValidNodes,
   };
@@ -321,8 +357,18 @@ async function runModelSuite(modelKey, providerName, modelInstance, outFileName)
 
   for (let i = 0; i < prompts.length; i++) {
     const item = prompts[i];
-    const existing = dataset.find((r) => r.id === item.id && r.success && r.totalNodes > 0);
-    if (existing) {
+    // Resumability rule: Skip ANY prompt with a recorded result. Retry ONLY prompts marked rate-limited.
+    const existing = dataset.find((r) => r.id === item.id);
+    const isRateLimited =
+      existing &&
+      (existing.rateLimited === true ||
+        existing.status === "rate_limited" ||
+        existing.error?.includes("429") ||
+        existing.error?.includes("Rate limit") ||
+        existing.error?.includes("quota") ||
+        (existing.totalNodes === 0 && existing.durationMs > 30000));
+
+    if (existing && !isRateLimited) {
       process.stdout.write(`\r[${modelKey}] Cached: ${i + 1}/${prompts.length} (${item.id})`);
       continue;
     }
@@ -346,7 +392,7 @@ async function runModelSuite(modelKey, providerName, modelInstance, outFileName)
 
 async function main() {
   const args = process.argv.slice(2);
-  const targetMode = args[0] || "fresh-20b-gemini";
+  const targetMode = args[0] || "summary-only";
 
   console.log("\n=======================================================");
   console.log("APPFORGE GENERATION EVALUATION HARNESS");
@@ -369,14 +415,9 @@ async function main() {
     // Resumable 120b runner (for tomorrow after quota reset)
     const model120b = groq("openai/gpt-oss-120b");
     results120b = await runModelSuite("Groq-120b", "Groq (openai/gpt-oss-120b)", model120b, "results-groq-120b.json");
-  } else {
-    // Run full 100 on gpt-oss-20b
+  } else if (targetMode === "run-20b") {
     const model20b = groq("openai/gpt-oss-20b");
     results20b = await runModelSuite("Groq-20b", "Groq (openai/gpt-oss-20b)", model20b, "results-groq-20b.json");
-
-    // Run full 100 on Gemini 2.5 Flash
-    const modelGemini = google("gemini-2.5-flash");
-    resultsGemini = await runModelSuite("Gemini-2.5-Flash", "Gemini (gemini-2.5-flash)", modelGemini, "results-gemini.json");
   }
 
   // Load existing datasets to build full comparative summary
@@ -390,9 +431,10 @@ async function main() {
     results120b = JSON.parse(fs.readFileSync(path.join(evalsDir, "results-groq-120b.json"), "utf-8"));
   }
 
-  const summary120b = results120b.length > 0 ? summarize(results120b, "Groq (openai/gpt-oss-120b) [Partial]") : null;
-  const summary20b = results20b.length > 0 ? summarize(results20b, "Groq (openai/gpt-oss-20b)") : null;
-  const summaryGemini = resultsGemini.length > 0 ? summarize(resultsGemini, "Gemini (gemini-2.5-flash)") : null;
+  // 120b latency is marked INVALID because stored records aggregated internal AI SDK retry sleeps on 429s
+  const summary120b = results120b.length > 0 ? summarize(results120b, "Groq (openai/gpt-oss-120b) [Partial]", true) : null;
+  const summary20b = results20b.length > 0 ? summarize(results20b, "Groq (openai/gpt-oss-20b)", false) : null;
+  const summaryGemini = resultsGemini.length > 0 ? summarize(resultsGemini, "Gemini (gemini-2.5-flash)", false) : null;
 
   const comparisonRows = [];
   if (summary120b) {
@@ -401,10 +443,10 @@ async function main() {
       "Sample N": summary120b.sampleSize,
       "Node Validity %": `${summary120b.nodeValidationPassRate}%`,
       "Full Layout %": `${summary120b.fullLayoutPassRate}%`,
-      "TTFT p50": `${summary120b.firstRenderP50Ms} ms`,
-      "TTFT p95": `${summary120b.firstRenderP95Ms} ms`,
-      "Duration p50": `${summary120b.fullLayoutP50Ms} ms`,
-      "Duration p95": `${summary120b.fullLayoutP95Ms} ms`,
+      "TTFT p50": summary120b.firstRenderP50Ms === "INVALID" ? "INVALID (Polluted by retry sleep)" : `${summary120b.firstRenderP50Ms} ms`,
+      "TTFT p95": summary120b.firstRenderP95Ms === "INVALID" ? "INVALID (Polluted by retry sleep)" : `${summary120b.firstRenderP95Ms} ms`,
+      "Duration p50": summary120b.fullLayoutP50Ms === "INVALID" ? "INVALID (Polluted by retry sleep)" : `${summary120b.fullLayoutP50Ms} ms`,
+      "Duration p95": summary120b.fullLayoutP95Ms === "INVALID" ? "INVALID (Polluted by retry sleep)" : `${summary120b.fullLayoutP95Ms} ms`,
       "Avg Tokens": summary120b.avgTokensPerPrompt,
     });
   }
@@ -431,7 +473,7 @@ async function main() {
       "TTFT p95": `${summaryGemini.firstRenderP95Ms} ms`,
       "Duration p50": `${summaryGemini.fullLayoutP50Ms} ms`,
       "Duration p95": `${summaryGemini.fullLayoutP95Ms} ms`,
-      "Avg Tokens": summaryGemini.avgTokensPerPrompt,
+      "Avg Tokens": `${summaryGemini.avgTokensPerPrompt} (thinking: ${summaryGemini.avgThinkingTokens})`,
     });
   }
 

@@ -567,7 +567,9 @@
     "hasHeader": false,
     "fullLayoutPass": false,
     "success": true,
-    "rawOutputPreview": "..."
+    "rawOutputPreview": "...",
+    "rateLimited": true,
+    "status": "rate_limited"
   },
   {
     "id": "dash-19",
@@ -882,7 +884,9 @@
     "hasHeader": false,
     "fullLayoutPass": false,
     "success": true,
-    "rawOutputPreview": "..."
+    "rawOutputPreview": "...",
+    "rateLimited": true,
+    "status": "rate_limited"
   },
   {
     "id": "crud-20",
@@ -897,7 +901,9 @@
     "hasHeader": false,
     "fullLayoutPass": false,
     "success": true,
-    "rawOutputPreview": "..."
+    "rawOutputPreview": "...",
+    "rateLimited": true,
+    "status": "rate_limited"
   },
   {
     "id": "sett-01",
@@ -912,7 +918,9 @@
     "hasHeader": false,
     "fullLayoutPass": false,
     "success": true,
-    "rawOutputPreview": "..."
+    "rawOutputPreview": "...",
+    "rateLimited": true,
+    "status": "rate_limited"
   },
   {
     "id": "sett-02",
@@ -942,7 +950,9 @@
     "hasHeader": false,
     "fullLayoutPass": false,
     "success": true,
-    "rawOutputPreview": "..."
+    "rawOutputPreview": "...",
+    "rateLimited": true,
+    "status": "rate_limited"
   },
   {
     "id": "sett-04",
@@ -957,7 +967,9 @@
     "hasHeader": false,
     "fullLayoutPass": false,
     "success": true,
-    "rawOutputPreview": "..."
+    "rawOutputPreview": "...",
+    "rateLimited": true,
+    "status": "rate_limited"
   },
   {
     "id": "sett-05",
@@ -972,7 +984,9 @@
     "hasHeader": false,
     "fullLayoutPass": false,
     "success": true,
-    "rawOutputPreview": "..."
+    "rawOutputPreview": "...",
+    "rateLimited": true,
+    "status": "rate_limited"
   },
   {
     "id": "sett-06",
@@ -1002,6 +1016,8 @@
     "hasHeader": false,
     "fullLayoutPass": false,
     "success": true,
-    "rawOutputPreview": "..."
+    "rawOutputPreview": "...",
+    "rateLimited": true,
+    "status": "rate_limited"
   }
 ]
