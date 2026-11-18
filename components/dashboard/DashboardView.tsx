@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { AppShell } from "@/components/layout/AppShell";
 import { PromptBox } from "@/components/dashboard/PromptBox";
 import { AppCard } from "@/components/dashboard/AppCard";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { RecentlyUpdated } from "@/components/dashboard/RecentActivity";
 import { EmptyStateTemplates } from "@/components/dashboard/EmptyStateTemplates";
 import { Button } from "@/components/ui/button";
 import { createApp, deleteApp, renameApp } from "@/actions/apps";
@@ -173,9 +173,9 @@ export function DashboardView({ initialApps }: Props) {
             )}
           </div>
 
-          {/* Activity Column (Desktop: right-hand column matching grid top & height, Mobile: below grid) */}
+          {/* Recently Updated Column (Desktop: right-hand column matching grid top & height, Mobile: below grid) */}
           <div className="lg:col-span-4 xl:col-span-3 w-full h-full flex flex-col">
-            <RecentActivity apps={initialApps} />
+            <RecentlyUpdated apps={initialApps} />
           </div>
         </div>
       </div>

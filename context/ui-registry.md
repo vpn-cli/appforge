@@ -214,13 +214,14 @@ Footer Row: flex items-center justify-between pt-3 border-t border-border/40 dar
   Edited By: 16px avatar circle (initial V) + relative time text
 ```
 
-**Recent Activity Timeline (`components/dashboard/RecentActivity.tsx`)**
+**Recently Updated Column (`components/dashboard/RecentActivity.tsx`)**
 ```text
 Container: rounded-2xl bg-card dark:bg-[#14141A] border border-border dark:border-white/10 p-5 shadow-xs h-full flex flex-col
 Grid Alignment: items-stretch matching the top and height of the main card grid
-Timeline Nodes: 20px avatar circles (initials V, A) along vertical 1px hairline border connector
-Activity Text: text-[13px] text-foreground leading-snug with action verbs in BOLD (<strong>Published</strong> / <strong>Saved draft for</strong>)
+State Nodes: 20px icon circles (Globe for Published, FileEdit for Draft) along vertical 1px hairline border connector
+Item Text: text-[13px] text-foreground leading-snug with status in BOLD (<strong>Published</strong> / <strong>Draft</strong>) and app name
 Relative Times: text-[12px] text-muted-foreground block mt-0.5
+Empty State: Authentic "No recently updated apps" state with clock icon and zero mock data
 ```
 
 ### Container-Aware Core Renderers (Tailwind v4 Container Queries)
