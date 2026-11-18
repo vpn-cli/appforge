@@ -1,6 +1,14 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef, useCallback, Suspense } from "react";
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useSyncExternalStore,
+  Suspense,
+} from "react";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
 import { CopilotFloatingPill } from "@/components/builder/CopilotFloatingPill";
 import { LivePreview } from "@/components/builder/LivePreview";
@@ -35,6 +43,63 @@ const DEFAULT_EDITOR_WIDTH = 460;
 const MIN_EDITOR_WIDTH = 340;
 const MIN_PREVIEW_WIDTH = 420;
 const RAIL_WIDTH = 40;
+const EDITOR_COLLAPSED_KEY = "appforge_editor_collapsed";
+const EDITOR_WIDTH_KEY = "appforge_editor_width";
+
+const layoutListeners = new Set<() => void>();
+let inMemoryEditorCollapsed: boolean | null = null;
+let inMemoryEditorWidth: number | null = null;
+
+function emitLayoutChange() {
+  layoutListeners.forEach((listener) => listener());
+}
+
+function subscribeLayoutPrefs(listener: () => void) {
+  layoutListeners.add(listener);
+  const handleStorage = (e: StorageEvent) => {
+    if (e.key === EDITOR_COLLAPSED_KEY) {
+      inMemoryEditorCollapsed = null;
+      listener();
+    } else if (e.key === EDITOR_WIDTH_KEY) {
+      inMemoryEditorWidth = null;
+      listener();
+    }
+  };
+  window.addEventListener("storage", handleStorage);
+  return () => {
+    layoutListeners.delete(listener);
+    window.removeEventListener("storage", handleStorage);
+  };
+}
+
+function getEditorCollapsedSnapshot(): boolean {
+  if (inMemoryEditorCollapsed !== null) return inMemoryEditorCollapsed;
+  try {
+    const saved = localStorage.getItem(EDITOR_COLLAPSED_KEY);
+    if (saved !== null) return saved === "true";
+  } catch {}
+  return false;
+}
+
+function getEditorCollapsedServerSnapshot(): boolean {
+  return false;
+}
+
+function getEditorWidthSnapshot(): number {
+  if (inMemoryEditorWidth !== null) return inMemoryEditorWidth;
+  try {
+    const saved = localStorage.getItem(EDITOR_WIDTH_KEY);
+    if (saved) {
+      const parsed = parseInt(saved, 10);
+      if (!isNaN(parsed) && parsed >= MIN_EDITOR_WIDTH) return parsed;
+    }
+  } catch {}
+  return DEFAULT_EDITOR_WIDTH;
+}
+
+function getEditorWidthServerSnapshot(): number {
+  return DEFAULT_EDITOR_WIDTH;
+}
 
 const defaultMockConfig = JSON.stringify(
   {
@@ -158,39 +223,48 @@ function BuilderContent() {
     }
   }, [copilotQuery]);
 
-  const [isEditorCollapsed, setIsEditorCollapsed] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem("appforge_editor_collapsed");
-      if (saved !== null) return saved === "true";
-    } catch {}
-    return false;
-  });
+  const isEditorCollapsed = useSyncExternalStore(
+    subscribeLayoutPrefs,
+    getEditorCollapsedSnapshot,
+    getEditorCollapsedServerSnapshot,
+  );
 
-  const [editorWidth, setEditorWidth] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem("appforge_editor_width");
-      if (saved) {
-        const parsed = parseInt(saved, 10);
-        if (!isNaN(parsed) && parsed >= MIN_EDITOR_WIDTH) return parsed;
-      }
-    } catch {}
-    return DEFAULT_EDITOR_WIDTH;
-  });
+  const editorWidth = useSyncExternalStore(
+    subscribeLayoutPrefs,
+    getEditorWidthSnapshot,
+    getEditorWidthServerSnapshot,
+  );
+
+  const setIsEditorCollapsed = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      const next =
+        typeof value === "function"
+          ? value(getEditorCollapsedSnapshot())
+          : value;
+      inMemoryEditorCollapsed = next;
+      try {
+        localStorage.setItem(EDITOR_COLLAPSED_KEY, String(next));
+      } catch {}
+      emitLayoutChange();
+    },
+    [],
+  );
+
+  const setEditorWidth = useCallback(
+    (value: number | ((prev: number) => number)) => {
+      const next =
+        typeof value === "function" ? value(getEditorWidthSnapshot()) : value;
+      inMemoryEditorWidth = next;
+      try {
+        localStorage.setItem(EDITOR_WIDTH_KEY, String(next));
+      } catch {}
+      emitLayoutChange();
+    },
+    [],
+  );
 
   // Dragging active state for editor/preview divider
   const [activeDrag, setActiveDrag] = useState<"editor" | null>(null);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("appforge_editor_collapsed", String(isEditorCollapsed));
-    } catch {}
-  }, [isEditorCollapsed]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("appforge_editor_width", String(editorWidth));
-    } catch {}
-  }, [editorWidth]);
 
   const { isSignedIn } = useAuth();
   const isGuestRoute = appId.startsWith("template-") || appId === "mock-new-id";
@@ -306,7 +380,7 @@ function BuilderContent() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [setIsEditorCollapsed]);
 
   useEffect(() => {
     if (!showPublishDialog) return;
@@ -328,7 +402,7 @@ function BuilderContent() {
       }
       return next;
     });
-  }, []);
+  }, [setIsEditorCollapsed]);
 
   // Window mousemove / mouseup handlers for divider dragging (Editor vs Preview)
   useEffect(() => {
@@ -367,7 +441,7 @@ function BuilderContent() {
       document.body.style.removeProperty("cursor");
       document.body.style.removeProperty("user-select");
     };
-  }, [activeDrag, editorWidth]);
+  }, [activeDrag, setEditorWidth]);
 
   const handleSave = async () => {
     setIsSaving(true);
