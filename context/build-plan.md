@@ -143,11 +143,10 @@ Wire the dashboard to InsForge DB data.
 - Implement global rate limiting (Upstash Redis) on API routes (like `/api/copilot`) to prevent quota abuse.
 - Integrate Sentry SDK for unhandled error tracking, monitoring silent background errors in the builder gracefully.
 
-### 19 Workflow Event Queue
+### 19 Platform Telemetry & Observability
 **Logic:**
-- Integrate Upstash Serverless Kafka.
-- Push standard AppForge events (`app_published`, `workflow_executed`) to an event queue.
-- Background consumer for decoupled analytics generation.
+- Direct transactional state persistence via Supabase Postgres (`apps.published_config` and `validation_logs`).
+- Sentry and Upstash Redis handle error tracking and semantic caching without requiring an external message queue.
 
 ### 20 Enterprise Integrations & DevOps
 **Logic & Config:**

@@ -18,7 +18,6 @@ import {
 } from "@/actions/apps";
 import { syncAppSchema } from "@/actions/schema";
 import { GET, POST, PUT, DELETE } from "@/app/api/proxy/[appId]/[entity]/route";
-import { EventPublisher } from "@/lib/event-queue";
 
 // Dedicated Test Database Helper: Teardown must drop tables through a test-only helper using service_role
 async function dropTestTable(serverDb: any, tableName: string) {
@@ -43,7 +42,6 @@ describe(
     const userA = "tenant_user_a_" + Date.now();
     const userB = "tenant_user_b_" + Date.now();
     let testAppId: string;
-    let kafkaPublishSpy: ReturnType<typeof vi.spyOn>;
 
     beforeAll(async () => {
       // Missing test secrets = fail
@@ -108,7 +106,6 @@ describe(
 
     beforeEach(() => {
       vi.clearAllMocks();
-      kafkaPublishSpy = vi.spyOn(EventPublisher, "publish").mockResolvedValue({ success: true } as any);
     });
 
     // =========================================================================
@@ -180,7 +177,7 @@ describe(
         expect((appRow?.config as any)?.app).toBe("Tenant A Confidential App");
       });
 
-      it("User B cannot publishAppConfig on User A's app (returns 404, no Kafka event)", async () => {
+      it("User B cannot publishAppConfig on User A's app (returns 404, config untouched)", async () => {
         // Act as User B
         (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userB });
 
@@ -190,9 +187,6 @@ describe(
         expect(result.success).toBe(false);
         expect(result.status).toBe(404);
         expect(result.error).toBe("App not found or not owned by user");
-
-        // Verify NO Kafka event was dispatched
-        expect(kafkaPublishSpy).not.toHaveBeenCalled();
 
         // Verify directly against the real database that published_config remains null
         const supabase = await createInsforgeServer();
@@ -256,7 +250,6 @@ describe(
         // Publish
         const pubRes = await publishAppConfig(testAppId, JSON.stringify({ app: "Tenant A Live", pages: [] }));
         expect(pubRes.success).toBe(true);
-        expect(kafkaPublishSpy).toHaveBeenCalledTimes(1);
 
         // Verify changes persisted in real DB
         const supabase = await createInsforgeServer();
