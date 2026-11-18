@@ -169,7 +169,7 @@ Execute this exact end-to-end smoke test against the live deployment **before** 
 2. **Add a field**: In the builder, add a new field to an existing entity and save. Confirm `Draft Saved` succeeds and inspect Vercel logs to verify the 3-argument `execute_app_ddl` RPC succeeded without errors.
 3. **Insert a row**: Insert a record into that entity (including a value for the newly added field) and verify it persists and renders back cleanly.
 4. **Publish**: Click **Publish** and confirm the app publishes without errors.
-5. **View the published app logged out**: Open `/apps/<appId>` in an incognito/private browser window (signed out) and confirm the published application renders cleanly with no 404/500 errors.
+5. **View the published app logged out**: Open `/apps/<appId>` in an incognito/private browser window (signed out) and confirm the published application renders cleanly **and displays its persisted data rows** (including the row inserted in step 3 via `GET /api/proxy/<appId>/<entity>`), not just the layout shell, with no 401/404/500 errors.
 
 *(Clean up the smoke-test app after completing Step 8.)*
 
