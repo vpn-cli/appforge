@@ -2,9 +2,7 @@ name: AppForge Enterprise CI/CD Pipeline
 
 on:
   push:
-    branches: [ "master", "main", "feat/*" ]
   pull_request:
-    branches: [ "master", "main" ]
 
 jobs:
   # Job 1: Linting and Code Integrity Verification
