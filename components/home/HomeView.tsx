@@ -2,8 +2,7 @@ import { HeroMeshBackground } from "./HeroMeshBackground";
 import { HomeTopBar } from "./HomeTopBar";
 import { HomeHero } from "./HomeHero";
 import { DemoRow } from "./DemoRow";
-import { HowItWorks } from "./HowItWorks";
-import { WhatsInside } from "./WhatsInside";
+import { StorySection } from "./StorySection";
 import { TemplatesStrip } from "./TemplatesStrip";
 import { Footer } from "@/components/layout/Footer";
 
@@ -34,8 +33,7 @@ export function HomeView() {
         </section>
 
         {/* Below-the-fold sections */}
-        <HowItWorks />
-        <WhatsInside />
+        <StorySection />
         <TemplatesStrip />
       </main>
 
