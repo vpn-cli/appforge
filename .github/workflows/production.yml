@@ -28,9 +28,30 @@ jobs:
       - name: ESLint Code Quality Scan
         run: npm run lint
 
-  # Job 2: Complete Test Suite (Unit & Real Database Isolation)
-  test-suite:
-    name: Test Suite (Unit & Test Database Verification)
+  # Job 2A: Unit Test Suite (Pure Logic, AST, Proxy Payload & Component Tests)
+  unit-tests:
+    name: Unit Tests (Pure Logic, AST, Proxy Payload & Components)
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Vitest Unit Tests
+        run: npm run test:unit
+
+  # Job 2B: Database Integration Test Suite (Multi-Tenant Isolation & RLS Verification)
+  database-tests:
+    name: Database Tests (Multi-Tenant Isolation & RLS Verification)
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
     steps:
@@ -53,7 +74,7 @@ jobs:
             exit 1
           fi
 
-      - name: Run All Vitest Test Files
+      - name: Run Vitest Database Tests
         env:
           NEXT_PUBLIC_INSFORGE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NEXT_PUBLIC_INSFORGE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
@@ -63,13 +84,13 @@ jobs:
           TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-        run: npm test
+        run: npm run test:db
 
   # Job 3: Build Verification & Dockerization
   build-and-containerize:
     name: Docker Multi-Stage Build
     runs-on: ubuntu-latest
-    needs: test-suite
+    needs: [unit-tests, database-tests]
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
