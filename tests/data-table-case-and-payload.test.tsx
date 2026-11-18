@@ -3,7 +3,7 @@ import React from "react";
 import { renderToString } from "react-dom/server";
 import { DataTable } from "@/registry/components/DataTable";
 import { normalizePayload, PUT } from "@/app/api/proxy/[appId]/[entity]/route";
-import { normalizeConfigFieldNames } from "@/actions/apps";
+import { normalizeConfigFieldNames } from "@/lib/config-normalizer";
 import * as appAccessModule from "@/lib/app-access";
 import * as serverDbModule from "@/lib/insforge-server";
 
