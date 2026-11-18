@@ -31,7 +31,8 @@ Copy and execute the entire contents of:
    (Applied for both `public` and `FOR ROLE postgres`).
 2. **Drop Unused Views & Policies**:
    - `DROP VIEW IF EXISTS published_apps;`
-   - PostgREST lockdown: `REVOKE ALL ON apps, app_schemas, app_* FROM anon, authenticated, PUBLIC;`
+   - PostgREST lockdown: `REVOKE ALL ON apps, app_schemas, validation_logs (if present), app_* FROM anon, authenticated, PUBLIC;`
+   - Locks down `validation_logs` (if present): enables RLS, revokes all privileges from `anon, authenticated, PUBLIC`, and drops the legacy permissive `"Allow Nextjs Server Actions on validation_logs"` (`USING (true)`) policy.
    - Drops all legacy `owner_policy_*` and `public_read_policy_*` policies.
 3. **Structured `execute_app_ddl` (New 3-argument Overload)**:
    - Accepts `(app_id text, entity_name text, fields jsonb)`.
@@ -75,6 +76,25 @@ npm test
 
 ## Step 3: Apply Migration A to the LIVE Project
 
+### ⚠️ MANDATORY BACKUP (`pg_dump`) BEFORE MIGRATION A ON LIVE
+Before running any DDL or privilege changes on the live database (`upljqampxcmhqjszatrp`), take a full logical backup via `pg_dump` using the live pooler session-mode connection string (port `5432`, supplied via environment variable — never commit or print credentials):
+
+```bash
+# Export a timestamped custom-format backup (schema + data) of the public schema
+pg_dump "$LIVE_DATABASE_URL" \
+  --schema=public \
+  --format=custom \
+  --no-owner \
+  --no-privileges \
+  --file="backups/live-pre-migration-a-$(date +%Y%m%d-%H%M%S).dump"
+
+# Verify the backup file exists and is readable before proceeding
+pg_restore --list backups/live-pre-migration-a-*.dump | head -n 20
+```
+
+> [!IMPORTANT]
+> Store the `.dump` file outside the git repository (or in a gitignored directory) and verify `pg_restore --list` succeeds before executing Migration A.
+
 ### ⚠️ MANDATORY PRE-CHECK BEFORE MIGRATION A ON LIVE
 > [!CAUTION]
 > **CRITICAL PRE-REQUISITE**: Before executing Migration A on live, you MUST confirm:
@@ -95,8 +115,8 @@ Copy and execute the entire contents of:
 > **DO NOT** run `sql/test-only/20261118_test_teardown_helper.sql` on the live database. The test teardown helper must remain exclusively in the test project.
 
 ### Verification on Live:
-- PostgREST direct access is locked down (`anon` and `authenticated` have 0 direct table privileges).
-- Default privileges revoke future tables, sequences, and functions.
+- PostgREST direct access is locked down (`anon` and `authenticated` have 0 direct table privileges across `apps`, `app_schemas`, `validation_logs`, and all `app_*` tables, with no permissive `USING (true)` policies remaining).
+- Default privileges revoke future tables, sequences, and functions for `postgres`.
 - The new 3-argument `execute_app_ddl` is active; the 2-argument `execute_app_ddl` remains available with safeguards for in-flight traffic.
 
 ---
@@ -141,13 +161,17 @@ Before triggering the application deploy in Step 4, audit your Vercel project en
 
 ---
 
-## Step 5: Verify Saving a Schema in Production
+## Step 5: Post-Deploy Smoke Test in Production
 
-1. Log in to the production application.
-2. Open or create an application in the builder.
-3. Save or update a configuration that defines entities and fields.
-4. Verify the UI confirms: `Draft Saved: All configurations and AST properties are synchronized.`
-5. Inspect application logs in Vercel to ensure the new 3-argument `execute_app_ddl` RPC was called successfully without errors.
+Execute this exact end-to-end smoke test against the live deployment **before** running Migration B:
+
+1. **Create an app from a template**: Log in to production, create a new app from a template (e.g., Employee Directory), and confirm the builder opens with its physical table provisioned.
+2. **Add a field**: In the builder, add a new field to an existing entity and save. Confirm `Draft Saved` succeeds and inspect Vercel logs to verify the 3-argument `execute_app_ddl` RPC succeeded without errors.
+3. **Insert a row**: Insert a record into that entity (including a value for the newly added field) and verify it persists and renders back cleanly.
+4. **Publish**: Click **Publish** and confirm the app publishes without errors.
+5. **View the published app logged out**: Open `/apps/<appId>` in an incognito/private browser window (signed out) and confirm the published application renders cleanly with no 404/500 errors.
+
+*(Clean up the smoke-test app after completing Step 8.)*
 
 ---
 
