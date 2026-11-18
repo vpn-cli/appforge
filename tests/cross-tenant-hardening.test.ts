@@ -502,15 +502,77 @@ describe(
         expect(res.status).toBe(404);
       });
 
-      it("Unauthenticated visitor (no userId) on proxy route returns 401", async () => {
+      it("Logged-out GET /api/proxy on an unpublished app returns 404", async () => {
         (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
 
-        const req = new Request(`http://localhost:3000/api/proxy/${privateAppId}/records`, { method: "GET" });
+        const req = new Request(`http://localhost:3000/api/proxy/${privateAppId}/records`, {
+          method: "GET",
+          headers: { "x-forwarded-for": "198.51.100.11" },
+        });
         const res = await GET(req, { params: Promise.resolve({ appId: privateAppId, entity: "records" }) });
 
-        expect(res.status).toBe(401);
+        expect(res.status).toBe(404);
         const body = await res.json();
-        expect(body.error).toBe("Unauthorized");
+        expect(body.error).toBe("Not found");
+      });
+
+      it("Logged-out GET /api/proxy on a published app returns 200 with rows", async () => {
+        const supabase = await createInsforgeServer();
+        const itemsTableName = `app_${testAppId.replace(/-/g, "_")}_items`;
+        const { data: insertedRow, error: insertErr } = await supabase
+          .from(itemsTableName)
+          .insert({ name: "Public Visible Item" })
+          .select("id, name")
+          .single();
+        expect(insertErr).toBeNull();
+
+        try {
+          (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
+
+          const req = new Request(`http://localhost:3000/api/proxy/${testAppId}/items`, {
+            method: "GET",
+            headers: { "x-forwarded-for": "198.51.100.12" },
+          });
+          const res = await GET(req, { params: Promise.resolve({ appId: testAppId, entity: "items" }) });
+
+          expect(res.status).toBe(200);
+          const body = await res.json();
+          expect(Array.isArray(body)).toBe(true);
+          expect(body.length).toBeGreaterThanOrEqual(1);
+          expect(body.some((row: any) => row.id === insertedRow?.id && row.name === "Public Visible Item")).toBe(true);
+        } finally {
+          if (insertedRow?.id) {
+            await supabase.from(itemsTableName).delete().eq("id", insertedRow.id);
+          }
+        }
+      });
+
+      it("Logged-out POST/PUT/DELETE /api/proxy returns 401 Unauthorized (even on published app)", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
+
+        const postReq = new Request(`http://localhost:3000/api/proxy/${testAppId}/items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: "Unauthenticated Write" }),
+        });
+        const postRes = await POST(postReq, { params: Promise.resolve({ appId: testAppId, entity: "items" }) });
+        expect(postRes.status).toBe(401);
+        const postBody = await postRes.json();
+        expect(postBody.error).toBe("Unauthorized");
+
+        const putReq = new Request(`http://localhost:3000/api/proxy/${testAppId}/items?id=mock-id`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: "Unauthenticated Update" }),
+        });
+        const putRes = await PUT(putReq, { params: Promise.resolve({ appId: testAppId, entity: "items" }) });
+        expect(putRes.status).toBe(401);
+
+        const delReq = new Request(`http://localhost:3000/api/proxy/${testAppId}/items?id=mock-id`, {
+          method: "DELETE",
+        });
+        const delRes = await DELETE(delReq, { params: Promise.resolve({ appId: testAppId, entity: "items" }) });
+        expect(delRes.status).toBe(401);
       });
 
       it("User B GET /api/proxy on User A's PUBLISHED app is permitted (public read)", async () => {
@@ -856,15 +918,13 @@ describe(
           expect(serverErr).toBeNull();
           expect(serverData).toEqual([{ title: "Public Record 1" }]);
 
-          // 2. Direct anonymous client query is either blocked (error 42501) or filtered under lockdown
+          // 2. Direct anonymous client query MUST fail with 42501 under full anon lockdown
           const { data: anonData, error: anonErr } = await directClient
             .from(dynamicTableName)
             .select("title");
-          if (anonErr) {
-            expect(anonErr.code).toBe("42501");
-          } else {
-            expect(Array.isArray(anonData)).toBe(true);
-          }
+          expect(anonErr).not.toBeNull();
+          expect(anonErr?.code).toBe("42501");
+          expect(anonData).toBeNull();
         } finally {
           // Revert published_config to null and cleanup row
           await serverDb.from(dynamicTableName).delete().neq("title", "");
