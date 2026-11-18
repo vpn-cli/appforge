@@ -17,7 +17,7 @@ export function HomeHero() {
 
       <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
         <Button
-          render={<Link href="/builder/demo" />}
+          render={<Link href="/builder/demo" prefetch={false} />}
           variant="primary"
           size="lg"
           showArrow
@@ -26,7 +26,7 @@ export function HomeHero() {
         </Button>
 
         <Button
-          render={<Link href="/templates" />}
+          render={<Link href="/templates" prefetch={false} />}
           variant="secondary"
           size="lg"
         >

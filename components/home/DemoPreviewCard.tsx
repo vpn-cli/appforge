@@ -1,5 +1,3 @@
-"use client";
-
 import { Layers } from "lucide-react";
 import { RenderNode } from "@/registry";
 import { StatusPill } from "@/components/ui/status-pill";

@@ -22,18 +22,21 @@ export function Footer() {
         <nav aria-label="Footer navigation" className="flex items-center gap-6">
           <Link
             href="/templates"
+            prefetch={false}
             className="text-text-secondary text-[14px] hover:text-foreground transition-colors"
           >
             Templates
           </Link>
           <Link
             href="/terms"
+            prefetch={false}
             className="text-text-secondary text-[14px] hover:text-foreground transition-colors"
           >
             Terms
           </Link>
           <Link
             href="/privacy"
+            prefetch={false}
             className="text-text-secondary text-[14px] hover:text-foreground transition-colors"
           >
             Privacy

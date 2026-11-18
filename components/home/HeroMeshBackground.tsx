@@ -79,11 +79,11 @@ export function HeroMeshBackground() {
 
           timerId = globalThis.setTimeout(() => {
             if (typeof window.requestIdleCallback === "function") {
-              idleId = window.requestIdleCallback(activate, { timeout: 1000 });
+              idleId = window.requestIdleCallback(activate, { timeout: 1500 });
             } else {
               activate();
             }
-          }, 2200) as unknown as number;
+          }, 3000) as unknown as number;
         });
       });
     };

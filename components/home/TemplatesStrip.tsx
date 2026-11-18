@@ -49,7 +49,7 @@ export function TemplatesStrip() {
           </div>
 
           <Button
-            render={<Link href="/templates" />}
+            render={<Link href="/templates" prefetch={false} />}
             variant="secondary"
             size="md"
             showArrow
@@ -63,6 +63,7 @@ export function TemplatesStrip() {
             <Link
               key={tpl.id}
               href="/templates"
+              prefetch={false}
               className="group rounded-2xl bg-card border border-border hover:border-border-strong p-6 flex flex-col justify-between gap-4 transition-colors"
             >
               <div>
@@ -93,3 +94,4 @@ export function TemplatesStrip() {
     </section>
   );
 }
+

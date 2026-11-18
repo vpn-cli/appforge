@@ -1,3 +1,5 @@
+"use client";
+
 import { TrendingUp, TrendingDown, Minus, Users, ArrowUpRight } from "lucide-react";
 import { useCardContext } from "../context";
 

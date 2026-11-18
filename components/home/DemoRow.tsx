@@ -1,5 +1,3 @@
-"use client";
-
 import { DemoCodeCard } from "./DemoCodeCard";
 import { DemoPreviewCard } from "./DemoPreviewCard";
 
