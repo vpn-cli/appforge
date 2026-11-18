@@ -125,12 +125,12 @@ export function normalizePayload(
   return { success: false, error: "Payload must be a valid JSON object or array" };
 }
 
-function getClientIp(request: Request): string {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    const first = forwardedFor.split(",")[0]?.trim();
-    if (first) return first;
-  }
+/**
+ * Resolves the client IP strictly from the Vercel edge-overwritten `x-real-ip` header.
+ * Never reads `x-forwarded-for`, whose leftmost value can be spoofed by clients.
+ * Falls back to "127.0.0.1" when `x-real-ip` is absent (e.g. local dev).
+ */
+export function getClientIp(request: Request): string {
   const realIp = request.headers.get("x-real-ip")?.trim();
   if (realIp) return realIp;
   return "127.0.0.1";

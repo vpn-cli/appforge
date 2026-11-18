@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { createInsforgeServer } from "@/lib/insforge-server";
-import { rateLimit } from "@/lib/rate-limit";
+import { publicReadRateLimit } from "@/lib/rate-limit";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ENTITY_MAX_LENGTH = 22;
@@ -48,7 +48,7 @@ export async function authorizeAppAccess(
 
     // Apply per-IP rate limit on unauthenticated public reads before querying the database
     const ipKey = `proxy_public_read:${options?.clientIp ?? "127.0.0.1"}`;
-    const { success, limit, remaining, reset } = await rateLimit.limit(ipKey);
+    const { success, limit, remaining, reset } = await publicReadRateLimit.limit(ipKey);
     if (!success) {
       return {
         error: NextResponse.json(

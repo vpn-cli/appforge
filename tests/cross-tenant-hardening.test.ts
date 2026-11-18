@@ -507,7 +507,7 @@ describe(
 
         const req = new Request(`http://localhost:3000/api/proxy/${privateAppId}/records`, {
           method: "GET",
-          headers: { "x-forwarded-for": "198.51.100.11" },
+          headers: { "x-real-ip": "198.51.100.11" },
         });
         const res = await GET(req, { params: Promise.resolve({ appId: privateAppId, entity: "records" }) });
 
@@ -531,7 +531,7 @@ describe(
 
           const req = new Request(`http://localhost:3000/api/proxy/${testAppId}/items`, {
             method: "GET",
-            headers: { "x-forwarded-for": "198.51.100.12" },
+            headers: { "x-real-ip": "198.51.100.12" },
           });
           const res = await GET(req, { params: Promise.resolve({ appId: testAppId, entity: "items" }) });
 
