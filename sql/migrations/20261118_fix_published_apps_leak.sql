@@ -97,6 +97,20 @@ DROP POLICY IF EXISTS "app_schemas_owner_policy" ON app_schemas;
 
 
 -- ============================================================================
+-- 4b. Secure validation_logs Table (if present)
+-- ============================================================================
+
+DO $$
+BEGIN
+    IF to_regclass('public.validation_logs') IS NOT NULL THEN
+        EXECUTE 'ALTER TABLE public.validation_logs ENABLE ROW LEVEL SECURITY;';
+        EXECUTE 'REVOKE ALL ON public.validation_logs FROM anon, authenticated, PUBLIC;';
+        EXECUTE 'DROP POLICY IF EXISTS "Allow Nextjs Server Actions on validation_logs" ON public.validation_logs;';
+    END IF;
+END $$;
+
+
+-- ============================================================================
 -- 5. Dynamic App Tables (app_<id>_<entity>): Backfill Existing Tables
 -- ============================================================================
 
