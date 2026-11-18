@@ -912,18 +912,19 @@ describe(
         await dropTestTable(supabase, `app_${testAppId.replace(/-/g, "_")}_${maliciousEntity}`);
       });
 
-      it("execute_app_ddl raw query parameter is completely removed (rejects legacy query calls)", async () => {
+      it("Legacy execute_app_ddl 2-argument overload strictly forbids DROP TABLE in expand phase", async () => {
         const supabase = await createInsforgeServer();
         const cleanId = testAppId.replace(/-/g, "_");
 
-        // Attempt raw query call on execute_app_ddl
+        // Attempt raw query DROP TABLE call on legacy execute_app_ddl overload
         const { error } = await (supabase as any).rpc("execute_app_ddl", {
           app_id: testAppId,
           query: `DROP TABLE IF EXISTS app_${cleanId}_items;`,
         });
 
-        // Postgres rejects the call because execute_app_ddl(text, text) does not exist
+        // Postgres rejects the call because DROP TABLE is strictly forbidden in execute_app_ddl
         expect(error).not.toBeNull();
+        expect(error?.message).toMatch(/DROP TABLE is strictly forbidden/i);
       });
 
       it("Multi-table drop injection 'app_<id>_items, apps' is strictly rejected and never drops apps", async () => {
@@ -947,6 +948,157 @@ describe(
 
         expect(checkErr).toBeNull();
         expect(appsTable?.id).toBe(testAppId);
+      });
+
+      it("Schema changes: add a field to an existing entity -> column exists and a row with it can be inserted", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+        const supabase = await createInsforgeServer();
+        const testEntity = "products";
+        const cleanId = testAppId.replace(/-/g, "_");
+        const physicalTable = `app_${cleanId}_${testEntity}`;
+
+        try {
+          // 1. Initial schema creation with single field 'title'
+          const initRes = await syncAppSchema(testAppId, { [testEntity]: { title: "string" } }, userA);
+          expect(initRes.success).toBe(true);
+
+          // 2. Add a new field 'price' (number) to existing entity
+          const addFieldRes = await syncAppSchema(
+            testAppId,
+            { [testEntity]: { title: "string", price: "number" } },
+            userA
+          );
+          expect(addFieldRes.success).toBe(true);
+
+          // 3. Verify row with both fields can be inserted
+          const { data: inserted, error: insertErr } = await supabase
+            .from(physicalTable)
+            .insert({ title: "Widget Pro", price: 49.99 })
+            .select()
+            .single();
+
+          expect(insertErr).toBeNull();
+          expect(inserted).toBeDefined();
+          expect(inserted.title).toBe("Widget Pro");
+          expect(Number(inserted.price)).toBe(49.99);
+
+          // 4. Verify row can be read back
+          const { data: readData, error: readErr } = await supabase
+            .from(physicalTable)
+            .select("title, price")
+            .eq("id", inserted.id)
+            .single();
+
+          expect(readErr).toBeNull();
+          expect(readData?.title).toBe("Widget Pro");
+          expect(Number(readData?.price)).toBe(49.99);
+        } finally {
+          await dropTestTable(supabase, physicalTable);
+        }
+      });
+
+      it("Schema changes: changing an existing column's type rejects with a clear error", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+        const supabase = await createInsforgeServer();
+        const testEntity = "type_guard_test";
+        const cleanId = testAppId.replace(/-/g, "_");
+        const physicalTable = `app_${cleanId}_${testEntity}`;
+
+        try {
+          // 1. Create table with column 'status' as 'string' (TEXT)
+          const initRes = await syncAppSchema(testAppId, { [testEntity]: { status: "string" } }, userA);
+          expect(initRes.success).toBe(true);
+
+          // 2. Attempt to change 'status' type to 'number' (NUMERIC)
+          const changeRes = await syncAppSchema(testAppId, { [testEntity]: { status: "number" } }, userA);
+          expect(changeRes.success).toBe(false);
+          expect(changeRes.message).toMatch(/cannot change type of existing column/i);
+        } finally {
+          await dropTestTable(supabase, physicalTable);
+        }
+      });
+
+      it("Reject unknown field types instead of defaulting to TEXT", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+        const res = await syncAppSchema(
+          testAppId,
+          { bad_types: { payload: "unsupported_blob_type" } },
+          userA
+        );
+        expect(res.success).toBe(false);
+        expect(res.message).toMatch(/invalid or unknown type/i);
+      });
+
+      it("Case handling: camelCase field and mixed-case entity name through proxy (create, insert, read, update, delete)", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+        const supabase = await createInsforgeServer();
+        const cleanId = testAppId.replace(/-/g, "_");
+        const mixedEntity = "UserTasks";
+        const physicalTable = `app_${cleanId}_usertasks`;
+
+        try {
+          // 1. CREATE: sync schema with mixed-case entity and camelCase fields
+          const createRes = await syncAppSchema(
+            testAppId,
+            { [mixedEntity]: { assignedUser: "string", taskPriority: "number" } },
+            userA
+          );
+          expect(createRes.success).toBe(true);
+
+          // 2. INSERT: POST via proxy endpoint with camelCase body and mixed-case entity route
+          const postReq = new Request(`http://localhost:3000/api/proxy/${testAppId}/${mixedEntity}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ assignedUser: "Alice Developer", taskPriority: 1 }),
+          });
+          const postRes = await POST(postReq, { params: Promise.resolve({ appId: testAppId, entity: mixedEntity }) });
+          expect(postRes.status).toBe(201);
+          const postData = await postRes.json();
+          expect(postData.id).toBeDefined();
+          expect(postData.assigneduser).toBe("Alice Developer");
+          expect(Number(postData.taskpriority)).toBe(1);
+
+          const recordId = postData.id;
+
+          // 3. READ: GET via proxy endpoint with camelCase order param
+          const getReq = new Request(`http://localhost:3000/api/proxy/${testAppId}/${mixedEntity}?order=taskPriority`);
+          const getRes = await GET(getReq, { params: Promise.resolve({ appId: testAppId, entity: mixedEntity }) });
+          expect(getRes.status).toBe(200);
+          const getData = await getRes.json();
+          expect(Array.isArray(getData)).toBe(true);
+          const found = getData.find((r: any) => r.id === recordId);
+          expect(found).toBeDefined();
+          expect(found.assigneduser).toBe("Alice Developer");
+
+          // 4. UPDATE: PUT via proxy endpoint updating camelCase field
+          const putReq = new Request(`http://localhost:3000/api/proxy/${testAppId}/${mixedEntity}?id=${recordId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ assignedUser: "Bob Maintainer", taskPriority: 2 }),
+          });
+          const putRes = await PUT(putReq, { params: Promise.resolve({ appId: testAppId, entity: mixedEntity }) });
+          expect(putRes.status).toBe(200);
+          const putData = await putRes.json();
+          expect(putData.assigneduser).toBe("Bob Maintainer");
+          expect(Number(putData.taskpriority)).toBe(2);
+
+          // 5. DELETE: DELETE via proxy endpoint
+          const deleteReq = new Request(`http://localhost:3000/api/proxy/${testAppId}/${mixedEntity}?id=${recordId}`, {
+            method: "DELETE",
+          });
+          const deleteRes = await DELETE(deleteReq, { params: Promise.resolve({ appId: testAppId, entity: mixedEntity }) });
+          expect(deleteRes.status).toBe(200);
+          const deleteData = await deleteRes.json();
+          expect(deleteData.success).toBe(true);
+
+          // Verify record is gone via GET
+          const verifyGetReq = new Request(`http://localhost:3000/api/proxy/${testAppId}/${mixedEntity}`);
+          const verifyGetRes = await GET(verifyGetReq, { params: Promise.resolve({ appId: testAppId, entity: mixedEntity }) });
+          const verifyData = await verifyGetRes.json();
+          expect(verifyData.find((r: any) => r.id === recordId)).toBeUndefined();
+        } finally {
+          await dropTestTable(supabase, physicalTable);
+        }
       });
     });
   });
