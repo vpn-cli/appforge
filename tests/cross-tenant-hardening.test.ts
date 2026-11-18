@@ -14,12 +14,11 @@ import {
   deleteApp,
   renameApp,
   getAppConfig,
+  createAppFromTemplate,
 } from "@/actions/apps";
 import { syncAppSchema } from "@/actions/schema";
 import { GET, POST, PUT, DELETE } from "@/app/api/proxy/[appId]/[entity]/route";
 import { EventPublisher } from "@/lib/event-queue";
-import fs from "fs";
-import path from "path";
 
 // SAFETY GUARD: Integration tests require a dedicated test database (TEST_SUPABASE_URL).
 // Direct execution against production project 'upljqampxcmhqjszatrp' is strictly prohibited.
@@ -80,9 +79,13 @@ describe.skipIf(!canRunDbTests)(
     });
 
     afterAll(async () => {
-      // Cleanup: remove the test app from the real database (cascades to app_schemas)
+      // Cleanup: remove the test app from the real database and drop dynamic tables
       if (testAppId) {
         const supabase = await createInsforgeServer();
+        await supabase.rpc("execute_app_ddl", {
+          app_id: testAppId,
+          query: `DROP TABLE IF EXISTS app_${testAppId.replace(/-/g, "_")}_items;`,
+        });
         await supabase.from("apps").delete().eq("id", testAppId);
       }
     });
@@ -295,7 +298,109 @@ describe.skipIf(!canRunDbTests)(
           const { data: checkDeleted } = await supabase.from("apps").select("id").eq("id", testAppIdB).maybeSingle();
           expect(checkDeleted).toBeNull();
         } finally {
+          await supabase.rpc("execute_app_ddl", {
+            app_id: testAppIdB,
+            query: `DROP TABLE IF EXISTS app_${testAppIdB.replace(/-/g, "_")}_notes;`,
+          });
           await supabase.from("apps").delete().eq("id", testAppIdB);
+        }
+      }, 20000);
+
+      it("Template Provisioning: createAppFromTemplate provisions physical tables in Postgres and allows row insertion", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+        const supabase = await createInsforgeServer();
+        let createdAppId: string | null = null;
+        let dynamicTableName: string | null = null;
+
+        try {
+          try {
+            await createAppFromTemplate("directory");
+          } catch (redirectErr: any) {
+            // Next.js redirect throws NEXT_REDIRECT with target URL in digest/message
+            const urlStr = redirectErr?.message || redirectErr?.digest || "";
+            const match = urlStr.match(/\/builder\/([0-9a-f-]{36})/i);
+            if (match) createdAppId = match[1];
+          }
+
+          expect(createdAppId).toBeDefined();
+          dynamicTableName = `app_${createdAppId!.replace(/-/g, "_")}_employees`;
+
+          // Verify schema was recorded in app_schemas
+          const { data: schemaRow, error: sErr } = await supabase
+            .from("app_schemas")
+            .select("table_name")
+            .eq("app_id", createdAppId)
+            .eq("table_name", "employees")
+            .maybeSingle();
+
+          expect(sErr).toBeNull();
+          expect(schemaRow?.table_name).toBe("employees");
+
+          // Verify physical table exists and allows row insertion
+          const { data: inserted, error: insertErr } = await supabase
+            .from(dynamicTableName)
+            .insert({ name: "Jane Doe", role: "VP Engineering", department: "R&D", email: "jane@example.com" })
+            .select()
+            .single();
+
+          expect(insertErr).toBeNull();
+          expect(inserted?.name).toBe("Jane Doe");
+        } finally {
+          if (createdAppId && dynamicTableName) {
+            await supabase.rpc("execute_app_ddl", {
+              app_id: createdAppId,
+              query: `DROP TABLE IF EXISTS ${dynamicTableName};`,
+            });
+            await supabase.from("apps").delete().eq("id", createdAppId);
+          }
+        }
+      }, 20000);
+
+      it("Publish Provisioning: publishAppConfig provisions physical tables even if user publishes without saving first", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+        const supabase = await createInsforgeServer();
+
+        // 1. Create a draft app without calling syncAppSchema
+        const unsavedConfig = {
+          app: "Directly Published App",
+          entities: { projects: { title: "string", budget: "number" } },
+          pages: [],
+        };
+        const { data: draftApp, error: draftErr } = await supabase
+          .from("apps")
+          .insert({
+            user_id: userA,
+            name: "Directly Published App",
+            config: unsavedConfig,
+            published_config: null,
+          })
+          .select("id")
+          .single();
+
+        expect(draftErr).toBeNull();
+        const appId = draftApp!.id;
+        const projectsTableName = `app_${appId.replace(/-/g, "_")}_projects`;
+
+        try {
+          // 2. Publish app directly without calling saveAppConfig first
+          const pubResult = await publishAppConfig(appId, JSON.stringify(unsavedConfig));
+          expect(pubResult.success).toBe(true);
+
+          // 3. Verify physical table was provisioned in Postgres
+          const { data: inserted, error: insertErr } = await supabase
+            .from(projectsTableName)
+            .insert({ title: "Apollo Program", budget: 25000000000 })
+            .select()
+            .single();
+
+          expect(insertErr).toBeNull();
+          expect(inserted?.title).toBe("Apollo Program");
+        } finally {
+          await supabase.rpc("execute_app_ddl", {
+            app_id: appId,
+            query: `DROP TABLE IF EXISTS ${projectsTableName};`,
+          });
+          await supabase.from("apps").delete().eq("id", appId);
         }
       }, 20000);
     });
@@ -410,6 +515,56 @@ describe.skipIf(!canRunDbTests)(
         expect(res.status).toBe(200);
         const body = await res.json();
         expect(Array.isArray(body)).toBe(true);
+      });
+
+      it("GET /api/proxy returns 503 error when entity is registered in app_schemas but physical table does not exist in Postgres", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+        const supabase = await createInsforgeServer();
+
+        // Register ghost_entity in app_schemas without creating the physical Postgres table
+        await supabase.from("app_schemas").upsert(
+          {
+            app_id: testAppId,
+            table_name: "ghost_entity",
+            schema_definition: { field1: "string" },
+          },
+          { onConflict: "app_id,table_name" }
+        );
+
+        try {
+          const req = new Request(`http://localhost:3000/api/proxy/${testAppId}/ghost_entity`, { method: "GET" });
+          const res = await GET(req, { params: Promise.resolve({ appId: testAppId, entity: "ghost_entity" }) });
+
+          expect(res.status).toBe(503);
+          const body = await res.json();
+          expect(body.error).toContain("registered in schema but physical table does not exist");
+        } finally {
+          await supabase.from("app_schemas").delete().eq("app_id", testAppId).eq("table_name", "ghost_entity");
+        }
+      });
+
+      it("GET /api/proxy returns 404 when app has no entities registered for the requested entity", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+
+        const req = new Request(`http://localhost:3000/api/proxy/${testAppId}/completely_unregistered_entity`, { method: "GET" });
+        const res = await GET(req, { params: Promise.resolve({ appId: testAppId, entity: "completely_unregistered_entity" }) });
+
+        expect(res.status).toBe(404);
+        const body = await res.json();
+        expect(body.error).toBe("Not found");
+      });
+
+      it("GET /api/proxy returns [] (200 OK) when physical table exists and has 0 rows", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+
+        // 'items' physical table was provisioned in beforeAll and currently has 0 rows
+        const req = new Request(`http://localhost:3000/api/proxy/${testAppId}/items`, { method: "GET" });
+        const res = await GET(req, { params: Promise.resolve({ appId: testAppId, entity: "items" }) });
+
+        expect(res.status).toBe(200);
+        const body = await res.json();
+        expect(Array.isArray(body)).toBe(true);
+        expect(body).toEqual([]);
       });
 
       it("User B POST /api/proxy on User A's PUBLISHED app is still rejected with 404 (write forbidden)", async () => {
@@ -572,7 +727,7 @@ describe.skipIf(!canRunDbTests)(
           const serverDb = await createInsforgeServer();
           await serverDb.rpc("execute_app_ddl", {
             app_id: directAppId,
-            query: `ALTER TABLE ${dynamicTableName} RENAME TO ${dynamicTableName}_old; DROP TABLE IF EXISTS ${dynamicTableName}_old;`,
+            query: `DROP TABLE IF EXISTS ${dynamicTableName};`,
           });
           await serverDb.from("apps").delete().eq("id", directAppId);
         }

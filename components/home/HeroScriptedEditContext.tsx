@@ -52,8 +52,13 @@ export function HeroScriptedEditProvider({ children }: { children: ReactNode }) 
   const isHoveredRef = useRef(false);
   const isIntersectingRef = useRef(true);
 
-  isHoveredRef.current = isHovered;
-  isIntersectingRef.current = isIntersecting;
+  useEffect(() => {
+    isHoveredRef.current = isHovered;
+  }, [isHovered]);
+
+  useEffect(() => {
+    isIntersectingRef.current = isIntersecting;
+  }, [isIntersecting]);
 
   // IntersectionObserver callback ref
   const containerRef = useCallback((node: HTMLElement | null) => {
