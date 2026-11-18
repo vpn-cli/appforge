@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -222,9 +221,13 @@
   --warning: #D97706;
   --danger: #DC2626;
 
-  /* Ambient washes */
+  /* Ambient washes & Hero Mesh Gradient Palette (Light: soft lavender/white) */
   --wash-blue: #E3EAFF;
   --brand-headline-end: #4F6BFF;
+  --mesh-c1: #F8F7FC;
+  --mesh-c2: #EEEBFF;
+  --mesh-c3: #E6EDFF;
+  --mesh-c4: #FFFFFF;
 
   /* Editor Theme Tokens (Light) */
   --editor-bg-light: #FFFFFF;
@@ -362,6 +365,11 @@
 .dark, :root.dark, [data-theme="dark"] {
   --canvas: var(--ink-950);
   --background: var(--ink-950);
+  /* Hero Mesh Gradient Palette (Dark: deep navy/violet, low contrast) */
+  --mesh-c1: #0B0B14;
+  --mesh-c2: #12152E;
+  --mesh-c3: #1D163A;
+  --mesh-c4: #0E1022;
   --surface: #16161F;
   --surface-glass: rgba(22, 22, 31, 0.78);
   --card: #16161F;
@@ -862,4 +870,18 @@ body::after {
     var(--surface-sunken) calc(100% - 96px),
     transparent 100%
   );
+}
+
+/* Static CSS mesh-gradient fallback (prefers-reduced-motion, no-WebGL, and first paint) */
+.hero-mesh-fallback {
+  background-color: var(--mesh-c1);
+  background-image:
+    radial-gradient(ellipse 65% 55% at 18% 22%, var(--mesh-c2) 0%, transparent 72%),
+    radial-gradient(ellipse 60% 55% at 82% 28%, var(--mesh-c3) 0%, transparent 72%),
+    radial-gradient(ellipse 70% 50% at 50% 78%, var(--mesh-c4) 0%, transparent 70%);
+}
+
+.hero-mesh-mask {
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 72%, transparent 100%);
 }

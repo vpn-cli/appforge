@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -18,7 +19,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks/clerk(.*)",
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
+const runClerkMiddleware = clerkMiddleware(async (auth, request) => {
   if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH_BYPASS === "true") {
     return;
   }
@@ -27,6 +28,18 @@ export default clerkMiddleware(async (auth, request) => {
     await auth.protect();
   }
 });
+
+export default function middleware(request: NextRequest, event: NextFetchEvent) {
+  // Static public marketing homepage does not need a server-side Clerk handshake redirect
+  if (
+    request.nextUrl.pathname === "/" &&
+    !request.nextUrl.searchParams.has("__clerk_handshake")
+  ) {
+    return NextResponse.next();
+  }
+
+  return runClerkMiddleware(request, event);
+}
 
 export const config = {
   matcher: [
