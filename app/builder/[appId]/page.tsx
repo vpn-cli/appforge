@@ -267,7 +267,8 @@ function BuilderContent() {
   const [activeDrag, setActiveDrag] = useState<"editor" | null>(null);
 
   const { isSignedIn } = useAuth();
-  const isGuestRoute = appId.startsWith("template-") || appId === "mock-new-id";
+  const isGuestRoute =
+    appId === "demo" || appId.startsWith("template-") || appId === "mock-new-id";
 
   const [configStr, setConfigStr] = useState(() => {
     if (appId.includes("template-blank")) {

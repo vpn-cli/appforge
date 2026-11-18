@@ -448,7 +448,7 @@ export async function renameApp(appId: string, newName: string) {
 }
 
 export async function getAppConfig(appId: string) {
-  if (appId.startsWith("template-") || appId.startsWith("mock-")) return null;
+  if (appId === "demo" || appId.startsWith("template-") || appId.startsWith("mock-")) return null;
 
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();

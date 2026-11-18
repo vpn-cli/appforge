@@ -10,6 +10,26 @@ type ConfigEditorProps = {
   onChange: (value: string | undefined) => void;
 };
 
+export function normalizeMonacoHexColor(
+  raw: string,
+  fallbackWithoutHash: string = "000000"
+): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return `#${fallbackWithoutHash}`;
+  const match = trimmed.match(
+    /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/
+  );
+  if (!match) return `#${fallbackWithoutHash}`;
+  const hex = match[1];
+  if (hex.length === 3 || hex.length === 4) {
+    return `#${hex
+      .split("")
+      .map((c) => c + c)
+      .join("")}`;
+  }
+  return `#${hex}`;
+}
+
 export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -22,18 +42,13 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
   const getCssColor = (varName: string, fallbackWithoutHash: string = "000000"): string => {
     if (typeof window !== "undefined") {
       const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      if (val) return val;
+      if (val) return normalizeMonacoHexColor(val, fallbackWithoutHash);
     }
-    return `#${fallbackWithoutHash}`;
+    return normalizeMonacoHexColor(fallbackWithoutHash, fallbackWithoutHash);
   };
 
   const getRuleColor = (varName: string, fallbackWithoutHash: string = "000000"): string => {
-    const raw = getCssColor(varName, fallbackWithoutHash);
-    let hex = raw.replace(/^#/, "");
-    if (hex.length === 3) {
-      hex = hex.split("").map((c) => c + c).join("");
-    }
-    return hex;
+    return getCssColor(varName, fallbackWithoutHash).replace(/^#/, "").slice(0, 6);
   };
 
   const defineThemes = (monaco: Monaco) => {
