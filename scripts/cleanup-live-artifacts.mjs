@@ -16,6 +16,7 @@ export const DIAGNOSTIC_TABLES = [
   "app_df557309_95e1_4b71_be92_759bf3ff33fc_pgtables_check_del",
   "app_test_jwt_probe",
   "app_test_123_items",
+  "app_test_items",
 ];
 
 export const CI_LEFTOVER_TABLES = [

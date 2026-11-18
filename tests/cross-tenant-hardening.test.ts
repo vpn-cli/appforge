@@ -605,7 +605,8 @@ describe(
         try {
           await supabase.rpc("execute_app_ddl", {
             app_id: userBAppId,
-            query: `CREATE TABLE IF NOT EXISTS ${bTableName} (id uuid default gen_random_uuid() primary key, name text, created_at timestamptz default now());`,
+            entity_name: "items",
+            fields: { name: "string" },
           });
           await supabase.from("app_schemas").upsert(
             {
@@ -706,10 +707,11 @@ describe(
           directAppId = data.id;
           dynamicTableName = `app_${directAppId.replace(/-/g, "_")}_secret_records`;
 
-          // Provision a dynamic table for this app using execute_app_ddl
+          // Provision a dynamic table for this app using structured execute_app_ddl
           await serverDb.rpc("execute_app_ddl", {
             app_id: directAppId,
-            query: `CREATE TABLE IF NOT EXISTS ${dynamicTableName} (id uuid default gen_random_uuid() primary key, title text);`,
+            entity_name: "secret_records",
+            fields: { title: "string" },
           });
 
           await serverDb.from("app_schemas").upsert(
@@ -868,6 +870,21 @@ describe(
     // Fix 6: SQL Injection & DDL Security Defenses
     // =========================================================================
     describe("Fix 6: SQL Injection & DDL Security Defenses", () => {
+      it("Entity identifier length limit: two entities sharing their first 22+ chars are rejected and not silently merged", async () => {
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+        // Both entities share the first 22 chars: "customer_support_ticke"
+        const entityA = "customer_support_ticket_billing"; // 32 chars
+        const entityB = "customer_support_ticket_feedback"; // 33 chars
+
+        const resA = await syncAppSchema(testAppId, { [entityA]: { details: "string" } }, userA);
+        expect(resA.success).toBe(false);
+        expect(resA.message).toMatch(/exceeds maximum length of 22 characters/i);
+
+        const resB = await syncAppSchema(testAppId, { [entityB]: { notes: "string" } }, userA);
+        expect(resB.success).toBe(false);
+        expect(resB.message).toMatch(/exceeds maximum length of 22 characters/i);
+      });
+
       it("Malicious entity and field names (e.g. 'x text); DROP TABLE apps; --') do NOT drop core tables", async () => {
         (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
         const supabase = await createInsforgeServer();
@@ -895,18 +912,18 @@ describe(
         await dropTestTable(supabase, `app_${testAppId.replace(/-/g, "_")}_${maliciousEntity}`);
       });
 
-      it("execute_app_ddl strictly forbids DROP TABLE statements", async () => {
+      it("execute_app_ddl raw query parameter is completely removed (rejects legacy query calls)", async () => {
         const supabase = await createInsforgeServer();
         const cleanId = testAppId.replace(/-/g, "_");
 
-        // Attempt DROP TABLE via execute_app_ddl
-        const { error } = await supabase.rpc("execute_app_ddl", {
+        // Attempt raw query call on execute_app_ddl
+        const { error } = await (supabase as any).rpc("execute_app_ddl", {
           app_id: testAppId,
           query: `DROP TABLE IF EXISTS app_${cleanId}_items;`,
         });
 
+        // Postgres rejects the call because execute_app_ddl(text, text) does not exist
         expect(error).not.toBeNull();
-        expect(error?.message).toMatch(/DROP TABLE is strictly forbidden in execute_app_ddl/i);
       });
 
       it("Multi-table drop injection 'app_<id>_items, apps' is strictly rejected and never drops apps", async () => {
@@ -914,21 +931,14 @@ describe(
         const cleanId = testAppId.replace(/-/g, "_");
         const maliciousTarget = `app_${cleanId}_items, apps`;
 
-        // 1. Attempt via execute_app_ddl
-        const { error: ddlErr } = await supabase.rpc("execute_app_ddl", {
-          app_id: testAppId,
-          query: `DROP TABLE ${maliciousTarget};`,
-        });
-        expect(ddlErr).not.toBeNull();
-
-        // 2. Attempt via test_teardown_drop_table
+        // 1. Attempt via test_teardown_drop_table
         const { error: teardownErr } = await supabase.rpc("test_teardown_drop_table", {
           target_table: maliciousTarget,
         });
         expect(teardownErr).not.toBeNull();
         expect(teardownErr?.message).toMatch(/invalid table name format/i);
 
-        // 3. Confirm apps table still exists and is untouched
+        // 2. Confirm apps table still exists and is untouched
         const { data: appsTable, error: checkErr } = await supabase
           .from("apps")
           .select("id")
