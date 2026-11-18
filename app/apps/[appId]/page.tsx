@@ -1,5 +1,6 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { RenderNode } from "@/registry";
+import { AppRuntimeProvider } from "@/registry/context";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -51,11 +52,13 @@ export default async function LiveAppPage({ params }: { params: Promise<{ appId:
          </div>
          
          {/* Live Execution Loop via Registry Engine */}
-         <div className="flex flex-col gap-8 w-full pb-32">
-           {(rawConfig as { pages?: { components: unknown[] }[] })?.pages?.[0]?.components?.map((comp: unknown, i: number) => (
-             <RenderNode key={i} config={comp} />
-           ))}
-         </div>
+         <AppRuntimeProvider appId={appId}>
+           <div className="flex flex-col gap-8 w-full pb-32">
+             {(rawConfig as { pages?: { components: unknown[] }[] })?.pages?.[0]?.components?.map((comp: unknown, i: number) => (
+               <RenderNode key={i} config={comp} />
+             ))}
+           </div>
+         </AppRuntimeProvider>
       </main>
 
       <Footer />

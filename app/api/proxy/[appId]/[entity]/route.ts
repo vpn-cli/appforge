@@ -125,10 +125,23 @@ export function normalizePayload(
   return { success: false, error: "Payload must be a valid JSON object or array" };
 }
 
+function getClientIp(request: Request): string {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const first = forwardedFor.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
+  return "127.0.0.1";
+}
+
 export async function GET(request: Request, { params }: RouteParams) {
   const { appId, entity } = await params;
-  
-  const authResult = await authorizeAppAccess(appId, entity, "read");
+
+  const authResult = await authorizeAppAccess(appId, entity, "read", {
+    clientIp: getClientIp(request),
+  });
   if (authResult.error) return authResult.error;
 
   const { tableName, schemaDefinition } = authResult;

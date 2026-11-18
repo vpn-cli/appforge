@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { createInsforgeServer } from "@/lib/insforge-server";
+import { rateLimit } from "@/lib/rate-limit";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ENTITY_MAX_LENGTH = 22;
@@ -10,6 +11,7 @@ export type AccessMode = "read" | "write";
 
 export interface AuthorizeOptions {
   skipEntityCheck?: boolean;
+  clientIp?: string;
 }
 
 export type AuthorizeResult =
@@ -39,7 +41,29 @@ export async function authorizeAppAccess(
   // 3. Authenticate user session
   const { userId } = await auth();
   if (!userId) {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+    // Writes and DDL operations strictly require authentication
+    if (mode !== "read" || options?.skipEntityCheck) {
+      return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+    }
+
+    // Apply per-IP rate limit on unauthenticated public reads before querying the database
+    const ipKey = `proxy_public_read:${options?.clientIp ?? "127.0.0.1"}`;
+    const { success, limit, remaining, reset } = await rateLimit.limit(ipKey);
+    if (!success) {
+      return {
+        error: NextResponse.json(
+          { error: "Too many requests. Please slow down and try again shortly." },
+          {
+            status: 429,
+            headers: {
+              "X-RateLimit-Limit": limit.toString(),
+              "X-RateLimit-Remaining": remaining.toString(),
+              "X-RateLimit-Reset": reset.toString(),
+            },
+          }
+        ),
+      };
+    }
   }
 
   // 4. Retrieve app metadata
@@ -54,7 +78,7 @@ export async function authorizeAppAccess(
     return { error: NextResponse.json({ error: "Server error" }, { status: 500 }) };
   }
 
-  const isOwner = app?.user_id === userId;
+  const isOwner = Boolean(userId && app?.user_id === userId);
   const isPublished = app?.published_config != null;
 
   // 5. Enforce access authorization rules

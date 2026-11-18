@@ -25,3 +25,27 @@ export function CardProvider({
 export function useCardContext() {
   return useContext(CardContext);
 }
+
+interface AppRuntimeContextValue {
+  appId?: string;
+}
+
+const AppRuntimeContext = createContext<AppRuntimeContextValue>({});
+
+export function AppRuntimeProvider({
+  appId,
+  children,
+}: {
+  appId?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <AppRuntimeContext.Provider value={{ appId }}>
+      {children}
+    </AppRuntimeContext.Provider>
+  );
+}
+
+export function useAppRuntimeContext() {
+  return useContext(AppRuntimeContext);
+}

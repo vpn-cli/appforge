@@ -11,8 +11,16 @@ vi.mock("@/lib/insforge-server", () => ({
   createInsforgeServer: vi.fn(),
 }));
 
+// Mock rate limiter
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimit: {
+    limit: vi.fn(),
+  },
+}));
+
 import { auth } from "@clerk/nextjs/server";
 import { createInsforgeServer } from "@/lib/insforge-server";
+import { rateLimit } from "@/lib/rate-limit";
 
 describe("authorizeAppAccess tenant isolation and access control", () => {
   const validAppId = "11111111-2222-3333-4444-555555555555";
@@ -25,6 +33,13 @@ describe("authorizeAppAccess tenant isolation and access control", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    (rateLimit.limit as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      success: true,
+      limit: 20,
+      remaining: 19,
+      reset: Date.now() + 60000,
+    });
 
     mockAppsTable = [
       {
@@ -110,13 +125,48 @@ describe("authorizeAppAccess tenant isolation and access control", () => {
     expect(body.error).toBe("Invalid entity");
   });
 
-  it("returns 401 when signed out (no userId)", async () => {
+  it("returns 401 for write when signed out (no userId)", async () => {
     (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
-    const result = await authorizeAppAccess(validAppId, validEntity, "read");
+    const result = await authorizeAppAccess(validAppId, validEntity, "write");
     expect(result.error).toBeDefined();
     expect(result.error?.status).toBe(401);
     const body = await result.error?.json();
     expect(body.error).toBe("Unauthorized");
+  });
+
+  it("returns 404 for signed-out read on an unpublished app", async () => {
+    (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
+    const result = await authorizeAppAccess(validAppId, validEntity, "read", { clientIp: "198.51.100.1" });
+    expect(result.error).toBeDefined();
+    expect(result.error?.status).toBe(404);
+    const body = await result.error?.json();
+    expect(body.error).toBe("Not found");
+    expect(rateLimit.limit).toHaveBeenCalledWith("proxy_public_read:198.51.100.1");
+  });
+
+  it("allows signed-out read on a published app with per-IP rate limiting", async () => {
+    (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
+    const publishedAppId = "22222222-3333-4444-5555-666666666666";
+    const result = await authorizeAppAccess(publishedAppId, validEntity, "read", { clientIp: "198.51.100.2" });
+    expect(result.error).toBeUndefined();
+    expect(result.isOwner).toBe(false);
+    expect(result.tableName).toBe(`app_${publishedAppId.replace(/-/g, "_")}_${validEntity}`);
+    expect(rateLimit.limit).toHaveBeenCalledWith("proxy_public_read:198.51.100.2");
+  });
+
+  it("returns 429 when per-IP rate limit is exceeded on signed-out read", async () => {
+    (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
+    (rateLimit.limit as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      success: false,
+      limit: 20,
+      remaining: 0,
+      reset: 1700000060000,
+    });
+    const publishedAppId = "22222222-3333-4444-5555-666666666666";
+    const result = await authorizeAppAccess(publishedAppId, validEntity, "read", { clientIp: "198.51.100.3" });
+    expect(result.error).toBeDefined();
+    expect(result.error?.status).toBe(429);
+    expect(result.error?.headers.get("X-RateLimit-Remaining")).toBe("0");
   });
 
   it("returns 404 for unknown app id", async () => {

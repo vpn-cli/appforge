@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
+import { useAppRuntimeContext } from "../context";
 
 export interface ColumnSchema {
   key: string;
@@ -39,11 +40,62 @@ export function DataTable({
   onRowClick,
   className = "",
 }: DataTableProps) {
+  const { appId } = useAppRuntimeContext();
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
   const [isTableFocused, setIsTableFocused] = useState<boolean>(false);
   const tableRef = useRef<HTMLDivElement>(null);
 
   const initialData = (rows && rows.length > 0) ? rows : (data && data.length > 0) ? data : undefined;
+  const fetchKey = appId && entity && !initialData ? `${appId}:${entity}` : null;
+  const [remoteResult, setRemoteResult] = useState<{
+    key: string;
+    status: "loaded" | "error";
+    rows: Record<string, unknown>[];
+    error?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!appId || !entity || initialData || !fetchKey) return;
+
+    let cancelled = false;
+    const targetKey = fetchKey;
+
+    fetch(`/api/proxy/${encodeURIComponent(appId)}/${encodeURIComponent(entity)}`)
+      .then(async (res) => {
+        if (!res.ok) {
+          const payload = await res.json().catch(() => null);
+          const msg =
+            payload && typeof payload === "object" && "error" in payload && typeof payload.error === "string"
+              ? payload.error
+              : `Request failed with status ${res.status}`;
+          throw new Error(msg);
+        }
+        return res.json();
+      })
+      .then((fetched: unknown) => {
+        if (cancelled) return;
+        setRemoteResult({
+          key: targetKey,
+          status: "loaded",
+          rows: Array.isArray(fetched) ? (fetched as Record<string, unknown>[]) : [],
+        });
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setRemoteResult({
+          key: targetKey,
+          status: "error",
+          rows: [],
+          error: err instanceof Error ? err.message : undefined,
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [appId, entity, initialData, fetchKey]);
+
+  const activeRemote = fetchKey && remoteResult?.key === fetchKey ? remoteResult : null;
 
   const resolvedCols = columns.length > 0 
     ? columns 
@@ -57,6 +109,8 @@ export function DataTable({
 
   const resolvedData = initialData
     ? initialData
+    : fetchKey
+    ? activeRemote?.rows ?? []
     : entity === "workflows"
     ? [
         { workflow: "User Sync", trigger: "cron:hourly", status: "Running" },
@@ -111,9 +165,15 @@ export function DataTable({
   const effectiveState =
     state !== "loaded"
       ? state
+      : fetchKey && !activeRemote
+      ? "loading"
+      : activeRemote?.status === "error"
+      ? "error"
       : !resolvedData || resolvedData.length === 0
       ? "empty"
       : "loaded";
+
+  const effectiveErrorMessage = activeRemote?.error || errorMessage;
 
   // Single tab stop keyboard navigation for interactive tables
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -352,7 +412,7 @@ export function DataTable({
                   <div className="flex flex-col items-center justify-center gap-1.5 max-w-sm mx-auto">
                     <AlertCircle className="w-4 h-4 text-error" />
                     <span className="text-xs font-semibold text-error-text">Failed to load dataset</span>
-                    <span className="text-[11px] text-muted-foreground">{errorMessage}</span>
+                    <span className="text-[11px] text-muted-foreground">{effectiveErrorMessage}</span>
                   </div>
                 </td>
               </tr>
