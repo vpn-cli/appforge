@@ -6,6 +6,8 @@ type RouteParams = {
   params: Promise<{ appId: string; entity: string }>;
 };
 
+export type OperationMode = "insert" | "update" | "delete";
+
 export type NormalizeResult =
   | { success: true; data: Record<string, unknown> | Record<string, unknown>[] }
   | { success: false; error: string };
@@ -35,7 +37,8 @@ function resolveColumn(key: string, allowedColumns: Set<string>): string {
 function normalizeSingleObject(
   item: Record<string, unknown>,
   allowedColumns: Set<string>,
-  entityName: string
+  entityName: string,
+  mode: OperationMode
 ): { data?: Record<string, unknown>; error?: string } {
   const normalized: Record<string, unknown> = {};
   const seenCleanKeys = new Map<string, string>(); // cleanKey -> raw original key
@@ -56,7 +59,18 @@ function normalizeSingleObject(
       seenCleanKeys.set(canonicalKey, key);
     }
 
-    // 2. Schema check: return 400 for fields not in the entity schema, not a database error
+    // 2. Handle id and created_at:
+    // On insert: ignore (strip) so database defaults (gen_random_uuid, NOW()) are used
+    // On update/delete: allow id and created_at in body
+    if (targetCol === "id" || targetCol === "created_at") {
+      if (mode === "insert") {
+        continue;
+      }
+      normalized[targetCol] = value;
+      continue;
+    }
+
+    // 3. Schema check: return 400 for fields not in the entity schema, not a database error
     if (!allowedColumns.has(targetCol)) {
       return {
         error: `Field '${key}' does not exist in schema for entity '${entityName}'`,
@@ -72,11 +86,14 @@ function normalizeSingleObject(
 /**
  * Normalizes request payload keys to lowercase alphanumeric/underscore,
  * validates against the entity schema, and rejects collapsing duplicate keys.
+ * In insert mode, id and created_at are ignored (stripped) to preserve system defaults.
+ * In update/delete mode, id and created_at are allowed in request bodies.
  */
 export function normalizePayload(
   payload: unknown,
   schemaDefinition: Record<string, unknown> | undefined,
-  entityName: string
+  entityName: string,
+  mode: OperationMode = "insert"
 ): NormalizeResult {
   const allowedColumns = new Set<string>(["id", "created_at"]);
   if (schemaDefinition && typeof schemaDefinition === "object") {
@@ -92,7 +109,7 @@ export function normalizePayload(
       if (typeof item !== "object" || item === null) {
         return { success: false, error: "Array items must be JSON objects" };
       }
-      const res = normalizeSingleObject(item as Record<string, unknown>, allowedColumns, entityName);
+      const res = normalizeSingleObject(item as Record<string, unknown>, allowedColumns, entityName, mode);
       if (res.error) return { success: false, error: res.error };
       normalizedArray.push(res.data!);
     }
@@ -100,7 +117,7 @@ export function normalizePayload(
   }
 
   if (typeof payload === "object" && payload !== null) {
-    const res = normalizeSingleObject(payload as Record<string, unknown>, allowedColumns, entityName);
+    const res = normalizeSingleObject(payload as Record<string, unknown>, allowedColumns, entityName, mode);
     if (res.error) return { success: false, error: res.error };
     return { success: true, data: res.data! };
   }
@@ -110,7 +127,7 @@ export function normalizePayload(
 
 export async function GET(request: Request, { params }: RouteParams) {
   const { appId, entity } = await params;
-
+  
   const authResult = await authorizeAppAccess(appId, entity, "read");
   if (authResult.error) return authResult.error;
 
@@ -179,7 +196,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const normResult = normalizePayload(body, schemaDefinition, entity);
+  const normResult = normalizePayload(body, schemaDefinition, entity, "insert");
   if (!normResult.success) {
     return NextResponse.json({ error: normResult.error }, { status: 400 });
   }
@@ -208,7 +225,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const normResult = normalizePayload(body, schemaDefinition, entity);
+  const normResult = normalizePayload(body, schemaDefinition, entity, "update");
   if (!normResult.success) {
     return NextResponse.json({ error: normResult.error }, { status: 400 });
   }
@@ -220,8 +237,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Missing record id to update" }, { status: 400 });
   }
 
-  // Remove primary key from update payload to prevent reassigning primary key column
-  const { id: _unusedId, ...updateFields } = normalizedBody;
+  // Remove primary key and created_at from update payload to prevent reassigning primary key column or creation timestamp
+  const { id: _unusedId, created_at: _unusedCreatedAt, ...updateFields } = normalizedBody;
 
   const supabase = await createInsforgeServer();
   const { data, error } = await supabase
@@ -248,9 +265,26 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   const authResult = await authorizeAppAccess(appId, entity, "write");
   if (authResult.error) return authResult.error;
 
-  const { tableName } = authResult;
+  const { tableName, schemaDefinition } = authResult;
   const url = new URL(request.url);
-  const id = url.searchParams.get("id");
+  let id = url.searchParams.get("id");
+
+  // Allow id to be supplied in JSON request body for DELETE
+  if (!id) {
+    try {
+      const body = await request.json();
+      const normResult = normalizePayload(body, schemaDefinition, entity, "delete");
+      if (normResult.success) {
+        const normBody = (Array.isArray(normResult.data) ? normResult.data[0] : normResult.data) || {};
+        if (normBody.id) {
+          id = String(normBody.id);
+        }
+      }
+    } catch {
+      // Body is optional on DELETE
+    }
+  }
+
   if (!id) {
     return NextResponse.json({ error: "Missing record id to delete" }, { status: 400 });
   }
