@@ -34,7 +34,8 @@ export function HeroMeshBackground() {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  // Load WebGL shader via dynamic import strictly after first paint and idle
+  // Load WebGL shader via dynamic import strictly after first paint + hydration settle
+  // (or immediately on first user interaction), preventing cold WebGL init from blocking initial TBT.
   useEffect(() => {
     if (prefersReducedMotion || shaderFailed) return;
 
@@ -44,8 +45,18 @@ export function HeroMeshBackground() {
     let idleId: number | null = null;
     let timerId: number | null = null;
 
+    const removeInteractionListeners = () => {
+      window.removeEventListener("pointermove", triggerNow);
+      window.removeEventListener("pointerdown", triggerNow);
+      window.removeEventListener("touchstart", triggerNow);
+      window.removeEventListener("keydown", triggerNow);
+      window.removeEventListener("scroll", triggerNow);
+    };
+
     const activate = () => {
       if (cancelled) return;
+      cancelled = true;
+      removeInteractionListeners();
       if (hasWebGL2Api()) {
         startTransition(() => setShaderEnabled(true));
       } else {
@@ -53,14 +64,26 @@ export function HeroMeshBackground() {
       }
     };
 
+    function triggerNow() {
+      activate();
+    }
+
     const scheduleAfterPaint = () => {
       raf1 = requestAnimationFrame(() => {
         raf2 = requestAnimationFrame(() => {
-          if (typeof window.requestIdleCallback === "function") {
-            idleId = window.requestIdleCallback(activate, { timeout: 1200 });
-          } else {
-            timerId = globalThis.setTimeout(activate, 200) as unknown as number;
-          }
+          window.addEventListener("pointermove", triggerNow, { passive: true, once: true });
+          window.addEventListener("pointerdown", triggerNow, { passive: true, once: true });
+          window.addEventListener("touchstart", triggerNow, { passive: true, once: true });
+          window.addEventListener("keydown", triggerNow, { passive: true, once: true });
+          window.addEventListener("scroll", triggerNow, { passive: true, once: true });
+
+          timerId = globalThis.setTimeout(() => {
+            if (typeof window.requestIdleCallback === "function") {
+              idleId = window.requestIdleCallback(activate, { timeout: 1000 });
+            } else {
+              activate();
+            }
+          }, 2200) as unknown as number;
         });
       });
     };
@@ -74,6 +97,7 @@ export function HeroMeshBackground() {
     return () => {
       cancelled = true;
       window.removeEventListener("load", scheduleAfterPaint);
+      removeInteractionListeners();
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
       if (idleId !== null && typeof window.cancelIdleCallback === "function") {

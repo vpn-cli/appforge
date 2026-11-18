@@ -57,7 +57,7 @@ function computePixelConfig(width: number, height: number): {
   const w = Math.max(1, Math.round(width));
   const h = Math.max(1, Math.round(height));
   return {
-    dpr,
+    dpr: 1,
     maxPixelCount: Math.max(1, Math.floor(w * h * dpr * dpr)),
   };
 }
