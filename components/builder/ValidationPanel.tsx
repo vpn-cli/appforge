@@ -26,7 +26,7 @@ export function ValidationPanel({
     }
   }, [hasErrors]);
 
-  // When collapsed: single 32px (h-8) status bar at the bottom of the editor pane
+  // Collapsed: 32px (h-8) status bar at the bottom of the editor pane
   if (!isExpanded) {
     return (
       <button
@@ -53,9 +53,8 @@ export function ValidationPanel({
             </>
           ) : (
             <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-              <Check className="w-3.5 h-3.5 shrink-0 stroke-[2.5]" />
               <span className="text-[12px] font-medium tracking-tight">
-                No issues
+                ✓ No issues
               </span>
               {hasWarnings && (
                 <span className="text-[11px] text-warning-text ml-1.5 font-normal">
@@ -93,9 +92,8 @@ export function ValidationPanel({
                   {errors.length} {errors.length === 1 ? "error" : "errors"}
                 </span>
               ) : (
-                <span className="flex items-center gap-1 text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
-                  <Check className="w-3 h-3 stroke-[2.5]" />
-                  No errors
+                <span className="text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
+                  ✓ No issues
                 </span>
               )}
               {hasWarnings && (
@@ -124,8 +122,7 @@ export function ValidationPanel({
           <>
             {!hasErrors && !hasWarnings && (
               <div className="flex items-center text-emerald-600 dark:text-emerald-400 text-xs font-medium gap-2 py-1">
-                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                ✓ No issues. Config is structurally valid.
+                <span>✓ Config is structurally valid.</span>
               </div>
             )}
             {errors.map((err, i) => (

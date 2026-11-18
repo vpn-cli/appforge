@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Status Colors (Part 1) Complete (branch `feat/landing-redesign`)
-**Last completed:** 27 DataTable Status Colors (`type: "status"`, `colors` map, 3-tier color resolution, palette-token pills with 6px dot, Copilot prompt v1.2.0, EVALS.md notice, and 12 unit tests)
-**Next:** Part 2 — Spacing (Builder & Landing Hero)
+**Phase:** Spacing (Part 2) Complete (branch `feat/landing-redesign`)
+**Last completed:** 28 Spacing & Layout Alignment (Statistic Grid orphan avoidance [4x1 or 2x2, never 3+1], 32px Validation log status bar with deduplicated "✓ No issues", Monaco padding.bottom 72, Builder preview hugging frame with 24px/20px rhythm, Landing Hero matching 44px headers, centered body removing dead table gap, and Lucide icons replacing "US"/"IG" initials; 9 unit tests in `tests/spacing-and-layout.test.tsx`)
+**Next:** Part 3 — Honest Hero Config
 
 ---
 

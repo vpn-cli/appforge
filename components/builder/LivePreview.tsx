@@ -95,12 +95,12 @@ export function LivePreview({
 
   return (
     <div
-      className="w-full h-full bg-background p-3 sm:p-5 flex flex-col items-center justify-start overflow-hidden select-none"
+      className="w-full h-full bg-background p-3 sm:p-5 flex flex-col items-center justify-start overflow-y-auto select-none"
       data-lenis-prevent
     >
-      {/* Framed Browser Viewport Container */}
+      {/* Framed Browser Viewport Container: hugs content height */}
       <div
-        className={`${viewportWidthClass} h-full flex flex-col bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 ease-out`}
+        className={`${viewportWidthClass} flex flex-col bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 ease-out shadow-xs shrink-0 max-h-full`}
       >
         {/* Browser Window Chrome Toolbar */}
         {showInnerToolbar && (
@@ -123,9 +123,9 @@ export function LivePreview({
           </div>
         )}
 
-        {/* Viewport Content Area: Fills frame height */}
+        {/* Viewport Content Area: hugs content with exact spacing */}
         <div
-          className="@container flex-1 overflow-y-auto p-4 @sm:p-6 bg-card min-w-0"
+          className="@container overflow-y-auto p-4 @sm:p-6 bg-card min-w-0"
           data-lenis-prevent
         >
           <AnimatePresence mode="wait">
@@ -137,7 +137,7 @@ export function LivePreview({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-warning-text text-[13px] flex flex-col gap-2 items-center justify-center h-full font-mono p-6 bg-warning-light border border-warning-border rounded-lg max-w-sm mx-auto text-center"
+                className="text-warning-text text-[13px] flex flex-col gap-2 items-center justify-center font-mono p-6 bg-warning-light border border-warning-border rounded-lg max-w-sm mx-auto text-center"
               >
                 <span className="text-xl">⚠️</span>
                 <span className="font-semibold">
@@ -156,20 +156,46 @@ export function LivePreview({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                className="flex flex-col gap-4 min-w-0"
+                className="flex flex-col min-w-0"
               >
-                {config?.pages?.[0]?.components?.map(
-                  (comp: Record<string, unknown>, i: number) => (
-                    <RenderNode key={i} config={comp} />
-                  ),
-                ) || (
-                  <div className="flex flex-col items-center justify-center text-muted-foreground py-20 border border-dashed border-border rounded-xl bg-muted/10 text-center">
-                    <span className="text-lg mb-2 opacity-50">📭</span>
-                    <span className="text-sm">
-                      No components defined in configuration yet
-                    </span>
-                  </div>
-                )}
+                {(() => {
+                  const items = config?.pages?.[0]?.components || [];
+                  if (items.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center text-muted-foreground py-20 border border-dashed border-border rounded-xl bg-muted/10 text-center">
+                        <span className="text-lg mb-2 opacity-50">📭</span>
+                        <span className="text-sm">
+                          No components defined in configuration yet
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return items.map((comp: Record<string, unknown>, i: number) => {
+                    const nextComp = items[i + 1] as Record<string, unknown> | undefined;
+                    // Spacing: header → stats 24px, stats → table 20px, default 20px
+                    let marginClass = "";
+                    if (nextComp) {
+                      const curType = comp?.type;
+                      const nextType = nextComp?.type;
+                      if (curType === "Header" && nextType === "Grid") {
+                        marginClass = "mb-6"; // 24px
+                      } else if (curType === "Grid" && nextType === "DataTable") {
+                        marginClass = "mb-5"; // 20px
+                      } else if (curType === "Header") {
+                        marginClass = "mb-6"; // 24px
+                      } else {
+                        marginClass = "mb-5"; // 20px
+                      }
+                    }
+
+                    return (
+                      <div key={i} className={`min-w-0 ${marginClass}`}>
+                        <RenderNode config={comp} />
+                      </div>
+                    );
+                  });
+                })()}
               </motion.div>
             )}
           </AnimatePresence>

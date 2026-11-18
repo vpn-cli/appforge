@@ -271,9 +271,14 @@ Empty State: Authentic "No recently updated apps" state with clock icon and zero
 ### Container-Aware Core Renderers (Tailwind v4 Container Queries)
 *Responsive renderers query container width, preventing overflow in narrow preview frames.*
 ```text
-Preview Frame Root: @container flex-1 overflow-y-auto p-4 @sm:p-6 bg-card min-w-0
+Preview Frame Root: @container w-full max-w-full flex flex-col bg-card rounded-xl border border-border shadow-xs max-h-full overflow-hidden (hugs content height)
 Grid Wrapper: @container w-full min-w-0
-Adaptive Columns: grid-cols-1 @[420px]:grid-cols-2 @[720px]:grid-cols-3 @[960px]:grid-cols-4
+Adaptive Columns (resolveGridColsClass):
+  4 items: grid-cols-1 @[420px]:grid-cols-2 @[860px]:grid-cols-4 (avoids 3+1 orphan cards; 4x1 when room, else 2x2)
+  2 items: grid-cols-1 @[420px]:grid-cols-2
+  3 items: grid-cols-1 @[600px]:grid-cols-3
+  6 items: grid-cols-1 @[420px]:grid-cols-2 @[640px]:grid-cols-3 @[960px]:grid-cols-6
+Preview Spacing: Header -> Grid 24px (mb-6), Grid -> DataTable 20px (mb-5).
 Card: @container h-full bg-card border border-border rounded-lg p-4 min-w-0
 Card Hierarchy: Title is primary (text-[16px] font-semibold text-foreground), Subtitle is secondary (text-[13px] text-muted-foreground)
 Card Divider Rule: Inside Card, content children use divide-y divide-border/60 with at most ONE bordered surface
