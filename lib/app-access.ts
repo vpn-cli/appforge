@@ -13,8 +13,8 @@ export interface AuthorizeOptions {
 }
 
 export type AuthorizeResult =
-  | { error: NextResponse; tableName?: undefined; isOwner?: undefined }
-  | { error?: undefined; tableName: string; isOwner: boolean };
+  | { error: NextResponse; tableName?: undefined; isOwner?: undefined; schemaDefinition?: undefined }
+  | { error?: undefined; tableName: string; isOwner: boolean; schemaDefinition?: Record<string, unknown> };
 
 export async function authorizeAppAccess(
   appId: string,
@@ -78,10 +78,11 @@ export async function authorizeAppAccess(
   const tableName = `app_${appId.replace(/-/g, "_")}_${cleanEntity}`;
 
   // 6. Verify entity exists in app_schemas unless explicitly bypassed for DDL creation
+  let schemaDefinition: Record<string, unknown> | undefined;
   if (!options?.skipEntityCheck) {
     const { data: schemaRow, error: schemaError } = await supabase
       .from("app_schemas")
-      .select("id")
+      .select("id, schema_definition")
       .eq("app_id", appId)
       .in("table_name", [cleanEntity, tableName])
       .maybeSingle();
@@ -93,7 +94,9 @@ export async function authorizeAppAccess(
     if (!schemaRow) {
       return { error: NextResponse.json({ error: "Not found" }, { status: 404 }) };
     }
+
+    schemaDefinition = (schemaRow.schema_definition as Record<string, unknown>) || undefined;
   }
 
-  return { tableName, isOwner };
+  return { tableName, isOwner, schemaDefinition };
 }

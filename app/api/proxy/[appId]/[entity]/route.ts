@@ -6,36 +6,115 @@ type RouteParams = {
   params: Promise<{ appId: string; entity: string }>;
 };
 
+export type NormalizeResult =
+  | { success: true; data: Record<string, unknown> | Record<string, unknown>[] }
+  | { success: false; error: string };
+
+/**
+ * Resolves a request key to the exact PostgreSQL column name in the schema,
+ * trying direct lowercase, snake_case conversion, and stripped-underscore matching.
+ */
+function resolveColumn(key: string, allowedColumns: Set<string>): string {
+  const direct = key.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase();
+  if (allowedColumns.has(direct)) return direct;
+
+  // Try snake_case conversion (e.g. firstName -> first_name)
+  const snake = key
+    .replace(/[^a-zA-Z0-9_]/g, "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .toLowerCase();
+  if (allowedColumns.has(snake)) return snake;
+
+  // Try stripping underscores (e.g. first_name -> firstname)
+  const stripped = direct.replace(/_/g, "");
+  if (allowedColumns.has(stripped)) return stripped;
+
+  return direct || key.toLowerCase();
+}
+
+function normalizeSingleObject(
+  item: Record<string, unknown>,
+  allowedColumns: Set<string>,
+  entityName: string
+): { data?: Record<string, unknown>; error?: string } {
+  const normalized: Record<string, unknown> = {};
+  const seenCleanKeys = new Map<string, string>(); // cleanKey -> raw original key
+
+  for (const [key, value] of Object.entries(item)) {
+    const targetCol = resolveColumn(key, allowedColumns);
+    const canonicalKey = key.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
+    // 1. Collision check: reject when two keys collapse to the same column (e.g. firstName + first_name)
+    const existingKey = seenCleanKeys.get(targetCol) || seenCleanKeys.get(canonicalKey);
+    if (existingKey && existingKey !== key) {
+      return {
+        error: `Payload contains conflicting keys: '${existingKey}' and '${key}' collapse to the same column '${targetCol}'`,
+      };
+    }
+    seenCleanKeys.set(targetCol, key);
+    if (canonicalKey) {
+      seenCleanKeys.set(canonicalKey, key);
+    }
+
+    // 2. Schema check: return 400 for fields not in the entity schema, not a database error
+    if (!allowedColumns.has(targetCol)) {
+      return {
+        error: `Field '${key}' does not exist in schema for entity '${entityName}'`,
+      };
+    }
+
+    normalized[targetCol] = value;
+  }
+
+  return { data: normalized };
+}
+
 /**
  * Normalizes request payload keys to lowercase alphanumeric/underscore,
- * matching PostgreSQL column normalization in execute_app_ddl and actions/schema.ts.
+ * validates against the entity schema, and rejects collapsing duplicate keys.
  */
-function normalizePayload(payload: unknown): Record<string, unknown> | Record<string, unknown>[] {
-  if (Array.isArray(payload)) {
-    return payload.map((item) =>
-      typeof item === "object" && item !== null
-        ? (normalizePayload(item) as Record<string, unknown>)
-        : {}
-    );
-  }
-  if (typeof payload === "object" && payload !== null) {
-    const normalized: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(payload as Record<string, unknown>)) {
-      const cleanKey = key.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase();
-      normalized[cleanKey || key.toLowerCase()] = value;
+export function normalizePayload(
+  payload: unknown,
+  schemaDefinition: Record<string, unknown> | undefined,
+  entityName: string
+): NormalizeResult {
+  const allowedColumns = new Set<string>(["id", "created_at"]);
+  if (schemaDefinition && typeof schemaDefinition === "object") {
+    for (const field of Object.keys(schemaDefinition)) {
+      const clean = field.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase();
+      if (clean) allowedColumns.add(clean);
     }
-    return normalized;
   }
-  return {};
+
+  if (Array.isArray(payload)) {
+    const normalizedArray: Record<string, unknown>[] = [];
+    for (const item of payload) {
+      if (typeof item !== "object" || item === null) {
+        return { success: false, error: "Array items must be JSON objects" };
+      }
+      const res = normalizeSingleObject(item as Record<string, unknown>, allowedColumns, entityName);
+      if (res.error) return { success: false, error: res.error };
+      normalizedArray.push(res.data!);
+    }
+    return { success: true, data: normalizedArray };
+  }
+
+  if (typeof payload === "object" && payload !== null) {
+    const res = normalizeSingleObject(payload as Record<string, unknown>, allowedColumns, entityName);
+    if (res.error) return { success: false, error: res.error };
+    return { success: true, data: res.data! };
+  }
+
+  return { success: false, error: "Payload must be a valid JSON object or array" };
 }
 
 export async function GET(request: Request, { params }: RouteParams) {
   const { appId, entity } = await params;
-  
+
   const authResult = await authorizeAppAccess(appId, entity, "read");
   if (authResult.error) return authResult.error;
 
-  const { tableName } = authResult;
+  const { tableName, schemaDefinition } = authResult;
   const supabase = await createInsforgeServer();
 
   const url = new URL(request.url);
@@ -43,6 +122,23 @@ export async function GET(request: Request, { params }: RouteParams) {
   const rawOrderBy = url.searchParams.get("order") || "created_at";
   const orderBy = rawOrderBy.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase() || "created_at";
   const ascending = url.searchParams.get("ascending") === "true";
+
+  // Validate order column against schema definition to prevent database errors
+  if (orderBy !== "created_at" && orderBy !== "id") {
+    const allowedColumns = new Set<string>(["id", "created_at"]);
+    if (schemaDefinition && typeof schemaDefinition === "object") {
+      for (const field of Object.keys(schemaDefinition)) {
+        const clean = field.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase();
+        if (clean) allowedColumns.add(clean);
+      }
+    }
+    if (!allowedColumns.has(orderBy)) {
+      return NextResponse.json(
+        { error: `Order field '${rawOrderBy}' does not exist in schema for entity '${entity}'` },
+        { status: 400 }
+      );
+    }
+  }
 
   const { data, error } = await supabase
     .from(tableName)
@@ -75,7 +171,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   const authResult = await authorizeAppAccess(appId, entity, "write");
   if (authResult.error) return authResult.error;
 
-  const { tableName } = authResult;
+  const { tableName, schemaDefinition } = authResult;
   let body: unknown;
   try {
     body = await request.json();
@@ -83,9 +179,13 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const normalizedBody = normalizePayload(body);
+  const normResult = normalizePayload(body, schemaDefinition, entity);
+  if (!normResult.success) {
+    return NextResponse.json({ error: normResult.error }, { status: 400 });
+  }
+
   const supabase = await createInsforgeServer();
-  const { data, error } = await supabase.from(tableName).insert(normalizedBody).select().single();
+  const { data, error } = await supabase.from(tableName).insert(normResult.data).select().single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
@@ -100,7 +200,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
   const authResult = await authorizeAppAccess(appId, entity, "write");
   if (authResult.error) return authResult.error;
 
-  const { tableName } = authResult;
+  const { tableName, schemaDefinition } = authResult;
   let body: unknown;
   try {
     body = await request.json();
@@ -108,8 +208,12 @@ export async function PUT(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const normalized = normalizePayload(body);
-  const normalizedBody = (Array.isArray(normalized) ? normalized[0] : normalized) || {};
+  const normResult = normalizePayload(body, schemaDefinition, entity);
+  if (!normResult.success) {
+    return NextResponse.json({ error: normResult.error }, { status: 400 });
+  }
+
+  const normalizedBody = (Array.isArray(normResult.data) ? normResult.data[0] : normResult.data) || {};
   const url = new URL(request.url);
   const id = url.searchParams.get("id") || (normalizedBody.id as string | undefined);
   if (!id) {

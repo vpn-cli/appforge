@@ -68,6 +68,7 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
 
     // Process fields with strict identifier validation and type whitelisting
     const sanitizedFields: Record<string, string> = {};
+    const seenColNames = new Map<string, string>();
 
     if (fields && typeof fields === "object") {
       for (const [fieldName, rawType] of Object.entries(fields as Record<string, unknown>)) {
@@ -86,6 +87,16 @@ export async function syncAppSchema(appId: string, entities: unknown, userId: st
           };
         }
         if (cleanFieldName === 'id' || cleanFieldName === 'created_at') continue;
+
+        // Check for duplicate column collisions (e.g. firstName and first_name)
+        const prevField = seenColNames.get(cleanFieldName);
+        if (prevField && prevField !== fieldName) {
+          return {
+            success: false,
+            message: `Duplicate column collision: "${fieldName}" and "${prevField}" collapse to the same column "${cleanFieldName}".`,
+          };
+        }
+        seenColNames.set(cleanFieldName, fieldName);
 
         const stringType = typeof rawType === "string" ? rawType.toLowerCase() : "";
         const pgType = COLUMN_TYPE_WHITELIST[stringType];

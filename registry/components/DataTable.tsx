@@ -133,6 +133,16 @@ export function DataTable({
     }
   };
 
+  const getCellValue = (row: Record<string, unknown>, colKey: string): unknown => {
+    if (row[colKey] !== undefined) return row[colKey];
+    const lowerKey = colKey.toLowerCase();
+    if (row[lowerKey] !== undefined) return row[lowerKey];
+    for (const [k, v] of Object.entries(row)) {
+      if (k.toLowerCase() === lowerKey) return v;
+    }
+    return undefined;
+  };
+
   const renderCellContent = (col: ColumnSchema, value: unknown, rowIdx: number) => {
     if (value === null || value === undefined || value === "") {
       return <span className="text-muted-foreground/50 select-none">-</span>;
@@ -390,7 +400,7 @@ export function DataTable({
                             : "text-left"
                         }`}
                       >
-                        {renderCellContent(col, row[col.key], rowIdx)}
+                        {renderCellContent(col, getCellValue(row, col.key), rowIdx)}
                       </td>
                     ))}
                   </tr>
