@@ -21,6 +21,13 @@ const ENTITY_IDENTIFIER_RE = /^[a-zA-Z0-9_]{1,22}$/;
 const COLUMN_IDENTIFIER_RE = /^[a-zA-Z0-9_]{1,63}$/;
 
 export async function syncAppSchema(appId: string, entities: unknown, userId: string | null) {
+  if (appId === "demo" || appId.startsWith("template-") || appId.startsWith("mock-")) {
+    return {
+      success: false,
+      message: "Sandbox demo and template schemas cannot be synchronized to the database.",
+    };
+  }
+
   const supabase = await createInsforgeServer();
 
   // If there's no Clerk userId (e.g. guest mode)
