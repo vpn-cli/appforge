@@ -72,7 +72,7 @@ export function DemoCodeCard({
   return (
     <div
       data-testid="hero-code-card"
-      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-full min-h-[410px] transition-colors relative"
+      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto transition-colors relative"
     >
       {/* Top Header Row — matching 44px (h-11) height with preview card */}
       <div className="h-11 flex items-center justify-between gap-2 pb-3 border-b border-border shrink-0">
@@ -103,10 +103,10 @@ export function DemoCodeCard({
         </Button>
       </div>
 
-      {/* Code Body — wraps cleanly with zero horizontal scroll */}
+      {/* Code Body — wraps cleanly with zero horizontal scroll and fits content */}
       <div
         data-testid="code-panel-body"
-        className="py-2.5 font-mono text-[13px] leading-[19px] select-text flex-1 flex flex-col justify-center overflow-x-hidden"
+        className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col overflow-x-hidden"
       >
         <div className="w-full flex flex-col">
           {lines.map((tokens, lineIdx) => {

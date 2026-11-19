@@ -144,8 +144,13 @@ describe("PART 2 — Spacing & Layout", () => {
       expect(codeHtml).toContain("h-9 pt-2.5 border-t border-border");
       expect(previewHtml).toContain("h-9 pt-2.5 border-t border-border");
 
-      // Preview body is vertically centered (flex-1 flex flex-col justify-center)
-      expect(previewHtml).toContain("flex-1 justify-center");
+      // Both panels fit content height naturally (h-auto, no forced min-h-[410px] or body justify-center)
+      expect(codeHtml).toContain("h-auto");
+      expect(previewHtml).toContain("h-auto");
+      expect(codeHtml).not.toContain("min-h-[410px]");
+      expect(previewHtml).not.toContain("min-h-[410px]");
+      expect(codeHtml).not.toContain("flex-1 flex flex-col justify-center");
+      expect(previewHtml).not.toContain("flex-1 justify-center");
     });
   });
 });

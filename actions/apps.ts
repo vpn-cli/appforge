@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { syncAppSchema } from "@/actions/schema";
 import { normalizeConfigFieldNames } from "@/lib/config-normalizer";
+import { isSandboxAppId } from "@/lib/sandbox";
 
 /**
  * Resolves the authenticated user ID.
@@ -260,13 +261,6 @@ export async function createAppFromTemplate(templateId: string) {
 
   // Redirecting the user to the builder with a flag so the UI can seed the template
   redirect(`/builder/${data.id}?template=${templateId}`);
-}
-
-/**
- * Identifies sandbox demo routes and transient template/mock IDs that should never write to persistent storage.
- */
-export function isSandboxAppId(appId: string): boolean {
-  return appId === "demo" || appId.startsWith("template-") || appId.startsWith("mock-");
 }
 
 export async function saveAppConfig(appId: string, configStr: string) {

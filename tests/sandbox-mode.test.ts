@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
+import { isSandboxAppId } from "@/lib/sandbox";
 import {
-  isSandboxAppId,
   saveAppConfig,
   publishAppConfig,
   renameApp,

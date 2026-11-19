@@ -20,7 +20,7 @@ export function DemoPreviewCard({
   return (
     <div
       data-testid="hero-preview-card"
-      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-full min-h-[410px] transition-colors relative"
+      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto transition-colors relative"
     >
       {/* Header — matching 44px (h-11) height with code card */}
       <div className="h-11 flex items-center justify-between gap-2 pb-3 border-b border-border shrink-0">
@@ -38,8 +38,8 @@ export function DemoPreviewCard({
         </StatusPill>
       </div>
 
-      {/* Real Registry Component Output — centered body removing dead gap below table */}
-      <div className="py-2.5 flex flex-col gap-5 flex-1 justify-center min-w-0">
+      {/* Real Registry Component Output — fits content height with no empty band above or below table */}
+      <div className="py-3 flex flex-col gap-4 min-w-0">
         {components.map((node, idx) => (
           <RenderNode key={idx} config={node} />
         ))}
