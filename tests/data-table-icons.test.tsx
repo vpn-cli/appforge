@@ -100,7 +100,8 @@ describe("DataTable row icons and schema-validated icon resolution", () => {
     });
 
     it("renders hero DataTable with explicit icons", () => {
-      const tableConfig = HERO_DEMO_CONFIG.pages[0].components[1];
+      const config = buildHeroDemoConfig({ includeSlackAlerts: true });
+      const tableConfig = config.pages[0].components[1] as any;
       const html = renderToString(
         <DataTable
           columns={tableConfig.columns}
