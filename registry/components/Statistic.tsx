@@ -156,9 +156,9 @@ export function Statistic({
           </div>
 
           <div className="flex items-baseline gap-2.5">
-            <h3 className="text-[32px] sm:text-[36px] font-bold tracking-tight text-white leading-none tabular-nums">
+            <div className="text-[32px] sm:text-[36px] font-bold tracking-tight text-white leading-none tabular-nums">
               {effectiveValue}
-            </h3>
+            </div>
             {trendStrValue && (
               <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-white/15 border border-white/25 text-white shrink-0">
                 <ArrowUpRight className="w-3 h-3" strokeWidth={2.2} />
@@ -239,9 +239,9 @@ export function Statistic({
 
           {/* Value and Growth pill: 52px bold number */}
           <div className="flex items-center gap-3.5">
-            <h3 className="text-4xl sm:text-[52px] font-bold tracking-tight text-foreground leading-none tabular-nums">
+            <div className="text-4xl sm:text-[52px] font-bold tracking-tight text-foreground leading-none tabular-nums">
               {effectiveValue}
-            </h3>
+            </div>
 
             {trendStrValue && (
               <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-status-success-bg text-status-success-text border border-status-success-border shrink-0 select-none">
@@ -271,14 +271,14 @@ export function Statistic({
 
       {/* Value and trend stack vertically when narrow (flex-wrap) */}
       <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 min-w-0">
-        <h3
+        <div
           className="font-bold text-foreground font-sans tabular-nums tracking-tight leading-none break-words [overflow-wrap:anywhere] min-w-0"
           style={{
             fontSize: "clamp(1.125rem, 5cqi + 0.5rem, 1.875rem)",
           }}
         >
           {effectiveValue}
-        </h3>
+        </div>
 
         {trendStrValue && (
           <div

@@ -43,6 +43,7 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
         <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/"
+            aria-label="AppForge Home"
             className="flex items-center gap-2.5 outline-none group select-none shrink-0"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}

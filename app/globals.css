@@ -247,7 +247,7 @@
   --editor-selection-light: #6D5BF040;
   --editor-selection-inactive-light: #6D5BF020;
   --editor-selection-highlight-light: #6D5BF028;
-  --editor-line-number-light: #9A9AB0;
+  --editor-line-number-light: #606078;
   --editor-line-number-active-light: #17171F;
   --editor-line-highlight-light: #0000000A;
   --editor-indent-guide-light: #0000000D;
@@ -268,7 +268,7 @@
   --editor-selection-dark: #8B7FF840;
   --editor-selection-inactive-dark: #8B7FF820;
   --editor-selection-highlight-dark: #8B7FF828;
-  --editor-line-number-dark: #6B6B82;
+  --editor-line-number-dark: #8E8EA8;
   --editor-line-number-active-dark: #F2F2F7;
   --editor-line-highlight-dark: #FFFFFF08;
   --editor-indent-guide-dark: #FFFFFF0D;

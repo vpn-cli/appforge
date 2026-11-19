@@ -736,8 +736,10 @@ function BuilderContent() {
           Copilot floating chat pill anchored at bottom-right corner of Monaco pane
           ========================================================================= */}
       <main
+        id="main-content"
+        tabIndex={-1}
         ref={containerRef}
-        className="flex-1 flex flex-col md:flex-row overflow-hidden relative"
+        className="flex-1 flex flex-col md:flex-row overflow-hidden relative outline-none"
       >
         {/* PANE 1: CONFIG EDITOR (LEFT) */}
         {isEditorCollapsed ? (

@@ -68,12 +68,14 @@ export default function RootLayout({
           />
         </head>
         <body className="min-h-full flex flex-col font-sans">
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-4 focus:left-4 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Skip to Main Content
-          </a>
+          <nav aria-label="Skip navigation">
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-4 focus:left-4 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Skip to Main Content
+            </a>
+          </nav>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
             <SmoothScroller>
               {children}

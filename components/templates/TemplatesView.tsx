@@ -83,9 +83,9 @@ export function TemplatesView() {
                 </div>
 
                 {/* Title: 17/600 */}
-                <h3 className="text-[17px] font-semibold text-foreground tracking-tight">
+                <h2 className="text-[17px] font-semibold text-foreground tracking-tight">
                   {tpl.title}
-                </h3>
+                </h2>
 
                 {/* Description: 14 */}
                 <p className="text-[14px] text-muted-foreground mt-1.5 leading-normal">

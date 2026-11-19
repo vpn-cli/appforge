@@ -100,9 +100,9 @@ export function AppCard({ app, onRename, onDelete }: Props) {
         <div className="flex flex-col gap-1 min-w-0">
           <div className="flex items-center justify-between gap-2.5">
             <div className="flex items-center gap-2 min-w-0">
-              <h3 className="text-[16px] sm:text-[17px] font-semibold text-foreground truncate tracking-tight transition-colors">
+              <h2 className="text-[16px] sm:text-[17px] font-semibold text-foreground truncate tracking-tight transition-colors">
                 {app.name}
-              </h3>
+              </h2>
               <StatusPill variant={isPublished ? "published" : "draft"}>
                 {app.status}
               </StatusPill>
