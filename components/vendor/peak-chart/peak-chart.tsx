@@ -228,17 +228,37 @@ function hslOf(color: string): [number, number] | null {
   return [(h * 60 + 360) % 360, sat];
 }
 
-/* ---------- static layers & deferred glow cache ---------- */
+/* ---------- static layers & precomputed asset cache ---------- */
 
-function makeCanvas(w: number, h: number) {
-  const c = document.createElement("canvas");
-  c.width = Math.max(1, Math.round(w));
-  c.height = Math.max(1, Math.round(h));
-  return c;
+const ASSET_PATHS = {
+  rest: "/peak-chart/field-rest.webp",
+  lift: "/peak-chart/field-lift.webp",
+  halo: "/peak-chart/halo.webp",
+  grid: "/peak-chart/grid.webp",
+};
+
+const imageCache: {
+  rest?: HTMLImageElement;
+  lift?: HTMLImageElement;
+  halo?: HTMLImageElement;
+  grid?: HTMLImageElement;
+} = {};
+
+function getOrLoadImage(key: keyof typeof ASSET_PATHS, onLoaded?: () => void) {
+  if (typeof window === "undefined") return null;
+  if (imageCache[key]) return imageCache[key];
+  const img = new Image();
+  img.src = ASSET_PATHS[key];
+  if (img.complete && img.naturalWidth > 0) {
+    imageCache[key] = img;
+    return img;
+  }
+  img.onload = () => {
+    imageCache[key] = img;
+    onLoaded?.();
+  };
+  return null;
 }
-
-/** In-memory cache for pre-computed glow fields to eliminate repeat calculations */
-const fieldCache = new Map<string, { rest: HTMLCanvasElement; lift: HTMLCanvasElement }>();
 
 /** Paints the card glow at `px` pixels per card width: resting field and brighter copy for breath. */
 function buildField(px: number, seed: number) {
@@ -695,31 +715,13 @@ export function PeakChart({
     canvas.style.width = `${canvas.width / dpr}px`;
     canvas.style.height = `${canvas.height / dpr}px`;
 
-    const fieldPx = Math.min(width * dpr, Math.max(width, 700));
-    const grid = buildGrid(width * dpr);
-    const halo = buildHalo(width);
     const tLand = (frac: number) => T_DRAW0 + T_DRAW * inverseEase(frac);
 
-    // Performance protection: Defer heavy buildField to requestIdleCallback with cache
-    let fieldCanvas: { rest: HTMLCanvasElement; lift: HTMLCanvasElement } | null = null;
-    const cacheKey = `${fieldPx}_11`;
-    const cachedField = fieldCache.get(cacheKey);
-
-    if (cachedField) {
-      fieldCanvas = cachedField;
-    } else {
-      const scheduleIdle =
-        typeof window !== "undefined" && "requestIdleCallback" in window
-          ? (cb: () => void) => window.requestIdleCallback(cb, { timeout: 250 })
-          : (cb: () => void) => setTimeout(cb, 40);
-
-      scheduleIdle(() => {
-        const computed = buildField(fieldPx, 11);
-        fieldCache.set(cacheKey, computed);
-        fieldCanvas = computed;
-        kick();
-      });
-    }
+    // Preload precomputed WebP assets without any main-thread computation
+    getOrLoadImage("halo", () => kick());
+    getOrLoadImage("rest", () => kick());
+    getOrLoadImage("lift", () => kick());
+    getOrLoadImage("grid", () => kick());
 
     let clock = reduce ? T_REST + 0.01 : 0;
     let started = reduce;
@@ -815,27 +817,34 @@ export function PeakChart({
       ctx.setTransform(s, 0, 0, s, bx, by);
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
-      ctx.drawImage(halo, -BX, -BY, CW + 2 * BX, CH + 2 * BY);
+
+      const haloImg = imageCache.halo || getOrLoadImage("halo", kick);
+      if (haloImg) {
+        ctx.drawImage(haloImg, -BX, -BY, CW + 2 * BX, CH + 2 * BY);
+      }
 
       ctx.save();
       roundRect();
       ctx.clip();
 
-      if (fieldCanvas) {
-        ctx.drawImage(fieldCanvas.rest, 0, 0, CW, CH);
-        if (F.breath > 0.001) {
+      const restImg = imageCache.rest || getOrLoadImage("rest", kick);
+      const liftImg = imageCache.lift || getOrLoadImage("lift", kick);
+      if (restImg) {
+        ctx.drawImage(restImg, 0, 0, CW, CH);
+        if (F.breath > 0.001 && liftImg) {
           ctx.globalAlpha = F.breath;
-          ctx.drawImage(fieldCanvas.lift, 0, 0, CW, CH);
+          ctx.drawImage(liftImg, 0, 0, CW, CH);
         }
       } else {
-        // Fast placeholder fill before idle callback finishes
+        // Fast placeholder fill before precomputed image loads
         ctx.fillStyle = BACKDROP;
         ctx.fillRect(0, 0, CW, CH);
       }
 
-      if (F.grid > 0.001) {
+      const gridImg = imageCache.grid || getOrLoadImage("grid", kick);
+      if (F.grid > 0.001 && gridImg) {
         ctx.globalAlpha = F.grid;
-        ctx.drawImage(grid, 0, 0, CW, CH);
+        ctx.drawImage(gridImg, 0, 0, CW, CH);
       }
       ctx.globalAlpha = 1;
 
