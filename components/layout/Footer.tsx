@@ -14,7 +14,7 @@ export function Footer() {
               AppForge
             </span>
             <span className="text-text-secondary text-[14px]">
-              — Metadata-driven application runtime.
+              - Metadata-driven application runtime.
             </span>
           </div>
         </div>

@@ -19,10 +19,10 @@ export function HomeView() {
         tabIndex={-1}
         className="flex-1 flex flex-col w-full outline-none"
       >
-        {/* Hero section (~90vh, vertically centred) with scoped animated mesh-gradient background */}
+        {/* Hero section (min-h-[100dvh], vertically centred) with scoped animated mesh-gradient background */}
         <section
           data-testid="hero-section"
-          className="relative w-full min-h-[90vh] pt-20 flex flex-col overflow-hidden"
+          className="relative w-full min-h-[100dvh] pt-20 flex flex-col overflow-hidden"
         >
           <HeroMeshBackground />
 

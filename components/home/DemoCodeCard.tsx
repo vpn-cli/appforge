@@ -20,42 +20,11 @@ const TOKEN_CLASSES: Record<JsonToken["kind"], string> = {
 
 type DemoCodeCardProps = {
   metricDisplayValue?: string;
-  typedLiveText?: string;
-  showCursor?: boolean;
-  isLineHighlighted?: boolean;
 };
-
-function renderTypedSuffix(text: string) {
-  if (!text) return null;
-  // Colorize ', "live": true' progressively using theme syntax tokens
-  const segments: Array<{ kind: JsonToken["kind"]; text: string }> = [];
-  const full = ', "live": true';
-  const rules: Array<{ len: number; kind: JsonToken["kind"] }> = [
-    { len: 2, kind: "punct" }, // ", "
-    { len: 6, kind: "key" }, // '"live"'
-    { len: 2, kind: "punct" }, // ": "
-    { len: 4, kind: "bool" }, // "true"
-  ];
-  let cursor = 0;
-  for (const r of rules) {
-    if (cursor >= text.length) break;
-    const end = Math.min(text.length, cursor + r.len);
-    segments.push({ kind: r.kind, text: full.slice(cursor, end) });
-    cursor = end;
-  }
-  return segments.map((seg, i) => (
-    <span key={i} className={TOKEN_CLASSES[seg.kind]}>
-      {seg.text}
-    </span>
-  ));
-}
 
 export function DemoCodeCard({
   metricDisplayValue = "1,244",
-  typedLiveText = "",
-  showCursor = false,
-  isLineHighlighted = false,
-}: DemoCodeCardProps) {
+}: DemoCodeCardProps = {}) {
   const [copied, setCopied] = useState(false);
   const lines = buildHeroJsonLines(metricDisplayValue);
 
@@ -109,41 +78,26 @@ export function DemoCodeCard({
         className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col overflow-x-hidden"
       >
         <div className="w-full flex flex-col">
-          {lines.map((tokens, lineIdx) => {
-            const isTargetLine = lineIdx === 11; // "entity": "workflows"
-            const isValueLine = lineIdx === 6 && isLineHighlighted;
-            return (
-              <div
-                key={lineIdx}
-                className={`flex items-baseline gap-4 min-w-0 rounded px-1.5 -mx-1.5 transition-colors duration-200 ${
-                  (isTargetLine && isLineHighlighted) || isValueLine
-                    ? "bg-brand-light"
-                    : ""
-                }`}
+          {lines.map((tokens, lineIdx) => (
+            <div
+              key={lineIdx}
+              className="flex items-baseline gap-4 min-w-0 rounded px-1.5 -mx-1.5"
+            >
+              <span
+                aria-hidden="true"
+                className="w-5 text-right text-text-muted/60 select-none shrink-0 tabular-nums"
               >
-                <span
-                  aria-hidden="true"
-                  className="w-5 text-right text-text-muted/60 select-none shrink-0 tabular-nums"
-                >
-                  {lineIdx + 1}
-                </span>
-                <code className="whitespace-pre-wrap break-words min-w-0 flex-1">
-                  {tokens.map((tok, tokIdx) => (
-                    <span key={tokIdx} className={TOKEN_CLASSES[tok.kind]}>
-                      {tok.text}
-                    </span>
-                  ))}
-                  {isTargetLine && renderTypedSuffix(typedLiveText)}
-                  {isTargetLine && showCursor && (
-                    <span
-                      aria-hidden="true"
-                      className="inline-block w-[2px] h-[14px] bg-brand-link align-middle ml-0.5 animate-pulse"
-                    />
-                  )}
-                </code>
-              </div>
-            );
-          })}
+                {lineIdx + 1}
+              </span>
+              <code className="whitespace-pre-wrap break-words min-w-0 flex-1">
+                {tokens.map((tok, tokIdx) => (
+                  <span key={tokIdx} className={TOKEN_CLASSES[tok.kind]}>
+                    {tok.text}
+                  </span>
+                ))}
+              </code>
+            </div>
+          ))}
         </div>
       </div>
 

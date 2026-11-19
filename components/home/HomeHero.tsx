@@ -10,9 +10,8 @@ export function HomeHero() {
       </h1>
 
       <p className="text-[16px] sm:text-[17px] text-text-secondary leading-[1.5] max-w-[60ch] mx-auto mb-6 font-normal">
-        Write or prompt a JSON config for your UI and entities. AppForge
-        validates every node, renders typed React components, and syncs tables
-        to Postgres.
+        Write or prompt a JSON config. AppForge validates every node, renders
+        typed components, and syncs tables to Postgres.
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
@@ -22,7 +21,7 @@ export function HomeHero() {
           size="lg"
           showArrow
         >
-          <span>Start Building</span>
+          <span>Start building</span>
         </Button>
 
         <Button
@@ -30,7 +29,7 @@ export function HomeHero() {
           variant="secondary"
           size="lg"
         >
-          <span>View Templates</span>
+          <span>View templates</span>
         </Button>
       </div>
     </div>
