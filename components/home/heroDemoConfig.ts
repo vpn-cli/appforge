@@ -1,3 +1,5 @@
+import { validateComponentNode } from "@/lib/validation";
+
 export type HeroDemoStateParams = {
   metricValue?: number;
   invoiceStatus?: "Idle" | "Running";
@@ -176,46 +178,91 @@ export const INITIAL_HERO_STATE: HeroScriptedState = {
 };
 
 /**
+ * Validates the candidate component AST node generated from the editor's current code string
+ * using the real registry schema validator `validateComponentNode`.
+ */
+export function validateHeroEditorState(displayVariantString: string): {
+  valid: boolean;
+  validationStatus: "validating" | "valid";
+  issues?: Array<{ path: string; message: string }>;
+} {
+  let candidateVariant: unknown = undefined;
+  try {
+    candidateVariant = JSON.parse(displayVariantString);
+  } catch {
+    candidateVariant = displayVariantString.replace(/^"|"$/g, "");
+  }
+
+  const candidateNode = {
+    type: "Statistic",
+    label: "Active Workflows",
+    value: "1,244",
+    variant: candidateVariant,
+    trend: { value: "+12%", sentiment: "positive" as const },
+  };
+
+  const res = validateComponentNode(candidateNode);
+  return {
+    valid: res.valid,
+    validationStatus: res.valid ? "valid" : "validating",
+    issues: res.issues,
+  };
+}
+
+/**
  * Deterministic scripted edit state calculator.
  * Cycle duration: 11,000ms.
  * - 0 .. 2800ms: Initial clean state ("panel", valid, no cursor).
  * - 2800 .. 4200ms: Scripted edit in progress (typing "gradient", validating…).
  * - 4200 .. 10200ms: Applied state ("gradient", valid, re-rendered via RenderNode).
  * - 10200 .. 11000ms: Reset transition back to initial state.
+ *
+ * NOTE: validationStatus is NOT hard-coded; it is computed by passing the candidate AST
+ * to validateComponentNode at runtime.
  */
 export function computeScriptedHeroState(tMs: number): HeroScriptedState {
   const t = tMs % 11000;
   const target = '"gradient"';
 
-  if (t < 2800) {
-    return INITIAL_HERO_STATE;
-  }
+  let phase: HeroScriptedPhase = "initial";
+  let variantValue: "panel" | "gradient" = "panel";
+  let displayVariantString = '"panel"';
+  let isEditing = false;
+  let activeLineHighlighted = false;
+  let showCursor = false;
 
-  if (t >= 2800 && t < 4200) {
+  if (t < 2800) {
+    phase = "initial";
+    variantValue = "panel";
+    displayVariantString = '"panel"';
+  } else if (t >= 2800 && t < 4200) {
+    phase = "editing";
+    variantValue = "panel"; // not yet applied to preview until fully valid
+    isEditing = true;
+    activeLineHighlighted = true;
+    showCursor = true;
     const elapsed = t - 2800;
     const progress = Math.min(1, elapsed / 1200);
     const charCount = Math.max(1, Math.floor(progress * target.length));
-    const typed = target.slice(0, charCount);
-
-    return {
-      phase: "editing",
-      variantValue: "panel", // not yet applied
-      displayVariantString: typed,
-      isEditing: true,
-      validationStatus: "validating",
-      activeLineHighlighted: true,
-      showCursor: true,
-    };
+    displayVariantString = target.slice(0, charCount);
+  } else {
+    // 4200 .. 11000ms: Applied state
+    phase = "applied";
+    variantValue = "gradient";
+    displayVariantString = '"gradient"';
+    activeLineHighlighted = t < 5200;
   }
 
-  // 4200 .. 11000ms: Applied state
+  // Real runtime validation via validateComponentNode
+  const runtimeValidation = validateHeroEditorState(displayVariantString);
+
   return {
-    phase: "applied",
-    variantValue: "gradient",
-    displayVariantString: '"gradient"',
-    isEditing: false,
-    validationStatus: "valid",
-    activeLineHighlighted: t < 5200, // hold line highlight briefly after application
-    showCursor: false,
+    phase,
+    variantValue,
+    displayVariantString,
+    isEditing,
+    validationStatus: runtimeValidation.validationStatus,
+    activeLineHighlighted,
+    showCursor,
   };
 }

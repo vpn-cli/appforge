@@ -9,6 +9,7 @@ import {
   HERO_DEMO_JSON_LINES,
   buildHeroDemoConfig,
   computeScriptedHeroState,
+  validateHeroEditorState,
   INITIAL_HERO_STATE,
 } from "@/components/home/heroDemoConfig";
 import { ComponentRegistry } from "@/registry";
@@ -130,6 +131,32 @@ describe("PART 3 — Honest Hero Config", () => {
         expect(validation.issues).toBeUndefined();
       }
     }
+  });
+
+  it("confirms validating… / ✓ valid is derived from real validateComponentNode calls at runtime", () => {
+    // When variant is fully valid ("panel" or "gradient")
+    const panelResult = validateHeroEditorState('"panel"');
+    expect(panelResult.valid).toBe(true);
+    expect(panelResult.validationStatus).toBe("valid");
+
+    const gradientResult = validateHeroEditorState('"gradient"');
+    expect(gradientResult.valid).toBe(true);
+    expect(gradientResult.validationStatus).toBe("valid");
+
+    // While typing intermediate partial values ("g", "grad", "gr")
+    const partialG = validateHeroEditorState('"g"');
+    expect(partialG.valid).toBe(false);
+    expect(partialG.validationStatus).toBe("validating");
+    expect(partialG.issues).toBeDefined();
+
+    const partialGrad = validateHeroEditorState('"grad"');
+    expect(partialGrad.valid).toBe(false);
+    expect(partialGrad.validationStatus).toBe("validating");
+
+    // Invalid schema value altogether
+    const invalidVal = validateHeroEditorState('"invalid-variant"');
+    expect(invalidVal.valid).toBe(false);
+    expect(invalidVal.validationStatus).toBe("validating");
   });
 
   it("renders validating… and ✓ valid states in code card footer", () => {
