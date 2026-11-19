@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { inter, geistMono } from "@/lib/fonts";
+import { inter, geist, geistMono } from "@/lib/fonts";
 import "./globals.css";
 import { SmoothScroller } from "@/components/layout/SmoothScroller";
 import { ThemeProvider } from "next-themes";
@@ -44,7 +44,7 @@ export default function RootLayout({
     >
       <html
         lang="en"
-        className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${inter.variable} ${geist.variable} ${geistMono.variable} h-full antialiased`}
         suppressHydrationWarning
       >
         <head>
