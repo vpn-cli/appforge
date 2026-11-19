@@ -115,7 +115,7 @@ describe("PART 3 — Honest Hero Config", () => {
 
   it("validates that every step in the scripted edit loop passes validateComponentNode", () => {
     // Initial state
-    expect(INITIAL_HERO_STATE.variantValue).toBe("panel");
+    expect(INITIAL_HERO_STATE.variantValue).toBe("gradient");
     expect(INITIAL_HERO_STATE.validationStatus).toBe("valid");
 
     // Scripted timestamps throughout the 11,000ms loop

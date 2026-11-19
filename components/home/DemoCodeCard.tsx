@@ -28,7 +28,7 @@ type DemoCodeCardProps = {
 
 export function DemoCodeCard({
   metricDisplayValue = "1,244",
-  variantDisplay = '"panel"',
+  variantDisplay = '"gradient"',
   validationStatus = "valid",
   activeLineHighlighted = false,
   showCursor = false,
@@ -49,7 +49,7 @@ export function DemoCodeCard({
   return (
     <div
       data-testid="hero-code-card"
-      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto transition-colors relative"
+      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto lg:h-full transition-colors relative"
     >
       {/* Top Header Row — matching 44px (h-11) height with preview card */}
       <div className="h-11 flex items-center justify-between gap-2 pb-3 border-b border-border shrink-0">

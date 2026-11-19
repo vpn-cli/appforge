@@ -8,8 +8,8 @@ type DemoPreviewCardProps = HeroDemoStateParams;
 export function DemoPreviewCard({
   metricValue = 1244,
   invoiceStatus = "Idle",
-  includeSlackAlerts = false,
-  variant = "panel",
+  includeSlackAlerts = true,
+  variant = "gradient",
 }: DemoPreviewCardProps = {}) {
   const config = buildHeroDemoConfig({
     metricValue,
@@ -22,7 +22,7 @@ export function DemoPreviewCard({
   return (
     <div
       data-testid="hero-preview-card"
-      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto transition-colors relative"
+      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto lg:h-full transition-colors relative"
     >
       {/* Header — matching 44px (h-11) height with code card */}
       <div className="h-11 flex items-center justify-between gap-2 pb-3 border-b border-border shrink-0">

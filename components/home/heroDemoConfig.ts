@@ -10,7 +10,7 @@ export type HeroDemoStateParams = {
 export function buildHeroDemoConfig({
   metricValue = 1244,
   invoiceStatus = "Idle",
-  includeSlackAlerts = false,
+  includeSlackAlerts = true,
   variant = "gradient",
 }: HeroDemoStateParams = {}) {
   const rows = [
@@ -174,8 +174,8 @@ export type HeroScriptedState = {
 
 export const INITIAL_HERO_STATE: HeroScriptedState = {
   phase: "initial",
-  variantValue: "panel",
-  displayVariantString: '"panel"',
+  variantValue: "gradient",
+  displayVariantString: '"gradient"',
   isEditing: false,
   validationStatus: "valid",
   activeLineHighlighted: false,
