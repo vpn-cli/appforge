@@ -9,11 +9,13 @@ export function DemoPreviewCard({
   metricValue = 1244,
   invoiceStatus = "Idle",
   includeSlackAlerts = false,
+  variant = "panel",
 }: DemoPreviewCardProps = {}) {
   const config = buildHeroDemoConfig({
     metricValue,
     invoiceStatus,
     includeSlackAlerts,
+    variant,
   });
   const components = config.pages[0].components;
 

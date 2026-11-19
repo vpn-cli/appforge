@@ -2,12 +2,14 @@ export type HeroDemoStateParams = {
   metricValue?: number;
   invoiceStatus?: "Idle" | "Running";
   includeSlackAlerts?: boolean;
+  variant?: "panel" | "gradient";
 };
 
 export function buildHeroDemoConfig({
   metricValue = 1244,
   invoiceStatus = "Idle",
   includeSlackAlerts = false,
+  variant = "gradient",
 }: HeroDemoStateParams = {}) {
   const rows = [
     { workflow: "User Sync", trigger: "cron:hourly", status: "Running", icon: "users" },
@@ -32,7 +34,7 @@ export function buildHeroDemoConfig({
             type: "Statistic",
             label: "Active Workflows",
             value: metricValue.toLocaleString("en-US"),
-            variant: "gradient" as const,
+            variant,
             trend: { value: "+12%", sentiment: "positive" as const },
           },
           {
@@ -59,7 +61,8 @@ export type JsonToken = {
 };
 
 export function buildHeroJsonLines(
-  metricDisplayValue: string = "1,244"
+  metricDisplayValue: string = "1,244",
+  variantDisplay: string = '"gradient"'
 ): readonly (readonly JsonToken[])[] {
   return [
     [{ kind: "bracket", text: "{" }],
@@ -109,7 +112,7 @@ export function buildHeroJsonLines(
       { kind: "plain", text: "      " },
       { kind: "key", text: '"variant"' },
       { kind: "punct", text: ": " },
-      { kind: "string", text: '"gradient"' },
+      { kind: "string", text: variantDisplay },
     ],
     [
       { kind: "plain", text: "    " },
@@ -144,8 +147,75 @@ export function buildHeroJsonLines(
   ];
 }
 
-export const HERO_DEMO_JSON_LINES = buildHeroJsonLines("1,244");
+export const HERO_DEMO_JSON_LINES = buildHeroJsonLines("1,244", '"gradient"');
 
 export const HERO_DEMO_RAW_JSON = HERO_DEMO_JSON_LINES.map((line) =>
   line.map((t) => t.text).join("")
 ).join("\n");
+
+export type HeroScriptedPhase = "initial" | "editing" | "applied";
+
+export type HeroScriptedState = {
+  phase: HeroScriptedPhase;
+  variantValue: "panel" | "gradient";
+  displayVariantString: string;
+  isEditing: boolean;
+  validationStatus: "validating" | "valid";
+  activeLineHighlighted: boolean;
+  showCursor: boolean;
+};
+
+export const INITIAL_HERO_STATE: HeroScriptedState = {
+  phase: "initial",
+  variantValue: "panel",
+  displayVariantString: '"panel"',
+  isEditing: false,
+  validationStatus: "valid",
+  activeLineHighlighted: false,
+  showCursor: false,
+};
+
+/**
+ * Deterministic scripted edit state calculator.
+ * Cycle duration: 11,000ms.
+ * - 0 .. 2800ms: Initial clean state ("panel", valid, no cursor).
+ * - 2800 .. 4200ms: Scripted edit in progress (typing "gradient", validating…).
+ * - 4200 .. 10200ms: Applied state ("gradient", valid, re-rendered via RenderNode).
+ * - 10200 .. 11000ms: Reset transition back to initial state.
+ */
+export function computeScriptedHeroState(tMs: number): HeroScriptedState {
+  const t = tMs % 11000;
+  const target = '"gradient"';
+
+  if (t < 2800) {
+    return INITIAL_HERO_STATE;
+  }
+
+  if (t >= 2800 && t < 4200) {
+    const elapsed = t - 2800;
+    const progress = Math.min(1, elapsed / 1200);
+    const charCount = Math.max(1, Math.floor(progress * target.length));
+    const typed = target.slice(0, charCount);
+
+    return {
+      phase: "editing",
+      variantValue: "panel", // not yet applied
+      displayVariantString: typed,
+      isEditing: true,
+      validationStatus: "validating",
+      activeLineHighlighted: true,
+      showCursor: true,
+    };
+  }
+
+  // 4200 .. 11000ms: Applied state
+  return {
+    phase: "applied",
+    variantValue: "gradient",
+    displayVariantString: '"gradient"',
+    isEditing: false,
+    validationStatus: "valid",
+    activeLineHighlighted: t < 5200, // hold line highlight briefly after application
+    showCursor: false,
+  };
+}

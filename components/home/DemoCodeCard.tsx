@@ -20,13 +20,21 @@ const TOKEN_CLASSES: Record<JsonToken["kind"], string> = {
 
 type DemoCodeCardProps = {
   metricDisplayValue?: string;
+  variantDisplay?: string;
+  validationStatus?: "validating" | "valid";
+  activeLineHighlighted?: boolean;
+  showCursor?: boolean;
 };
 
 export function DemoCodeCard({
   metricDisplayValue = "1,244",
+  variantDisplay = '"panel"',
+  validationStatus = "valid",
+  activeLineHighlighted = false,
+  showCursor = false,
 }: DemoCodeCardProps = {}) {
   const [copied, setCopied] = useState(false);
-  const lines = buildHeroJsonLines(metricDisplayValue);
+  const lines = buildHeroJsonLines(metricDisplayValue, variantDisplay);
 
   const handleCopy = async () => {
     try {
@@ -78,33 +86,62 @@ export function DemoCodeCard({
         className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col overflow-x-hidden"
       >
         <div className="w-full flex flex-col">
-          {lines.map((tokens, lineIdx) => (
-            <div
-              key={lineIdx}
-              className="flex items-baseline gap-4 min-w-0 rounded px-1.5 -mx-1.5"
-            >
-              <span
-                aria-hidden="true"
-                className="w-5 text-right text-text-muted/60 select-none shrink-0 tabular-nums"
+          {lines.map((tokens, lineIdx) => {
+            const isVariantLine = lineIdx === 7;
+            const isHighlighted = isVariantLine && activeLineHighlighted;
+
+            return (
+              <div
+                key={lineIdx}
+                className={`flex items-baseline gap-4 min-w-0 rounded px-1.5 -mx-1.5 transition-colors duration-200 ${
+                  isHighlighted ? "bg-brand-light" : ""
+                }`}
               >
-                {lineIdx + 1}
-              </span>
-              <code className="whitespace-pre-wrap break-words min-w-0 flex-1">
-                {tokens.map((tok, tokIdx) => (
-                  <span key={tokIdx} className={TOKEN_CLASSES[tok.kind]}>
-                    {tok.text}
-                  </span>
-                ))}
-              </code>
-            </div>
-          ))}
+                <span
+                  aria-hidden="true"
+                  className="w-5 text-right text-text-muted/60 select-none shrink-0 tabular-nums"
+                >
+                  {lineIdx + 1}
+                </span>
+                <code className="whitespace-pre-wrap break-words min-w-0 flex-1">
+                  {tokens.map((tok, tokIdx) => (
+                    <span key={tokIdx} className={TOKEN_CLASSES[tok.kind]}>
+                      {tok.text}
+                    </span>
+                  ))}
+                  {isVariantLine && showCursor && (
+                    <span
+                      aria-hidden="true"
+                      className="inline-block w-[2px] h-[14px] bg-brand-link align-middle ml-0.5 animate-pulse"
+                    />
+                  )}
+                </code>
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* Quiet Footer Caption — aligned to exact same baseline */}
       <div className="h-9 pt-2.5 border-t border-border text-[13px] text-muted-foreground flex items-center justify-between gap-2 shrink-0">
         <span className="truncate">Registry: Statistic, DataTable</span>
-        <span className="font-mono whitespace-nowrap shrink-0">Zod-validated</span>
+        {validationStatus === "validating" ? (
+          <span
+            data-testid="code-footer-validating"
+            className="font-mono whitespace-nowrap shrink-0 text-warning-text inline-flex items-center gap-1.5"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
+            validating…
+          </span>
+        ) : (
+          <span
+            data-testid="code-footer-valid"
+            className="font-mono whitespace-nowrap shrink-0 text-success-text inline-flex items-center gap-1.5"
+          >
+            <Check className="w-3.5 h-3.5 text-success-text" strokeWidth={2} />
+            ✓ valid
+          </span>
+        )}
       </div>
     </div>
   );
