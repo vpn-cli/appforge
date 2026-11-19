@@ -14,6 +14,14 @@ function hasWebGL2Api(): boolean {
   return typeof window.WebGL2RenderingContext !== "undefined";
 }
 
+function isMobileEnvironment(): boolean {
+  if (typeof window === "undefined") return true;
+  const isCoarse = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+  const isNarrow =
+    window.innerWidth < 768 || (window.matchMedia?.("(max-width: 767px)")?.matches ?? false);
+  return isCoarse || isNarrow;
+}
+
 export function HeroMeshBackground() {
   const { resolvedTheme } = useTheme();
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -23,6 +31,7 @@ export function HeroMeshBackground() {
   const [isVisibleInViewport, setIsVisibleInViewport] = useState(true);
   const [isDocumentHidden, setIsDocumentHidden] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
 
   // Track prefers-reduced-motion live
   useEffect(() => {
@@ -34,29 +43,34 @@ export function HeroMeshBackground() {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  // Load WebGL shader via dynamic import strictly after first paint + hydration settle
-  // (or immediately on first user interaction), preventing cold WebGL init from blocking initial TBT.
+  // Track mobile vs desktop viewport/input capability: CSS gradient ONLY on mobile
   useEffect(() => {
-    if (prefersReducedMotion || shaderFailed) return;
+    if (typeof window === "undefined") return;
+    const updateDeviceType = () => {
+      setIsMobile(isMobileEnvironment());
+    };
+    updateDeviceType();
+    window.addEventListener("resize", updateDeviceType, { passive: true });
+    return () => window.removeEventListener("resize", updateDeviceType);
+  }, []);
+
+  // On desktop: WebGL compiles strictly in requestIdleCallback without any interaction triggers.
+  // On mobile: CSS gradient only (shader never enabled).
+  useEffect(() => {
+    if (prefersReducedMotion || shaderFailed || isMobile) {
+      if (isMobile && shaderEnabled) {
+        setShaderEnabled(false);
+      }
+      return;
+    }
 
     let cancelled = false;
-    let raf1 = 0;
-    let raf2 = 0;
     let idleId: number | null = null;
     let timerId: number | null = null;
 
-    const removeInteractionListeners = () => {
-      window.removeEventListener("pointermove", triggerNow);
-      window.removeEventListener("pointerdown", triggerNow);
-      window.removeEventListener("touchstart", triggerNow);
-      window.removeEventListener("keydown", triggerNow);
-      window.removeEventListener("scroll", triggerNow);
-    };
-
     const activate = () => {
       if (cancelled) return;
-      cancelled = true;
-      removeInteractionListeners();
+      if (isMobileEnvironment()) return;
       if (hasWebGL2Api()) {
         startTransition(() => setShaderEnabled(true));
       } else {
@@ -64,50 +78,31 @@ export function HeroMeshBackground() {
       }
     };
 
-    function triggerNow() {
-      activate();
-    }
-
-    const scheduleAfterPaint = () => {
-      raf1 = requestAnimationFrame(() => {
-        raf2 = requestAnimationFrame(() => {
-          window.addEventListener("pointermove", triggerNow, { passive: true, once: true });
-          window.addEventListener("pointerdown", triggerNow, { passive: true, once: true });
-          window.addEventListener("touchstart", triggerNow, { passive: true, once: true });
-          window.addEventListener("keydown", triggerNow, { passive: true, once: true });
-          window.addEventListener("scroll", triggerNow, { passive: true, once: true });
-
-          timerId = globalThis.setTimeout(() => {
-            if (typeof window.requestIdleCallback === "function") {
-              idleId = window.requestIdleCallback(activate, { timeout: 1500 });
-            } else {
-              activate();
-            }
-          }, 3000) as unknown as number;
-        });
-      });
+    const scheduleDesktopIdleCompile = () => {
+      if (typeof window.requestIdleCallback === "function") {
+        idleId = window.requestIdleCallback(activate, { timeout: 2000 });
+      } else {
+        timerId = window.setTimeout(activate, 500);
+      }
     };
 
     if (document.readyState === "complete") {
-      scheduleAfterPaint();
+      scheduleDesktopIdleCompile();
     } else {
-      window.addEventListener("load", scheduleAfterPaint, { once: true });
+      window.addEventListener("load", scheduleDesktopIdleCompile, { once: true });
     }
 
     return () => {
       cancelled = true;
-      window.removeEventListener("load", scheduleAfterPaint);
-      removeInteractionListeners();
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
+      window.removeEventListener("load", scheduleDesktopIdleCompile);
       if (idleId !== null && typeof window.cancelIdleCallback === "function") {
         window.cancelIdleCallback(idleId);
       }
       if (timerId !== null) {
-        globalThis.clearTimeout(timerId);
+        window.clearTimeout(timerId);
       }
     };
-  }, [prefersReducedMotion, shaderFailed]);
+  }, [prefersReducedMotion, shaderFailed, isMobile, shaderEnabled]);
 
   // Pause when document.hidden
   useEffect(() => {
@@ -140,7 +135,7 @@ export function HeroMeshBackground() {
     setShaderEnabled(false);
   }, []);
 
-  const shouldRenderShader = shaderEnabled && !shaderFailed && !prefersReducedMotion;
+  const shouldRenderShader = shaderEnabled && !shaderFailed && !prefersReducedMotion && !isMobile;
   const isPaused = isDocumentHidden || !isVisibleInViewport || prefersReducedMotion;
   const shaderState = !shouldRenderShader
     ? "fallback"
@@ -156,10 +151,10 @@ export function HeroMeshBackground() {
       data-shader-state={shaderState}
       className="pointer-events-none absolute inset-0 overflow-hidden z-0 select-none hero-mesh-mask"
     >
-      {/* Immediate static CSS mesh-gradient fallback (first paint, reduced-motion, no-WebGL) */}
+      {/* Immediate static CSS mesh-gradient fallback (mobile, first paint, reduced-motion, no-WebGL) */}
       <div className="absolute inset-0 hero-mesh-fallback" />
 
-      {/* Dynamically imported WebGL mesh gradient after first paint */}
+      {/* Dynamically imported WebGL mesh gradient compiled in requestIdleCallback on desktop */}
       {shouldRenderShader && (
         <div className="absolute inset-0 transition-opacity duration-500 opacity-100">
           <DynamicHeroMeshShader

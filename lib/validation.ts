@@ -37,6 +37,7 @@ export const StatisticTrendSchema = z.union([
     label: z.string().optional(),
     direction: z.enum(["up", "down", "neutral"]).optional(),
     sentiment: z.enum(["positive", "negative", "neutral"]).optional(),
+    series: z.array(z.number()).optional(),
   }).strict(),
 ]);
 

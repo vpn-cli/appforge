@@ -90,8 +90,8 @@ export function DemoRow() {
       }}
       className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <div className="min-w-0">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        <div className="min-w-0 flex flex-col h-full">
           <DemoCodeCard
             variantDisplay={state.displayVariantString}
             validationStatus={state.validationStatus}
@@ -99,7 +99,7 @@ export function DemoRow() {
             showCursor={state.showCursor}
           />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex flex-col h-full">
           <DemoPreviewCard variant={state.variantValue} />
         </div>
       </div>

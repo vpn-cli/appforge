@@ -13,6 +13,7 @@ import {
   INITIAL_HERO_STATE,
 } from "@/components/home/heroDemoConfig";
 import { ComponentRegistry } from "@/registry";
+import { Statistic } from "@/registry/components/Statistic";
 import {
   validateComponentNode,
   StatisticSchema,
@@ -98,7 +99,12 @@ describe("PART 3 — Honest Hero Config", () => {
       expect(statComp.variant).toBe("gradient");
       expect(statComp.label).toBe("Active Workflows");
       expect(statComp.value).toBe("1,244");
-      expect(statComp.trend).toEqual({ value: "+12%", sentiment: "positive" });
+      expect(statComp.trend).toEqual({
+        value: "+12%",
+        sentiment: "positive",
+        direction: "up",
+        series: [24, 28, 27, 36, 42, 45, 54],
+      });
 
       const tableComp = fullConfigParsed.data.pages[0].components[1] as any;
       expect(tableComp.entity).toBe("workflows");
@@ -187,5 +193,72 @@ describe("PART 3 — Honest Hero Config", () => {
     const words = subtext.trim().split(/\s+/);
     expect(words.length).toBeLessThanOrEqual(20);
     expect(heroHtml).toContain("Write or prompt a JSON config.");
+  });
+
+  it("declares trend.series in StatisticSchema, preserves it upon parsing, and enforces upward trend matching data", () => {
+    const rawStat = {
+      type: "Statistic",
+      label: "Active Workflows",
+      value: "1,244",
+      variant: "gradient" as const,
+      trend: {
+        value: "+12%",
+        sentiment: "positive" as const,
+        direction: "up" as const,
+        series: [24, 28, 27, 36, 42, 45, 54],
+      },
+    };
+
+    const parsed = StatisticSchema.safeParse(rawStat);
+    expect(parsed.success).toBe(true);
+    if (parsed.success && typeof parsed.data.trend === "object" && parsed.data.trend !== null) {
+      expect(parsed.data.trend.series).toEqual([24, 28, 27, 36, 42, 45, 54]);
+      // The data must match the trend direction: if trend is "up", series ends higher than it starts
+      const series = parsed.data.trend.series!;
+      expect(series[series.length - 1]).toBeGreaterThan(series[0]);
+    }
+
+    // Strict schema: rejects unknown keys in trend
+    const invalidTrend = {
+      ...rawStat,
+      trend: {
+        value: "+12%",
+        series: [10, 20],
+        unknownKey: "bad",
+      },
+    };
+    expect(StatisticSchema.safeParse(invalidTrend).success).toBe(false);
+  });
+
+  it("footer status in DemoCodeCard shows exactly one check mark: '✓ valid' without a duplicate SVG check icon", () => {
+    const validHtml = renderToString(<DemoCodeCard validationStatus="valid" />);
+    expect(validHtml).toContain("✓ valid");
+    // Ensure code-footer-valid renders only one check mark and no duplicate SVG check icon inside it
+    const footerValidHtml = validHtml.match(/<span[^>]*data-testid="code-footer-valid"[^>]*>([\s\S]*?)<\/span>/)?.[1];
+    expect(footerValidHtml).toBeDefined();
+    expect(footerValidHtml).toContain("✓ valid");
+    expect(footerValidHtml).not.toContain("<svg");
+  });
+
+  it("any value suffix keeps its leading space in the renderer ('14,200 runs')", () => {
+    const htmlWithSuffixInValue = renderToString(
+      <Statistic label="Total Runs" value="14,200 runs" variant="gradient" />
+    );
+    expect(htmlWithSuffixInValue).toContain("14,200 runs");
+    expect(htmlWithSuffixInValue).not.toContain("14,200runs");
+
+    const htmlWithPropSuffix = renderToString(
+      <Statistic label="Total Runs" value={14200} suffix="runs" variant="gradient" />
+    );
+    expect(htmlWithPropSuffix).toContain("14,200 runs");
+    expect(htmlWithPropSuffix).not.toContain("14,200runs");
+  });
+
+  it("'Sample data' appears exactly once, in the footer only", () => {
+    const previewHtml = renderToString(<DemoPreviewCard />);
+    const matches = previewHtml.match(/Sample data/g) || [];
+    expect(matches.length).toBe(1);
+    // Verified in the footer section
+    expect(previewHtml).toContain("border-t border-border text-[13px] text-muted-foreground");
   });
 });

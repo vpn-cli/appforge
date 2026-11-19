@@ -1,18 +1,23 @@
 "use client";
 
 import { TrendingUp, TrendingDown, Minus, Users, ArrowUpRight } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useCardContext } from "../context";
+import { AnimatedSparkline } from "@/components/ui/animated-sparkline";
 
 export interface TrendObject {
   value?: string;
   label?: string;
+  direction?: "up" | "down" | "neutral";
   sentiment?: "positive" | "negative" | "neutral";
+  series?: number[];
 }
 
 export interface StatisticProps {
   label?: string;
   title?: string;
   value?: string | number;
+  suffix?: string;
   format?: "compact" | "full" | "auto";
   trend?: "up" | "down" | "neutral" | TrendObject;
   trendValue?: string;
@@ -20,6 +25,24 @@ export interface StatisticProps {
   icon?: "users" | "workflow" | string;
   variant?: "default" | "panel" | "gradient";
   className?: string;
+}
+
+export function parseValueAndSuffix(val: string | number, propSuffix?: string) {
+  if (propSuffix !== undefined && propSuffix !== null) {
+    const s = String(propSuffix);
+    const normSuffix = s.startsWith(" ") ? s : ` ${s}`;
+    const num = typeof val === "number" ? val : parseFloat(String(val).replace(/,/g, "")) || 0;
+    return { num, suffix: normSuffix, rawVal: val };
+  }
+  if (typeof val === "string") {
+    const match = val.match(/^([\d,.]+)(\s+.*)$/);
+    if (match) {
+      const num = parseFloat(match[1].replace(/,/g, "")) || 0;
+      return { num, suffix: match[2], rawVal: val };
+    }
+  }
+  const num = typeof val === "number" ? val : parseFloat(String(val).replace(/,/g, "")) || 0;
+  return { num, suffix: "", rawVal: val };
 }
 
 function formatCompactString(val: string | number) {
@@ -62,6 +85,7 @@ export function Statistic({
   label,
   title,
   value = "1,244",
+  suffix,
   format,
   trend,
   trendValue,
@@ -79,11 +103,18 @@ export function Statistic({
   let trendStrValue = "";
   let sentiment: "positive" | "negative" | "neutral" = "neutral";
   let direction: "up" | "down" | "neutral" = "neutral";
+  let trendSeries: number[] | undefined = undefined;
 
   if (typeof trend === "object" && trend !== null) {
     trendStrValue = trend.value || trend.label || "";
     if (trend.sentiment) {
       sentiment = trend.sentiment;
+    }
+    if (trend.direction) {
+      direction = trend.direction;
+    }
+    if (Array.isArray(trend.series)) {
+      trendSeries = trend.series;
     }
   } else if (typeof trend === "string") {
     direction = trend;
@@ -110,39 +141,72 @@ export function Statistic({
     colorClass = "text-error-text";
   }
 
+  // Parse numeric value and suffix (always preserving leading spaces)
+  const parsed = parseValueAndSuffix(value, suffix);
+  const targetNumber = parsed.num;
+  const valSuffix = parsed.suffix;
+
   const effectiveValue = (isPanel || isGradient) && format !== "compact"
-    ? (typeof value === "number" ? value.toLocaleString() : String(value))
-    : formatDisplayValue(value, format);
+    ? `${targetNumber.toLocaleString("en-US")}${valSuffix}`
+    : `${formatDisplayValue(targetNumber, format)}${valSuffix}`;
+
+  // Number animation for gradient card: counts up over ~500ms after ~150ms delay
+  const [animatedNumber, setAnimatedNumber] = useState<number>(() => targetNumber);
+
+  useEffect(() => {
+    if (!isGradient) return;
+
+    if (typeof window !== "undefined") {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      if (mq.matches) {
+        setAnimatedNumber(targetNumber);
+        return;
+      }
+    }
+
+    setAnimatedNumber(0);
+
+    let rafId: number;
+    const timer = setTimeout(() => {
+      const startTime = performance.now();
+      const duration = 500;
+
+      const animate = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(targetNumber * easeOut);
+        setAnimatedNumber(current);
+
+        if (progress < 1) {
+          rafId = requestAnimationFrame(animate);
+        } else {
+          setAnimatedNumber(targetNumber);
+        }
+      };
+
+      rafId = requestAnimationFrame(animate);
+    }, 150);
+
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(rafId);
+    };
+  }, [targetNumber, isGradient]);
 
   if (isGradient) {
+    const gradientDisplayValue = `${animatedNumber.toLocaleString("en-US")}${valSuffix}`;
+
     return (
       <div
         className={`@container relative overflow-hidden rounded-2xl metric-card-gradient border border-white/25 text-white p-4 shadow-sm min-w-0 select-none ${className}`}
       >
-        {/* Confined sparkline wave in bottom-right 45% */}
+        {/* Confined animated sparkline wave in bottom-right 45% */}
         <div
-          className="absolute right-0 bottom-0 w-[45%] h-[52px] pointer-events-none opacity-40"
+          className="absolute right-0 bottom-0 w-[45%] h-[52px] pointer-events-none select-none"
           aria-hidden="true"
         >
-          <svg
-            viewBox="0 0 200 60"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-full"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M0 46 C36 44, 62 28, 96 30 C130 32, 158 14, 200 8 L200 60 L0 60 Z"
-              fill="currentColor"
-              fillOpacity="0.24"
-            />
-            <path
-              d="M0 46 C36 44, 62 28, 96 30 C130 32, 158 14, 200 8"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeOpacity="0.85"
-            />
-          </svg>
+          <AnimatedSparkline series={trendSeries} />
         </div>
 
         <div className="relative z-10 flex flex-col gap-2">
@@ -157,7 +221,7 @@ export function Statistic({
 
           <div className="flex items-baseline gap-2.5">
             <div className="text-[32px] sm:text-[36px] font-bold tracking-tight text-white leading-none tabular-nums">
-              {effectiveValue}
+              {gradientDisplayValue}
             </div>
             {trendStrValue && (
               <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-white/15 border border-white/25 text-white shrink-0">

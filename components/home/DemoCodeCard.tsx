@@ -87,7 +87,7 @@ export function DemoCodeCard({
       >
         <div className="w-full flex flex-col">
           {lines.map((tokens, lineIdx) => {
-            const isVariantLine = lineIdx === 7;
+            const isVariantLine = tokens.some((t) => t.text === '"variant"');
             const isHighlighted = isVariantLine && activeLineHighlighted;
 
             return (
@@ -138,7 +138,6 @@ export function DemoCodeCard({
             data-testid="code-footer-valid"
             className="font-mono whitespace-nowrap shrink-0 text-success-text inline-flex items-center gap-1.5"
           >
-            <Check className="w-3.5 h-3.5 text-success-text" strokeWidth={2} />
             ✓ valid
           </span>
         )}

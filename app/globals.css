@@ -121,6 +121,12 @@
   --height-control-lg: 36px;
   --height-toolbar: 44px;
 
+  /* Motion tokens */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.15, 0, 0.2, 1);
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -226,6 +232,14 @@
   --info: #2563EB;
   --warning: #D97706;
   --danger: #DC2626;
+
+  /* Motion Tokens */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.15, 0, 0.2, 1);
+  --spring-bounce: 0.15;
+  --spring-visual-duration: 0.4s;
 
   /* Ambient washes & Hero Mesh Gradient Palette (Light: soft lavender/white) */
   --wash-blue: #E3EAFF;

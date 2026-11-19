@@ -55,6 +55,18 @@ Each with text color, tinted background, and border:
 
 ---
 
+## Motion Tokens
+
+All animations and transitions adhere to standard motion tokens to prevent slow or sluggish interfaces:
+- `--duration-fast`: `150ms` (micro-interactions, tooltips, validation checkmarks)
+- `--duration-base`: `250ms` (standard state shifts, tabs, dropdowns)
+- `--duration-slow`: `400ms` (card reveals, panel collapses)
+- `--ease-standard`: `cubic-bezier(0.15, 0, 0.2, 1)`
+- Standard spring: `bounce: 0.15`, `visualDuration: 0.4s`
+- **Rule**: No UI transition anywhere longer than `600ms` (except a one-time draw-in like the hero sparkline). Every third-party component maps to these tokens.
+
+---
+
 ## Type Scale
 
 - Base body: 15px, line-height 1.55

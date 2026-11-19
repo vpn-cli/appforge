@@ -7,6 +7,7 @@ import { DataTable } from "@/registry/components/DataTable";
 import { LivePreview } from "@/components/builder/LivePreview";
 import { DemoCodeCard } from "@/components/home/DemoCodeCard";
 import { DemoPreviewCard } from "@/components/home/DemoPreviewCard";
+import { DemoRow } from "@/components/home/DemoRow";
 
 describe("PART 2 — Spacing & Layout", () => {
   describe("Statistic Grid: orphan card avoidance", () => {
@@ -151,6 +152,12 @@ describe("PART 2 — Spacing & Layout", () => {
       expect(previewHtml).not.toContain("min-h-[410px]");
       expect(codeHtml).not.toContain("flex-1 flex flex-col justify-center");
       expect(previewHtml).not.toContain("flex-1 justify-center");
+    });
+
+    it("configures DemoRow with items-stretch and full height columns for equal card heights on desktop", () => {
+      const demoRowHtml = renderToString(<DemoRow />);
+      expect(demoRowHtml).toContain("items-stretch");
+      expect(demoRowHtml).toContain("flex flex-col h-full");
     });
   });
 });

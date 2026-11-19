@@ -37,7 +37,12 @@ export function buildHeroDemoConfig({
             label: "Active Workflows",
             value: metricValue.toLocaleString("en-US"),
             variant,
-            trend: { value: "+12%", sentiment: "positive" as const },
+            trend: {
+              value: "+12%",
+              sentiment: "positive" as const,
+              direction: "up" as const,
+              series: [24, 28, 27, 36, 42, 45, 54],
+            },
           },
           {
             type: "DataTable",
