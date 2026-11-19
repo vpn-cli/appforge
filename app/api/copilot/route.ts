@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
-export const runtime = "edge";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, checkGuestCopilotLimit } from "@/lib/rate-limit";
 import { createGroq } from "@ai-sdk/groq";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { Redis } from "@upstash/redis";
@@ -41,11 +41,46 @@ Architectural Rules:
 
 export async function POST(req: Request) {
   try {
-    // 1. Resolve Client Origin
-    const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    // 1. Resolve Client Origin strictly via x-real-ip
+    const clientIp =
+      req.headers.get("x-real-ip")?.trim() ||
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "127.0.0.1";
 
-    // 2. Validate against sliding window threshold (10 req / 10s)
-    const { success, limit, remaining, reset } = await rateLimit.limit(ip);
+    // 2. Resolve Authenticated User
+    let userId: string | null = null;
+    try {
+      const authRes = await auth();
+      userId = authRes?.userId ?? null;
+    } catch {
+      userId = null;
+    }
+
+    // 3. For logged-out users, enforce per-IP limit + global daily cap to prevent LLM quota draining
+    if (!userId) {
+      const guestCheck = await checkGuestCopilotLimit(clientIp);
+      if (!guestCheck.success) {
+        return NextResponse.json(
+          {
+            error: "Please sign in to keep generating with Copilot.",
+            code: "AUTH_REQUIRED",
+            reason: guestCheck.reason,
+          },
+          {
+            status: 429,
+            headers: {
+              "X-RateLimit-Limit": guestCheck.limit.toString(),
+              "X-RateLimit-Remaining": guestCheck.remaining.toString(),
+              "X-RateLimit-Reset": guestCheck.reset.toString(),
+            },
+          }
+        );
+      }
+    }
+
+    // 4. Validate against sliding window threshold (per user or per IP)
+    const rateLimitKey = userId ? `user:${userId}` : `guest_ip:${clientIp}`;
+    const { success, limit, remaining, reset } = await rateLimit.limit(rateLimitKey);
 
     if (!success) {
       return NextResponse.json(
