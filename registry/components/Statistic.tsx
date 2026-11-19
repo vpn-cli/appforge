@@ -18,7 +18,7 @@ export interface StatisticProps {
   trendValue?: string;
   chartWave?: boolean;
   icon?: "users" | "workflow" | string;
-  variant?: "default" | "panel";
+  variant?: "default" | "panel" | "gradient";
   className?: string;
 }
 
@@ -72,6 +72,7 @@ export function Statistic({
 }: StatisticProps) {
   const { isInCard } = useCardContext();
   const effectiveLabel = label || title || "Active Workflows";
+  const isGradient = variant === "gradient";
   const isPanel = variant === "panel" || chartWave !== undefined;
 
   // Normalize trend values and sentiment
@@ -109,9 +110,66 @@ export function Statistic({
     colorClass = "text-error-text";
   }
 
-  const effectiveValue = isPanel && format !== "compact"
+  const effectiveValue = (isPanel || isGradient) && format !== "compact"
     ? (typeof value === "number" ? value.toLocaleString() : String(value))
     : formatDisplayValue(value, format);
+
+  if (isGradient) {
+    return (
+      <div
+        className={`@container relative overflow-hidden rounded-2xl metric-card-gradient border border-white/25 text-white p-4 shadow-sm min-w-0 select-none ${className}`}
+      >
+        {/* Confined sparkline wave in bottom-right 45% */}
+        <div
+          className="absolute right-0 bottom-0 w-[45%] h-[52px] pointer-events-none opacity-40"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 200 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 46 C36 44, 62 28, 96 30 C130 32, 158 14, 200 8 L200 60 L0 60 Z"
+              fill="currentColor"
+              fillOpacity="0.24"
+            />
+            <path
+              d="M0 46 C36 44, 62 28, 96 30 C130 32, 158 14, 200 8"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeOpacity="0.85"
+            />
+          </svg>
+        </div>
+
+        <div className="relative z-10 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[13px] font-medium text-white/90 tracking-tight truncate">
+              {effectiveLabel}
+            </p>
+            <div className="w-7 h-7 rounded-full bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
+              <Users className="w-3.5 h-3.5 text-white" strokeWidth={1.8} />
+            </div>
+          </div>
+
+          <div className="flex items-baseline gap-2.5">
+            <h3 className="text-[32px] sm:text-[36px] font-bold tracking-tight text-white leading-none tabular-nums">
+              {effectiveValue}
+            </h3>
+            {trendStrValue && (
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-white/15 border border-white/25 text-white shrink-0">
+                <ArrowUpRight className="w-3 h-3" strokeWidth={2.2} />
+                <span>{trendStrValue}</span>
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isPanel) {
     return (

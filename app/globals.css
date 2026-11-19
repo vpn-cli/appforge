@@ -858,7 +858,12 @@ body::after {
 }
 
 .metric-card-gradient {
-  background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-400) 100%);
+  background: linear-gradient(135deg, var(--brand-700) 0%, var(--brand-600) 55%, var(--brand-500) 100%);
+}
+
+.dark .metric-card-gradient,
+:root.dark .metric-card-gradient {
+  background: linear-gradient(135deg, var(--brand-800) 0%, var(--brand-700) 55%, var(--brand-600) 100%);
 }
 
 .token-key {

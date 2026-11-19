@@ -191,33 +191,33 @@ export function DataTable({
 
   const activeRemote = fetchKey && remoteResult?.key === fetchKey ? remoteResult : null;
 
-  const resolvedCols = columns.length > 0 
-    ? columns 
+  const resolvedCols = columns.length > 0
+    ? columns
     : entity === "workflows"
-    ? [
+      ? [
         { key: "workflow", label: "WORKFLOW", type: "avatar" as const },
         { key: "trigger", label: "TRIGGER", type: "code" as const },
         { key: "status", label: "STATUS", type: "status" as const },
       ]
-    : [];
+      : [];
 
   const resolvedData = initialData
     ? initialData
     : fetchKey
-    ? activeRemote?.rows ?? []
-    : entity === "workflows"
-    ? [
-        { workflow: "User Sync", trigger: "cron:hourly", status: "Running" },
-        { workflow: "Invoice Gen", trigger: "webhook:rx", status: "Idle" },
-      ]
-    : [];
+      ? activeRemote?.rows ?? []
+      : entity === "workflows"
+        ? [
+          { workflow: "User Sync", trigger: "cron:hourly", status: "Running" },
+          { workflow: "Invoice Gen", trigger: "webhook:rx", status: "Idle" },
+        ]
+        : [];
 
   // Normalize column definitions
   const normalizedCols: ColumnSchema[] = (resolvedCols.length > 0
     ? resolvedCols
     : resolvedData.length > 0
-    ? Object.keys(resolvedData[0])
-    : ["id", "name", "value", "status"]
+      ? Object.keys(resolvedData[0])
+      : ["id", "name", "value", "status"]
   ).map((col) => {
     if (typeof col === "string") {
       const lower = col.toLowerCase();
@@ -261,12 +261,12 @@ export function DataTable({
     state !== "loaded"
       ? state
       : fetchKey && !activeRemote
-      ? "loading"
-      : activeRemote?.status === "error"
-      ? "error"
-      : !resolvedData || resolvedData.length === 0
-      ? "empty"
-      : "loaded";
+        ? "loading"
+        : activeRemote?.status === "error"
+          ? "error"
+          : !resolvedData || resolvedData.length === 0
+            ? "empty"
+            : "loaded";
 
   const effectiveErrorMessage = activeRemote?.error || errorMessage;
 
@@ -424,15 +424,13 @@ export function DataTable({
         onBlur={() => setIsTableFocused(false)}
         onKeyDown={handleKeyDown}
         aria-label="Data Table"
-        className={`w-full overflow-x-auto ${
-          variant === "dark-panel"
-            ? "border border-border bg-card/90 rounded-xl shadow-inner text-foreground"
-            : `border border-border bg-card ${effectiveState === "degraded" ? "rounded-b-lg" : "rounded-lg"}`
-        } ${
-          isInteractive
+        className={`w-full overflow-x-auto ${variant === "dark-panel"
+          ? "border border-border bg-card/90 rounded-xl shadow-inner text-foreground"
+          : `border border-border bg-card ${effectiveState === "degraded" ? "rounded-b-lg" : "rounded-lg"}`
+          } ${isInteractive
             ? "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             : ""
-        }`}
+          }`}
       >
         <table className="w-full text-xs text-left border-collapse">
           {/* Header Row */}
@@ -442,17 +440,15 @@ export function DataTable({
                 <th
                   key={idx}
                   scope="col"
-                  className={`px-4 py-2.5 select-none whitespace-nowrap ${
-                    variant === "dark-panel"
-                      ? "text-[10px] font-mono tracking-wider uppercase text-slate-400 font-semibold"
-                      : "text-xs text-muted-foreground font-medium"
-                  } ${
-                    col.align === "right"
+                  className={`px-4 py-2.5 select-none whitespace-nowrap ${variant === "dark-panel"
+                    ? "text-[10px] font-mono tracking-wider uppercase text-slate-400 font-semibold"
+                    : "text-xs text-muted-foreground font-medium"
+                    } ${col.align === "right"
                       ? "text-right"
                       : col.align === "center"
-                      ? "text-center"
-                      : "text-left"
-                  }`}
+                        ? "text-center"
+                        : "text-left"
+                    }`}
                 >
                   {col.label}
                 </th>
@@ -469,9 +465,8 @@ export function DataTable({
                     {normalizedCols.map((col, colIdx) => (
                       <td key={colIdx} className="px-3 py-2">
                         <div
-                          className={`h-3.5 rounded bg-muted animate-pulse ${
-                            col.align === "right" ? "ml-auto" : ""
-                          }`}
+                          className={`h-3.5 rounded bg-muted animate-pulse ${col.align === "right" ? "ml-auto" : ""
+                            }`}
                           style={{
                             width: `${Math.max(35, Math.min(85, (colIdx + rowIdx * 3) * 17 % 50 + 40))}%`,
                           }}
@@ -519,24 +514,21 @@ export function DataTable({
                   <tr
                     key={rowIdx}
                     onClick={() => onRowClick && onRowClick(row, rowIdx)}
-                    className={`${rowBorderClass} transition-colors ${
-                      isInteractive ? "cursor-pointer" : ""
-                    } ${
-                      isRowFocused
+                    className={`${rowBorderClass} transition-colors ${isInteractive ? "cursor-pointer" : ""
+                      } ${isRowFocused
                         ? "bg-muted/70 ring-1 ring-inset ring-ring"
                         : ""
-                    }`}
+                      }`}
                   >
                     {normalizedCols.map((col, colIdx) => (
                       <td
                         key={colIdx}
-                        className={`px-4 ${variant === "dark-panel" ? "py-3" : "py-2"} whitespace-nowrap text-xs ${
-                          col.align === "right"
-                            ? "text-right"
-                            : col.align === "center"
+                        className={`px-4 ${variant === "dark-panel" ? "py-3" : "py-2"} whitespace-nowrap text-xs ${col.align === "right"
+                          ? "text-right"
+                          : col.align === "center"
                             ? "text-center"
                             : "text-left"
-                        }`}
+                          }`}
                       >
                         {renderCellContent(col, getCellValue(row, col.key), rowIdx, row)}
                       </td>
