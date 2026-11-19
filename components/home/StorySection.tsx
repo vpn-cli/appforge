@@ -10,6 +10,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { RenderNode } from "@/registry";
+import { StoryVisualSlot } from "./StoryVisualSlot";
 
 export function StorySection() {
   return (
@@ -55,69 +56,71 @@ export function StorySection() {
           </div>
 
           <div className="w-full lg:w-7/12">
-            <div className="glass-1 rounded-2xl p-5 sm:p-8 w-full min-h-[360px] sm:min-h-[400px] flex items-center justify-center relative overflow-hidden select-none">
-              <div className="w-full max-w-[540px] flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
-                <div className="flex flex-col gap-2.5 w-full sm:w-[210px] shrink-0">
-                  {[
-                    { name: "users", meta: "4 fields · id, role" },
-                    { name: "projects", meta: "6 fields · org_id" },
-                    { name: "workflows", meta: "3 fields · trigger" },
-                  ].map((ent) => (
-                    <div
-                      key={ent.name}
-                      className="glass-3 rounded-xl p-3 flex items-center justify-between border border-border"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-brand-light flex items-center justify-center text-brand-link">
-                          <Layers className="w-4 h-4" strokeWidth={1.8} />
-                        </div>
-                        <div>
-                          <div className="text-[13px] font-mono font-semibold text-foreground">
-                            {ent.name}
+            <StoryVisualSlot kind="backends">
+              <div className="glass-1 rounded-2xl p-5 sm:p-8 w-full min-h-[360px] sm:min-h-[400px] flex items-center justify-center relative overflow-hidden select-none">
+                <div className="w-full max-w-[560px] flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+                  <div className="flex flex-col gap-2.5 w-full sm:w-[196px] shrink-0">
+                    {[
+                      { name: "users", meta: "4 fields · id, role" },
+                      { name: "projects", meta: "6 fields · org_id" },
+                      { name: "workflows", meta: "3 fields · trigger" },
+                    ].map((ent) => (
+                      <div
+                        key={ent.name}
+                        className="glass-3 rounded-xl p-2.5 sm:p-3 flex items-center justify-between border border-border"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-brand-light flex items-center justify-center text-brand-link">
+                            <Layers className="w-4 h-4" strokeWidth={1.8} />
                           </div>
-                          <div className="text-[12px] text-muted-foreground font-mono">
-                            {ent.meta}
+                          <div>
+                            <div className="text-[13px] font-mono font-semibold text-foreground">
+                              {ent.name}
+                            </div>
+                            <div className="text-[12px] text-muted-foreground font-mono">
+                              {ent.meta}
+                            </div>
                           </div>
                         </div>
+                        <span className="w-2 h-2 rounded-full bg-brand" />
                       </div>
-                      <span className="w-2 h-2 rounded-full bg-brand" />
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                <div className="flex items-center justify-center shrink-0 text-brand-link">
-                  <ArrowRight className="w-5 h-5 hidden sm:block" />
-                  <ArrowDown className="w-5 h-5 sm:hidden" />
-                </div>
+                  <div className="flex items-center justify-center shrink-0 text-brand-link">
+                    <ArrowRight className="w-5 h-5 hidden sm:block" />
+                    <ArrowDown className="w-5 h-5 sm:hidden" />
+                  </div>
 
-                <div className="w-full sm:flex-1 min-w-0">
-                  <div className="glass-3 rounded-2xl p-4 border border-border flex flex-col gap-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-[12px] font-semibold text-foreground">
-                        app_ops_workflows
-                      </span>
-                      <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-brand-light text-brand-link border border-border">
-                        RLS ON
-                      </span>
+                  <div className="w-full sm:flex-1 min-w-0">
+                    <div className="glass-3 rounded-2xl p-4 border border-border flex flex-col gap-2.5 min-h-[212px]">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[12px] font-semibold text-foreground">
+                          app_ops_workflows
+                        </span>
+                        <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-brand-light text-brand-link border border-border">
+                          RLS ON · 3/3
+                        </span>
+                      </div>
+                      <RenderNode
+                        config={{
+                          type: "DataTable",
+                          columns: [
+                            { key: "workflow", label: "Workflow", type: "text" },
+                            { key: "status", label: "Status", type: "badge" },
+                          ],
+                          data: [
+                            { workflow: "User Sync", status: "Active" },
+                            { workflow: "Invoice Gen", status: "Pending" },
+                            { workflow: "Slack Alerts", status: "Active" },
+                          ],
+                        }}
+                      />
                     </div>
-                    <RenderNode
-                      config={{
-                        type: "DataTable",
-                        columns: [
-                          { key: "workflow", label: "Workflow", type: "text" },
-                          { key: "status", label: "Status", type: "badge" },
-                        ],
-                        data: [
-                          { workflow: "User Sync", status: "Active" },
-                          { workflow: "Invoice Gen", status: "Pending" },
-                          { workflow: "Slack Alerts", status: "Active" },
-                        ],
-                      }}
-                    />
                   </div>
                 </div>
               </div>
-            </div>
+            </StoryVisualSlot>
           </div>
         </div>
 
@@ -127,45 +130,47 @@ export function StorySection() {
           className="flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-14 w-full"
         >
           <div className="w-full lg:w-7/12">
-            <div className="glass-1 rounded-2xl p-5 sm:p-8 w-full min-h-[360px] sm:min-h-[400px] flex items-center justify-center relative overflow-hidden select-none">
-              <div className="w-full max-w-[520px] grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <RenderNode
-                  config={{
-                    type: "Statistic",
-                    label: "Active Users",
-                    value: "12,840",
-                    trend: { value: "+14%", sentiment: "positive" },
-                  }}
-                />
-
-                <div className="rounded-xl border border-error-border bg-error-light/60 p-3 flex flex-col justify-center min-w-0">
+            <StoryVisualSlot kind="resilience">
+              <div className="glass-1 rounded-2xl p-5 sm:p-8 w-full min-h-[360px] sm:min-h-[400px] flex items-center justify-center relative overflow-hidden select-none">
+                <div className="w-full max-w-[520px] grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <RenderNode
                     config={{
-                      type: "DataTable",
-                      columns: "missing_columns_array",
+                      type: "Statistic",
+                      label: "Active Users",
+                      value: "12,840",
+                      trend: { value: "+14%", sentiment: "positive" },
+                    }}
+                  />
+
+                  <div className="rounded-xl border border-error-border bg-error-light/70 p-3 flex flex-col justify-center min-w-0">
+                    <RenderNode
+                      config={{
+                        type: "DataTable",
+                        columns: "missing",
+                      }}
+                    />
+                  </div>
+
+                  <RenderNode
+                    config={{
+                      type: "Statistic",
+                      label: "Records Synced",
+                      value: "4,312",
+                      trend: { value: "+6%", sentiment: "positive" },
+                    }}
+                  />
+
+                  <RenderNode
+                    config={{
+                      type: "Statistic",
+                      label: "API Requests",
+                      value: "98,420",
+                      trend: { value: "+2.4%", sentiment: "positive" },
                     }}
                   />
                 </div>
-
-                <RenderNode
-                  config={{
-                    type: "Statistic",
-                    label: "Records Synced",
-                    value: "4,312",
-                    trend: { value: "+6%", sentiment: "positive" },
-                  }}
-                />
-
-                <RenderNode
-                  config={{
-                    type: "Statistic",
-                    label: "API Requests",
-                    value: "98,420",
-                    trend: { value: "+2.4%", sentiment: "positive" },
-                  }}
-                />
               </div>
-            </div>
+            </StoryVisualSlot>
           </div>
 
           <div className="w-full lg:w-5/12 flex flex-col justify-center">
@@ -209,51 +214,53 @@ export function StorySection() {
           </div>
 
           <div className="w-full lg:w-7/12">
-            <div className="glass-1 rounded-2xl p-5 sm:p-8 w-full min-h-[360px] sm:min-h-[400px] flex items-center justify-center relative overflow-hidden select-none">
-              <div className="w-full max-w-[540px] flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-5">
-                <div className="glass-3 rounded-2xl p-4 w-full sm:w-[235px] border border-border font-mono text-[12px] leading-[1.7] shrink-0">
-                  <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-border font-sans">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Code className="w-3.5 h-3.5 text-brand-link" />
-                      <span className="text-[12px] font-medium text-foreground">config.json</span>
+            <StoryVisualSlot kind="preview">
+              <div className="glass-1 rounded-2xl p-5 sm:p-8 w-full min-h-[360px] sm:min-h-[400px] flex items-center justify-center relative overflow-hidden select-none">
+                <div className="w-full max-w-[540px] flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-5">
+                  <div className="glass-3 rounded-2xl p-4 w-full sm:w-[240px] border border-border font-mono text-[12px] leading-[1.75] shrink-0">
+                    <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-border font-sans">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Code className="w-3.5 h-3.5 text-brand-link" />
+                        <span className="text-[12px] font-medium text-foreground">config.json</span>
+                      </div>
+                      <span className="text-[11px] font-mono text-success-text font-medium">
+                        Valid
+                      </span>
                     </div>
-                    <span className="text-[11px] font-mono text-success-text font-medium">
-                      Valid
-                    </span>
+                    <div className="text-muted-foreground">
+                      <span className="token-bracket">&#123;</span>
+                      <br />
+                      &nbsp;&nbsp;<span className="token-key">&quot;type&quot;</span>:{" "}
+                      <span className="token-string">&quot;Statistic&quot;</span>,
+                      <br />
+                      &nbsp;&nbsp;<span className="token-key">&quot;label&quot;</span>:{" "}
+                      <span className="token-string">&quot;Revenue&quot;</span>,
+                      <br />
+                      &nbsp;&nbsp;<span className="token-key">&quot;value&quot;</span>:{" "}
+                      <span className="token-string">&quot;$48,200&quot;</span>
+                      <br />
+                      <span className="token-bracket">&#125;</span>
+                    </div>
                   </div>
-                  <div className="text-muted-foreground">
-                    <span className="token-bracket">&#123;</span>
-                    <br />
-                    &nbsp;&nbsp;<span className="token-key">&quot;type&quot;</span>:{" "}
-                    <span className="token-string">&quot;Statistic&quot;</span>,
-                    <br />
-                    &nbsp;&nbsp;<span className="token-key">&quot;label&quot;</span>:{" "}
-                    <span className="token-string">&quot;Revenue&quot;</span>,
-                    <br />
-                    &nbsp;&nbsp;<span className="token-key">&quot;value&quot;</span>:{" "}
-                    <span className="token-string">&quot;$48,200&quot;</span>
-                    <br />
-                    <span className="token-bracket">&#125;</span>
+
+                  <div className="flex items-center justify-center shrink-0 text-brand-link">
+                    <ArrowRight className="w-4 h-4 hidden sm:block" />
+                    <ArrowDown className="w-4 h-4 sm:hidden" />
                   </div>
-                </div>
 
-                <div className="flex items-center justify-center shrink-0 text-brand-link">
-                  <ArrowRight className="w-4 h-4 hidden sm:block" />
-                  <ArrowDown className="w-4 h-4 sm:hidden" />
-                </div>
-
-                <div className="w-full sm:flex-1 min-w-0">
-                  <RenderNode
-                    config={{
-                      type: "Statistic",
-                      label: "Revenue",
-                      value: "$48,200",
-                      trend: { value: "+18%", sentiment: "positive" },
-                    }}
-                  />
+                  <div className="w-full sm:flex-1 min-w-0">
+                    <RenderNode
+                      config={{
+                        type: "Statistic",
+                        label: "Revenue",
+                        value: "$48,200",
+                        trend: { value: "+18%", sentiment: "positive" },
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+            </StoryVisualSlot>
           </div>
         </div>
 
@@ -263,48 +270,50 @@ export function StorySection() {
           className="flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-14 w-full"
         >
           <div className="w-full lg:w-7/12">
-            <div className="glass-1 rounded-2xl p-5 sm:p-8 w-full min-h-[360px] sm:min-h-[400px] flex items-center justify-center relative overflow-hidden select-none">
-              <div className="w-full max-w-[520px] flex flex-col gap-3.5">
-                <div className="glass-3 rounded-xl p-3.5 border border-border flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Sparkles className="w-4 h-4 text-brand-link shrink-0" />
-                    <span className="text-[13px] text-foreground truncate">
-                      &quot;Create an incident triage board with SLA metrics&quot;
+            <StoryVisualSlot kind="copilot">
+              <div className="glass-1 rounded-2xl p-5 sm:p-8 w-full min-h-[360px] sm:min-h-[400px] flex items-center justify-center relative overflow-hidden select-none">
+                <div className="w-full max-w-[520px] flex flex-col gap-3.5">
+                  <div className="glass-3 rounded-xl p-3.5 border border-border flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Sparkles className="w-4 h-4 text-brand-link shrink-0" />
+                      <span className="text-[13px] text-foreground truncate">
+                        &quot;Create an incident triage board with SLA metrics&quot;
+                      </span>
+                    </div>
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-brand-light text-brand-link shrink-0">
+                      Groq → Gemini
                     </span>
                   </div>
-                  <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-brand-light text-brand-link shrink-0">
-                    Groq → Gemini
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <RenderNode
-                    config={{
-                      type: "Statistic",
-                      label: "Open Incidents",
-                      value: "2",
-                      trend: { value: "-3", sentiment: "positive" },
-                    }}
-                  />
-                  <RenderNode
-                    config={{
-                      type: "Statistic",
-                      label: "SLA Compliance",
-                      value: "99.98%",
-                      trend: { value: "+0.1%", sentiment: "positive" },
-                    }}
-                  />
-                </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-h-[104px]">
+                    <RenderNode
+                      config={{
+                        type: "Statistic",
+                        label: "Open Incidents",
+                        value: "2",
+                        trend: { value: "-3", sentiment: "positive" },
+                      }}
+                    />
+                    <RenderNode
+                      config={{
+                        type: "Statistic",
+                        label: "SLA Compliance",
+                        value: "99.98%",
+                        trend: { value: "+0.1%", sentiment: "positive" },
+                      }}
+                    />
+                  </div>
 
-                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-surface-sunken border border-border text-[12px] font-mono text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5 text-success-text">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    2/2 nodes validated
-                  </span>
-                  <span>Strict JSON AST</span>
+                  <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-surface-sunken border border-border text-[12px] font-mono text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5 text-success-text">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      2/2 nodes validated
+                    </span>
+                    <span>Strict JSON AST</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </StoryVisualSlot>
           </div>
 
           <div className="w-full lg:w-5/12 flex flex-col justify-center">
