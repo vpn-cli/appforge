@@ -277,7 +277,9 @@ Adaptive Columns (resolveGridColsClass):
   4 items: grid-cols-1 @[420px]:grid-cols-2 @[860px]:grid-cols-4 (avoids 3+1 orphan cards; 4x1 when room, else 2x2)
   2 items: grid-cols-1 @[420px]:grid-cols-2
   3 items: grid-cols-1 @[600px]:grid-cols-3
+  5 items: grid-cols-1 @[420px]:grid-cols-2 @[640px]:grid-cols-3 @[960px]:grid-cols-5 (5x1 wide, 3+2 medium avoiding 4+1 orphan, 2x3 compact)
   6 items: grid-cols-1 @[420px]:grid-cols-2 @[640px]:grid-cols-3 @[960px]:grid-cols-6
+  7 items: grid-cols-1 @[420px]:grid-cols-2 @[640px]:grid-cols-3 @[860px]:grid-cols-4 (4+3 balanced split on wide with 0 lonely cards; @[1100px]:grid-cols-7 if configured 7)
 Preview Spacing: Header -> Grid 24px (mb-6), Grid -> DataTable 20px (mb-5).
 Card: @container h-full bg-card border border-border rounded-lg p-4 min-w-0
 Card Hierarchy: Title is primary (text-[16px] font-semibold text-foreground), Subtitle is secondary (text-[13px] text-muted-foreground)
