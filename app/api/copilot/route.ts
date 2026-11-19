@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-import { rateLimit, checkGuestCopilotLimit } from "@/lib/rate-limit";
+import { rateLimit, checkGuestCopilotLimit, resolveClientIp } from "@/lib/rate-limit";
 import { createGroq } from "@ai-sdk/groq";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { Redis } from "@upstash/redis";
@@ -41,11 +41,9 @@ Architectural Rules:
 
 export async function POST(req: Request) {
   try {
-    // 1. Resolve Client Origin strictly via x-real-ip
-    const clientIp =
-      req.headers.get("x-real-ip")?.trim() ||
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      "127.0.0.1";
+    // 1. Resolve Client Origin strictly via x-real-ip only. If absent, map to shared "unknown" bucket.
+    // Never trust client-controlled headers like x-forwarded-for or cf-connecting-ip.
+    const clientIp = resolveClientIp(req);
 
     // 2. Resolve Authenticated User
     let userId: string | null = null;

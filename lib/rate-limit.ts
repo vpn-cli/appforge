@@ -18,6 +18,23 @@ export const DEFAULT_GUEST_COPILOT_DAILY_CAP = 25;
 // Determine if we have Upstash Redis access wired seamlessly via environment boundaries
 const hasUpstashKeys = !!process.env.UPSTASH_REDIS_REST_URL && !!process.env.UPSTASH_REDIS_REST_TOKEN;
 
+if (!hasUpstashKeys && process.env.NODE_ENV === "production") {
+  console.warn(
+    "[RateLimit Warning] UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN is not configured in production. " +
+    "The in-memory rate limiter does not persist state across serverless function instances."
+  );
+}
+
+/**
+ * Resolves the client IP strictly via `x-real-ip` (set by trusted Edge/ingress proxy).
+ * Never trusts client-controlled headers like `x-forwarded-for` or `cf-connecting-ip`.
+ * If absent, returns the shared fallback bucket "unknown".
+ */
+export function resolveClientIp(req: Request): string {
+  const realIp = req.headers.get("x-real-ip")?.trim();
+  return realIp || "unknown";
+}
+
 let ratelimit: Ratelimit | null = null;
 let publicReadRatelimit: Ratelimit | null = null;
 let guestIpRatelimit: Ratelimit | null = null;
