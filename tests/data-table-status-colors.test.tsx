@@ -263,7 +263,7 @@ describe("PART 1 — DataTable Status Colors", () => {
 
   describe("Copilot system prompt & PROMPT_VERSION", () => {
     it("bumps PROMPT_VERSION and instructs Copilot to emit type: 'status' with colors map", () => {
-      expect(PROMPT_VERSION).toBe("v1.2.0");
+      expect(PROMPT_VERSION).toBe("v1.3.0");
       expect(COPILOT_SYSTEM_PROMPT).toContain('type: "status"');
       expect(COPILOT_SYSTEM_PROMPT).toContain("colors");
     });

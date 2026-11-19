@@ -6,7 +6,7 @@ import {
 } from "./validation";
 import { z } from "zod";
 
-export const PROMPT_VERSION = "v1.2.0";
+export const PROMPT_VERSION = "v1.3.0";
 
 /**
  * Introspects a Zod schema to extract its shape, handling lazy schemas.
