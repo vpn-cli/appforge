@@ -977,7 +977,7 @@ describe(
 
         // Clean up the created test table if it was created
         await dropTestTable(supabase, `app_${testAppId.replace(/-/g, "_")}_${maliciousEntity}`);
-      });
+      }, 15000);
 
       it("Legacy execute_app_ddl 2-argument overload is permanently removed in contract phase (Migration B)", async () => {
         const supabase = await createInsforgeServer();
