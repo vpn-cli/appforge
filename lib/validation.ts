@@ -143,29 +143,6 @@ export const GridSchema: z.ZodType<any> = z.lazy(() =>
   }).strict()
 );
 
-export const TrendChartSchema = z.object({
-  type: z.literal("TrendChart"),
-  title: z.string().optional(),
-  caption: z.string().optional(),
-  value: z.number().optional(),
-  valueSuffix: z.string().optional(),
-  decimals: z.number().optional(),
-  updatedText: z.string().optional(),
-  trend: z.enum(["up", "down", "none"]).optional(),
-  period: z.enum(["Weekly", "Monthly", "Yearly", "Daily", "Quarterly"]).optional(),
-  defaultPeriod: z.string().optional(),
-  periods: z.array(z.string()).optional(),
-  data: z.array(z.number()).optional(),
-  labels: z.array(z.string()).optional(),
-  accent: z.string().optional(),
-  width: z.number().optional(),
-  loop: z.number().optional(),
-  backdrop: z.boolean().optional(),
-  state: z.enum(["loading", "loaded", "empty", "error", "degraded"]).optional(),
-  errorMessage: z.string().optional(),
-  className: z.string().optional(),
-}).strict();
-
 export const ComponentSchemas: Record<string, z.ZodTypeAny> = {
   Header: HeaderSchema,
   Statistic: StatisticSchema,
@@ -173,7 +150,6 @@ export const ComponentSchemas: Record<string, z.ZodTypeAny> = {
   Card: CardSchema,
   Grid: GridSchema,
   ButtonAction: ButtonActionSchema,
-  TrendChart: TrendChartSchema,
 };
 
 export const ComponentNodeSchema: z.ZodType<any> = z.lazy(() =>
@@ -184,7 +160,6 @@ export const ComponentNodeSchema: z.ZodType<any> = z.lazy(() =>
     CardSchema,
     GridSchema,
     ButtonActionSchema,
-    TrendChartSchema,
   ])
 );
 
@@ -236,19 +211,10 @@ export function validateComponentNode(node: unknown): {
 
   const result = schema.safeParse(node);
   if (!result.success) {
-    const issues = result.error.issues.flatMap((i) => {
-      const unrecognized = (i as any).keys as string[] | undefined;
-      if (unrecognized && unrecognized.length > 0) {
-        return unrecognized.map((key) => ({
-          path: key,
-          message: `Unrecognized key: "${key}"`,
-        }));
-      }
-      return [{
-        path: i.path.join(".") || "root",
-        message: i.message,
-      }];
-    });
+    const issues = result.error.issues.map((i) => ({
+      path: i.path.join(".") || "root",
+      message: i.message,
+    }));
     return {
       valid: false,
       type: raw.type,

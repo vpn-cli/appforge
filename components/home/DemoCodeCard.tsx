@@ -19,7 +19,7 @@ const TOKEN_CLASSES: Record<JsonToken["kind"], string> = {
 };
 
 type DemoCodeCardProps = {
-  periodDisplay?: string;
+  metricDisplayValue?: string;
   variantDisplay?: string;
   validationStatus?: "validating" | "valid";
   activeLineHighlighted?: boolean;
@@ -27,15 +27,14 @@ type DemoCodeCardProps = {
 };
 
 export function DemoCodeCard({
-  periodDisplay = '"Monthly"',
-  variantDisplay,
+  metricDisplayValue = "1,244",
+  variantDisplay = '"panel"',
   validationStatus = "valid",
   activeLineHighlighted = false,
   showCursor = false,
 }: DemoCodeCardProps = {}) {
   const [copied, setCopied] = useState(false);
-  const effectivePeriod = variantDisplay || periodDisplay;
-  const lines = buildHeroJsonLines(effectivePeriod);
+  const lines = buildHeroJsonLines(metricDisplayValue, variantDisplay);
 
   const handleCopy = async () => {
     try {
@@ -50,7 +49,7 @@ export function DemoCodeCard({
   return (
     <div
       data-testid="hero-code-card"
-      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto lg:h-full transition-colors relative"
+      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto transition-colors relative"
     >
       {/* Top Header Row — matching 44px (h-11) height with preview card */}
       <div className="h-11 flex items-center justify-between gap-2 pb-3 border-b border-border shrink-0">
@@ -84,12 +83,12 @@ export function DemoCodeCard({
       {/* Code Body — wraps cleanly with zero horizontal scroll and fits content */}
       <div
         data-testid="code-panel-body"
-        className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col overflow-x-hidden flex-1"
+        className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col overflow-x-hidden"
       >
         <div className="w-full flex flex-col">
           {lines.map((tokens, lineIdx) => {
-            const isPeriodLine = lineIdx === 11;
-            const isHighlighted = isPeriodLine && activeLineHighlighted;
+            const isVariantLine = lineIdx === 7;
+            const isHighlighted = isVariantLine && activeLineHighlighted;
 
             return (
               <div
@@ -110,7 +109,7 @@ export function DemoCodeCard({
                       {tok.text}
                     </span>
                   ))}
-                  {isPeriodLine && showCursor && (
+                  {isVariantLine && showCursor && (
                     <span
                       aria-hidden="true"
                       className="inline-block w-[2px] h-[14px] bg-brand-link align-middle ml-0.5 animate-pulse"
@@ -125,7 +124,7 @@ export function DemoCodeCard({
 
       {/* Quiet Footer Caption — aligned to exact same baseline */}
       <div className="h-9 pt-2.5 border-t border-border text-[13px] text-muted-foreground flex items-center justify-between gap-2 shrink-0">
-        <span className="truncate">Registry: TrendChart</span>
+        <span className="truncate">Registry: Statistic, DataTable</span>
         {validationStatus === "validating" ? (
           <span
             data-testid="code-footer-validating"
@@ -147,5 +146,3 @@ export function DemoCodeCard({
     </div>
   );
 }
-
-export default DemoCodeCard;

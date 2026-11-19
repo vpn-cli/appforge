@@ -6,8 +6,8 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Peak Chart Vendor Integration Complete (branch `feat/landing-redesign`)
-**Last completed:** Peak Chart Integration (`components/vendor/peak-chart/peak-chart.tsx` by Louis Studios under MIT license; registered as honest real registry component `type: "TrendChart"` with strict Zod schema in `ComponentRegistry`; AppForge violet `#6D5BF0` accent; Geist font stack `var(--font-geist-sans)`; equal heights desktop verification with 0.00px difference across 1440x900, 1280x800, and 1024x768; 4 screenshots light/dark at 1440x900 and 390x844; 0 axe accessibility violations on `/`; 120 unit tests passing)
+**Phase:** Part 3 Complete (branch `feat/landing-redesign`)
+**Last completed:** Part 3 — Honest Hero Config & Pre-flight Validation (Guest Copilot per-IP rate limit with `x-real-ip` & configurable global daily cap; `npm run test:db` passing 41/41; `.screenshots/` confirmed in `.gitignore`; Honest Hero Config with strictly real registry types `Statistic` + `DataTable` through `ComponentRegistry` via `<RenderNode />`, "Sample data" label, zero "Live" badge, zero fake status dots; hero subtext <= 20 words, max 4 text elements, CTAs "Start building" + "View templates", violet gradient on "driven Apps" only; em-dash replaced in Footer; pre-flight check passing 10/10; 104 unit tests across 12 suites and 41 DB tests passing; full Next.js production build passing with 0 errors)
 **Next:** Production Review / Branch Promotion
 
 ---

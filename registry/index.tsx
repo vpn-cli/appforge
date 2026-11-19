@@ -5,7 +5,6 @@ import { Card } from "./components/Card";
 import { Grid } from "./components/Grid";
 import { Statistic } from "./components/Statistic";
 import { DataTable } from "./components/DataTable";
-import { TrendChart } from "./components/TrendChart";
 import { InvalidNodeFallback } from "./components/InvalidNodeFallback";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { validateComponentNode } from "@/lib/validation";
@@ -17,7 +16,6 @@ export const ComponentRegistry: Record<string, React.ComponentType<any>> = {
   Grid,
   Statistic,
   DataTable,
-  TrendChart,
 };
 
 export function RenderNode({ config }: { config: unknown }) {
