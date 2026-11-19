@@ -322,4 +322,16 @@ Copilot Floating Pill (components/builder/CopilotFloatingPill.tsx):
   Expanded State: width: min(520px, pane width - 32px), height: min(560px, pane height - 32px), scales from bottom-right (originX: 1, originY: 1)
     Surface: bg-white/96 dark:bg-[#121218]/96 backdrop-blur-2xl (>=92% opaque smoked glass)
     Dismissal: Esc key, click outside, collapse chevron button, or ⌘K shortcut
+
+### TrendChart Component (`registry/components/TrendChart.tsx`)
+```text
+Type: "TrendChart" (registered in ComponentRegistry and ComponentSchemas)
+Vendor artwork: Peak Chart by Louis Studios (MIT License, components/vendor/peak-chart/peak-chart.tsx)
+Accent: AppForge violet (#6D5BF0) - hue shifts canvas shaders and accents
+Font: var(--font-geist-sans) (Geist font stack)
+States: 5 mandatory lifecycle states (loading, empty, error, loaded, degraded)
+Performance: next/dynamic (ssr: false), requestIdleCallback field calculation, DPR capped at 1.5, static placeholder (CLS = 0)
+Geometry: 540:696 fixed card ratio (HN = 1.28888...). In hero demo, width is sized dynamically to match left column height via ResizeObserver.
+Accessibility: aria-hidden canvas with sr-only text summary; period dropdown supports ArrowUp/Down/Enter/Escape/Tab keyboard navigation; 0 axe violations.
+```
 ```
