@@ -160,7 +160,7 @@ export function HeroMeshShader({ themeKey, isPaused, onFallback }: Props) {
             ref={shaderElRef}
             colors={colors}
             speed={0}
-            frame={frameMsRef.current}
+            frame={0}
             distortion={0.45}
             swirl={0.18}
             grainMixer={0}
