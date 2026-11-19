@@ -18,6 +18,10 @@ import {
 } from "@/actions/apps";
 import { syncAppSchema } from "@/actions/schema";
 import { GET, POST, PUT, DELETE } from "@/app/api/proxy/[appId]/[entity]/route";
+import React from "react";
+import { renderToString } from "react-dom/server";
+import { RenderNode } from "@/registry";
+import { validateComponentNode } from "@/lib/validation";
 
 // Dedicated Test Database Helper: Teardown must drop tables through a test-only helper using service_role
 async function dropTestTable(serverDb: any, tableName: string) {
@@ -265,6 +269,72 @@ describe(
         const { data: appRow } = await supabase.from("apps").select("name, published_config").eq("id", testAppId).single();
         expect(appRow?.name).toBe("Tenant A Authorized Name");
         expect((appRow?.published_config as any)?.app).toBe("Tenant A Live");
+      });
+
+      it("Security: published-app path with injected dangerouslySetInnerHTML, onClick, style, foo is reported by validation and renders none of them to DOM", async () => {
+        // Act as User A (owner)
+        (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
+
+        const maliciousConfig = {
+          app: "Security Audit App",
+          pages: [
+            {
+              components: [
+                {
+                  type: "Statistic",
+                  label: "Safe Metric",
+                  value: "1,337",
+                  dangerouslySetInnerHTML: { __html: "<script>alert('pwned')</script>" },
+                  onClick: "alert('click')",
+                  style: { color: "red", pointerEvents: "all" },
+                  foo: "malicious_unrecognized_key",
+                },
+              ],
+            },
+          ],
+        };
+
+        // 1. Publish malicious config to real test database
+        const pubRes = await publishAppConfig(testAppId, JSON.stringify(maliciousConfig));
+        expect(pubRes.success).toBe(true);
+
+        // 2. Fetch the published configuration from the test database
+        const supabase = await createInsforgeServer();
+        const { data: appRow } = await supabase
+          .from("apps")
+          .select("published_config")
+          .eq("id", testAppId)
+          .single();
+
+        const published = appRow?.published_config as any;
+        expect(published).toBeDefined();
+        const componentSpec = published.pages[0].components[0];
+
+        // 3. Validation reports the unknown keys
+        const validation = validateComponentNode(componentSpec);
+        expect(validation.valid).toBe(false);
+        expect(validation.issues).toBeDefined();
+
+        const issueMessages = validation.issues!.map((iss) => `${iss.path}: ${iss.message}`).join(" ");
+        expect(issueMessages).toContain("dangerouslySetInnerHTML");
+        expect(issueMessages).toContain("onClick");
+        expect(issueMessages).toContain("style");
+        expect(issueMessages).toContain("foo");
+
+        // 4. Render through RenderNode (exact published app execution engine)
+        const renderedHtml = renderToString(React.createElement(RenderNode, { config: componentSpec }));
+
+        // None of the malicious props/elements are applied to the DOM
+        expect(renderedHtml).not.toContain("<script>alert('pwned')</script>");
+        expect(renderedHtml).not.toContain("alert('pwned')");
+        expect(renderedHtml).not.toContain("onclick");
+        expect(renderedHtml).not.toContain("style=\"color:red");
+        expect(renderedHtml).not.toContain("style=\"color: red");
+        expect(renderedHtml).not.toContain("foo=\"malicious_unrecognized_key\"");
+
+        // Safe InvalidNodeFallback is rendered instead with clear diagnostic issues
+        expect(renderedHtml).toContain("Invalid Component Spec");
+        expect(renderedHtml).toContain("dangerouslySetInnerHTML");
       });
 
       it("Positive Control: User B (legitimate owner of App B) CAN update, rename, publish, and delete B's own app", async () => {

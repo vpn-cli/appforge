@@ -27,7 +27,8 @@ export const HeaderSchema = z.object({
   title: z.string().optional(),
   subtitle: z.string().optional(),
   size: z.enum(["sm", "md", "lg"]).optional().default("md"),
-}).passthrough();
+  className: z.string().optional(),
+}).strict();
 
 export const StatisticTrendSchema = z.union([
   z.enum(["up", "down", "neutral"]),
@@ -36,7 +37,7 @@ export const StatisticTrendSchema = z.union([
     label: z.string().optional(),
     direction: z.enum(["up", "down", "neutral"]).optional(),
     sentiment: z.enum(["positive", "negative", "neutral"]).optional(),
-  }).passthrough(),
+  }).strict(),
 ]);
 
 export const StatisticSchema = z.object({
@@ -51,7 +52,7 @@ export const StatisticSchema = z.object({
   icon: z.string().optional(),
   variant: z.enum(["default", "panel", "gradient"]).optional(),
   className: z.string().optional(),
-}).passthrough();
+}).strict();
 
 export const StatusColorToneSchema = z.enum([
   "success",
@@ -96,7 +97,7 @@ export const DataTableColumnSchema = z.union([
       z.record(z.string(), StatusColorToneSchema).optional()
     ),
     align: z.enum(["left", "right", "center"]).optional(),
-  }).passthrough(),
+  }).strict(),
 ]);
 
 export const DataTableSchema = z.object({
@@ -111,14 +112,15 @@ export const DataTableSchema = z.object({
   degradedMessage: z.string().optional(),
   isInteractive: z.boolean().optional(),
   className: z.string().optional(),
-}).passthrough();
+}).strict();
 
 export const ButtonActionSchema = z.object({
   type: z.literal("ButtonAction"),
   label: z.string().optional(),
   variant: z.enum(["default", "outline", "secondary", "ghost"]).optional().default("default"),
   icon: z.string().optional(),
-}).passthrough();
+  className: z.string().optional(),
+}).strict();
 
 export const CardSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
@@ -127,7 +129,8 @@ export const CardSchema: z.ZodType<any> = z.lazy(() =>
     subtitle: z.string().optional(),
     content: z.array(ComponentNodeSchema).optional().default([]),
     footer: z.array(ComponentNodeSchema).optional().default([]),
-  }).passthrough()
+    className: z.string().optional(),
+  }).strict()
 );
 
 export const GridSchema: z.ZodType<any> = z.lazy(() =>
@@ -137,7 +140,7 @@ export const GridSchema: z.ZodType<any> = z.lazy(() =>
     gap: z.union([z.number(), z.string()]).optional().default(4),
     items: z.array(ComponentNodeSchema).optional().default([]),
     className: z.string().optional(),
-  }).passthrough()
+  }).strict()
 );
 
 export const ComponentSchemas: Record<string, z.ZodTypeAny> = {
@@ -160,22 +163,17 @@ export const ComponentNodeSchema: z.ZodType<any> = z.lazy(() =>
   ])
 );
 
-// Generic Base Schema
-const BaseComponentSchema = z.object({
-  type: z.string({
-    message: "Component 'type' is required and must be a string",
-  }),
-}).passthrough();
-
 const PageSchema = z.object({
   components: z.array(z.any()).optional().default([]),
-}).passthrough();
+  title: z.string().optional(),
+  id: z.string().optional(),
+}).strict();
 
 export const AppConfigSchema = z.object({
   app: z.string().optional(),
   pages: z.array(PageSchema).optional().default([]),
   entities: z.record(z.string(), z.any()).optional(),
-}).passthrough();
+}).strict();
 
 /**
  * Validates a single component AST node against its component-specific Zod schema.
