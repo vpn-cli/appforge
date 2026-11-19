@@ -71,9 +71,9 @@ describe("PART 2 — Spacing & Layout", () => {
         <DataTable
           columns={[{ key: "workflow", label: "WORKFLOW", type: "avatar" }]}
           data={[
-            { workflow: "User Sync" },
-            { workflow: "Invoice Gen" },
-            { workflow: "Slack Alerts" },
+            { workflow: "User Sync", icon: "users" },
+            { workflow: "Invoice Gen", icon: "file-text" },
+            { workflow: "Slack Alerts", icon: "bell" },
           ]}
           state="loaded"
         />

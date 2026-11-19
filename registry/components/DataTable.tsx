@@ -1,7 +1,23 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { AlertCircle, RefreshCw, Users, FileText, Bell, Sparkles } from "lucide-react";
+import {
+  AlertCircle,
+  RefreshCw,
+  Users,
+  User,
+  FileText,
+  Bell,
+  Sparkles,
+  Activity,
+  Layers,
+  CheckCircle2,
+  AlertTriangle,
+  Shield,
+  Database,
+  Workflow,
+  Clock,
+} from "lucide-react";
 import { useAppRuntimeContext } from "../context";
 import {
   resolveStatusColor,
@@ -11,27 +27,80 @@ import {
 
 export { resolveStatusColor, type StatusColorTone };
 
-function getWorkflowIcon(name: string): React.ReactNode | null {
-  const lower = name.toLowerCase();
-  if (lower.includes("user") || lower.includes("sync") || lower.includes("account")) {
-    return <Users className="w-3.5 h-3.5" strokeWidth={1.8} />;
+export const WHITELISTED_ROW_ICONS = [
+  "users",
+  "user",
+  "file-text",
+  "filetext",
+  "bell",
+  "sparkles",
+  "activity",
+  "layers",
+  "check-circle",
+  "checkcircle",
+  "alert-triangle",
+  "alerttriangle",
+  "shield",
+  "database",
+  "workflow",
+  "clock",
+] as const;
+
+export type WhitelistedRowIcon = (typeof WHITELISTED_ROW_ICONS)[number];
+
+export function resolveRowIcon(iconName: unknown): React.ReactNode | null {
+  if (typeof iconName !== "string") return null;
+  const normalized = iconName.trim().toLowerCase().replace(/[\s_-]+/g, "-");
+  switch (normalized) {
+    case "users":
+    case "user-group":
+      return <Users className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "user":
+      return <User className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "file-text":
+    case "filetext":
+    case "file":
+    case "document":
+      return <FileText className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "bell":
+    case "alert":
+    case "notification":
+      return <Bell className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "sparkles":
+    case "sparkle":
+    case "ai":
+      return <Sparkles className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "activity":
+      return <Activity className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "layers":
+      return <Layers className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "check-circle":
+    case "checkcircle":
+    case "check":
+      return <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "alert-triangle":
+    case "alerttriangle":
+    case "warning":
+      return <AlertTriangle className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "shield":
+      return <Shield className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "database":
+      return <Database className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "workflow":
+    case "git-branch":
+      return <Workflow className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "clock":
+    case "time":
+      return <Clock className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    default:
+      return null;
   }
-  if (lower.includes("invoice") || lower.includes("gen") || lower.includes("bill") || lower.includes("payment")) {
-    return <FileText className="w-3.5 h-3.5" strokeWidth={1.8} />;
-  }
-  if (lower.includes("slack") || lower.includes("alert") || lower.includes("notify")) {
-    return <Bell className="w-3.5 h-3.5" strokeWidth={1.8} />;
-  }
-  if (lower.includes("bot") || lower.includes("ai") || lower.includes("copilot")) {
-    return <Sparkles className="w-3.5 h-3.5" strokeWidth={1.8} />;
-  }
-  return null;
 }
 
 export interface ColumnSchema {
   key: string;
   label?: string;
-  type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "status" | "avatar";
+  type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "status" | "avatar" | "icon";
   colors?: Record<string, string>;
   align?: "left" | "right" | "center";
 }
@@ -229,7 +298,12 @@ export function DataTable({
     return undefined;
   };
 
-  const renderCellContent = (col: ColumnSchema, value: unknown, rowIdx: number) => {
+  const renderCellContent = (
+    col: ColumnSchema,
+    value: unknown,
+    rowIdx: number,
+    row?: Record<string, unknown>
+  ) => {
     if (value === null || value === undefined || value === "") {
       return <span className="text-muted-foreground/50 select-none">-</span>;
     }
@@ -250,9 +324,26 @@ export function DataTable({
       );
     }
 
+    if (col.type === "icon") {
+      const rawIcon = value ?? (row ? (row as Record<string, unknown>).icon : undefined);
+      const icon = resolveRowIcon(rawIcon);
+      return (
+        <div
+          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+            variant === "dark-panel"
+              ? "bg-white/10 text-slate-100"
+              : "bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300 border border-border"
+          }`}
+        >
+          {icon ?? <FileText className="w-3.5 h-3.5" strokeWidth={1.8} />}
+        </div>
+      );
+    }
+
     if (col.type === "avatar") {
       const name = String(value);
-      const icon = getWorkflowIcon(name);
+      const rowIcon = row ? (row as Record<string, unknown>).icon : undefined;
+      const icon = resolveRowIcon(rowIcon);
       const initials =
         name
           .split(" ")
@@ -447,7 +538,7 @@ export function DataTable({
                             : "text-left"
                         }`}
                       >
-                        {renderCellContent(col, getCellValue(row, col.key), rowIdx)}
+                        {renderCellContent(col, getCellValue(row, col.key), rowIdx, row)}
                       </td>
                     ))}
                   </tr>

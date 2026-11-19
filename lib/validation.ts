@@ -49,7 +49,7 @@ export const StatisticSchema = z.object({
   trendValue: z.string().optional(),
   chartWave: z.boolean().optional(),
   icon: z.string().optional(),
-  variant: z.enum(["default", "panel"]).optional(),
+  variant: z.enum(["default", "panel", "gradient"]).optional(),
   className: z.string().optional(),
 }).passthrough();
 
@@ -62,13 +62,34 @@ export const StatusColorToneSchema = z.enum([
   "violet",
 ]);
 
+export const WHITELISTED_ROW_ICONS = [
+  "users",
+  "user",
+  "file-text",
+  "filetext",
+  "bell",
+  "sparkles",
+  "activity",
+  "layers",
+  "check-circle",
+  "checkcircle",
+  "alert-triangle",
+  "alerttriangle",
+  "shield",
+  "database",
+  "workflow",
+  "clock",
+] as const;
+
+export const WhitelistedRowIconSchema = z.enum(WHITELISTED_ROW_ICONS);
+
 export const DataTableColumnSchema = z.union([
   z.string(),
   z.object({
     key: z.string(),
     label: z.string().optional(),
     type: z
-      .enum(["text", "number", "currency", "id", "code", "badge", "status", "avatar"])
+      .enum(["text", "number", "currency", "id", "code", "badge", "status", "avatar", "icon"])
       .optional(),
     colors: z.preprocess(
       preprocessStatusColorsMap,
