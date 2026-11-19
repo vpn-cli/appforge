@@ -148,6 +148,34 @@ Before triggering the application deploy in Step 4, audit your Vercel project en
 
 ---
 
+## Step 3B: Audit Live App Configurations Against Strict Schemas
+
+Before merging and deploying the application code, audit all existing application configurations in the live production database to confirm compatibility with the strict `.strict()` AST schemas:
+
+```bash
+# Run compatibility check against live production database (read-only transaction, 0 writes):
+node scripts/check-live-configs.mjs --live
+```
+
+> [!CAUTION]
+> **If ANY apps are reported as INVALID**:
+> 1. Immediately take a fresh logical backup via `pg_dump`:
+>    ```bash
+>    pg_dump "$LIVE_DATABASE_URL" \
+>      --table=apps \
+>      --format=custom \
+>      --no-owner \
+>      --no-privileges \
+>      --file="backups/live-apps-pre-strip-$(date +%Y%m%d-%H%M%S).dump"
+>    ```
+> 2. Run the key stripping migration script in dry-run mode (read-only transaction, 0 writes) to inspect what keys would be stripped:
+>    ```bash
+>    node scripts/migrate-strip-invalid-keys.mjs --live
+>    ```
+> 3. **STOP AND WAIT FOR CONFIRMATION**: Do NOT apply the stripping migration or proceed with the merge. Wait for user review and explicit approval before taking any further action.
+
+---
+
 ## Step 4: Merge and Deploy Application Code
 
 > [!WARNING]
