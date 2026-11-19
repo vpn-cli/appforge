@@ -152,7 +152,7 @@ export const TrendChartSchema = z.object({
   decimals: z.number().optional(),
   updatedText: z.string().optional(),
   trend: z.enum(["up", "down", "none"]).optional(),
-  period: z.string().optional(),
+  period: z.enum(["Weekly", "Monthly", "Yearly", "Daily", "Quarterly"]).optional(),
   defaultPeriod: z.string().optional(),
   periods: z.array(z.string()).optional(),
   data: z.array(z.number()).optional(),
@@ -236,10 +236,19 @@ export function validateComponentNode(node: unknown): {
 
   const result = schema.safeParse(node);
   if (!result.success) {
-    const issues = result.error.issues.map((i) => ({
-      path: i.path.join(".") || "root",
-      message: i.message,
-    }));
+    const issues = result.error.issues.flatMap((i) => {
+      const unrecognized = (i as any).keys as string[] | undefined;
+      if (unrecognized && unrecognized.length > 0) {
+        return unrecognized.map((key) => ({
+          path: key,
+          message: `Unrecognized key: "${key}"`,
+        }));
+      }
+      return [{
+        path: i.path.join(".") || "root",
+        message: i.message,
+      }];
+    });
     return {
       valid: false,
       type: raw.type,

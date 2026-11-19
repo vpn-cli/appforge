@@ -15,14 +15,14 @@ import {
 import { ComponentRegistry } from "@/registry";
 import {
   validateComponentNode,
-  StatisticSchema,
+  TrendChartSchema,
   AppConfigSchema,
 } from "@/lib/validation";
 
-describe("PART 3 — Honest Hero Config", () => {
-  it("uses only real registry types (Statistic, DataTable) in hero config", () => {
+describe("PART 3 — Honest Hero Config with TrendChart", () => {
+  it("uses only real registry types (TrendChart) in hero config", () => {
     const componentTypes = HERO_DEMO_CONFIG.pages[0].components.map((c) => c.type);
-    expect(componentTypes).toEqual(["Statistic", "DataTable"]);
+    expect(componentTypes).toEqual(["TrendChart"]);
 
     // Every component in the hero config must exist in ComponentRegistry
     for (const comp of HERO_DEMO_CONFIG.pages[0].components) {
@@ -56,60 +56,66 @@ describe("PART 3 — Honest Hero Config", () => {
 
   it("displays honest AST JSON code matching registry types without fake live typing", () => {
     const codeHtml = renderToString(<DemoCodeCard />);
-    expect(codeHtml).toContain("Statistic");
-    expect(codeHtml).toContain("DataTable");
-    expect(codeHtml).toContain("workflows");
+    expect(codeHtml).toContain("TrendChart");
+    expect(codeHtml).toContain("Workflow executions");
+    expect(codeHtml).toContain("Sample data");
     expect(codeHtml).toContain("app.config.json");
     expect(codeHtml).not.toContain('"live": true');
   });
 
-  it("confirms variant is declared in StatisticSchema and parsed output preserves it", () => {
-    const panelRaw = {
-      type: "Statistic",
-      label: "Active Workflows",
-      value: "1,244",
-      variant: "panel" as const,
-      trend: { value: "+12%", sentiment: "positive" as const },
+  it("confirms period is declared in TrendChartSchema and parsed output preserves it", () => {
+    const monthlyRaw = {
+      type: "TrendChart",
+      title: "Workflow executions",
+      caption: "Recorded in current billing cycle",
+      value: 14200,
+      valueSuffix: " runs",
+      trend: "up" as const,
+      updatedText: "Sample data",
+      period: "Monthly" as const,
+      periods: ["Weekly", "Monthly", "Yearly"],
+      data: [95, 112, 150, 339, 384],
     };
-    const parsedPanel = StatisticSchema.safeParse(panelRaw);
-    expect(parsedPanel.success).toBe(true);
-    if (parsedPanel.success) {
-      expect(parsedPanel.data.variant).toBe("panel");
+    const parsedMonthly = TrendChartSchema.safeParse(monthlyRaw);
+    expect(parsedMonthly.success).toBe(true);
+    if (parsedMonthly.success) {
+      expect(parsedMonthly.data.period).toBe("Monthly");
     }
 
-    const gradientRaw = {
-      type: "Statistic",
-      label: "Active Workflows",
-      value: "1,244",
-      variant: "gradient" as const,
-      trend: { value: "+12%", sentiment: "positive" as const },
+    const weeklyRaw = {
+      type: "TrendChart",
+      title: "Workflow executions",
+      caption: "Recorded in current billing cycle",
+      value: 14200,
+      valueSuffix: " runs",
+      trend: "up" as const,
+      updatedText: "Sample data",
+      period: "Weekly" as const,
+      periods: ["Weekly", "Monthly", "Yearly"],
+      data: [128, 152, 141],
     };
-    const parsedGradient = StatisticSchema.safeParse(gradientRaw);
-    expect(parsedGradient.success).toBe(true);
-    if (parsedGradient.success) {
-      expect(parsedGradient.data.variant).toBe("gradient");
+    const parsedWeekly = TrendChartSchema.safeParse(weeklyRaw);
+    expect(parsedWeekly.success).toBe(true);
+    if (parsedWeekly.success) {
+      expect(parsedWeekly.data.period).toBe("Weekly");
     }
 
     // Verify AppConfigSchema does not strip any keys from the full hero config
     const fullConfigParsed = AppConfigSchema.safeParse(HERO_DEMO_CONFIG);
     expect(fullConfigParsed.success).toBe(true);
     if (fullConfigParsed.success) {
-      const statComp = fullConfigParsed.data.pages[0].components[0] as any;
-      expect(statComp.variant).toBe("gradient");
-      expect(statComp.label).toBe("Active Workflows");
-      expect(statComp.value).toBe("1,244");
-      expect(statComp.trend).toEqual({ value: "+12%", sentiment: "positive" });
-
-      const tableComp = fullConfigParsed.data.pages[0].components[1] as any;
-      expect(tableComp.entity).toBe("workflows");
-      expect(tableComp.columns).toHaveLength(3);
-      expect(tableComp.data[0].icon).toBe("users");
+      const chartComp = fullConfigParsed.data.pages[0].components[0] as any;
+      expect(chartComp.type).toBe("TrendChart");
+      expect(chartComp.title).toBe("Workflow executions");
+      expect(chartComp.value).toBe(14200);
+      expect(chartComp.period).toBe("Monthly");
+      expect(chartComp.updatedText).toBe("Sample data");
     }
   });
 
   it("validates that every step in the scripted edit loop passes validateComponentNode", () => {
     // Initial state
-    expect(INITIAL_HERO_STATE.variantValue).toBe("panel");
+    expect(INITIAL_HERO_STATE.periodValue).toBe("Weekly");
     expect(INITIAL_HERO_STATE.validationStatus).toBe("valid");
 
     // Scripted timestamps throughout the 11,000ms loop
@@ -117,14 +123,11 @@ describe("PART 3 — Honest Hero Config", () => {
 
     for (const t of checkpoints) {
       const state = computeScriptedHeroState(t);
-      // Real schema-valid field is mutated ("panel" or "gradient")
-      expect(["panel", "gradient"]).toContain(state.variantValue);
-
-      // Status is either validating or valid
+      expect(["Weekly", "Monthly", "Yearly"]).toContain(state.periodValue);
       expect(["validating", "valid"]).toContain(state.validationStatus);
 
       // Verify the resulting component config passes registry validation
-      const config = buildHeroDemoConfig({ variant: state.variantValue });
+      const config = buildHeroDemoConfig({ period: state.periodValue });
       for (const comp of config.pages[0].components) {
         const validation = validateComponentNode(comp);
         expect(validation.valid).toBe(true);
@@ -134,27 +137,27 @@ describe("PART 3 — Honest Hero Config", () => {
   });
 
   it("confirms validating… / ✓ valid is derived from real validateComponentNode calls at runtime", () => {
-    // When variant is fully valid ("panel" or "gradient")
-    const panelResult = validateHeroEditorState('"panel"');
-    expect(panelResult.valid).toBe(true);
-    expect(panelResult.validationStatus).toBe("valid");
+    // When period is fully valid ("Weekly" or "Monthly")
+    const weeklyResult = validateHeroEditorState('"Weekly"');
+    expect(weeklyResult.valid).toBe(true);
+    expect(weeklyResult.validationStatus).toBe("valid");
 
-    const gradientResult = validateHeroEditorState('"gradient"');
-    expect(gradientResult.valid).toBe(true);
-    expect(gradientResult.validationStatus).toBe("valid");
+    const monthlyResult = validateHeroEditorState('"Monthly"');
+    expect(monthlyResult.valid).toBe(true);
+    expect(monthlyResult.validationStatus).toBe("valid");
 
-    // While typing intermediate partial values ("g", "grad", "gr")
-    const partialG = validateHeroEditorState('"g"');
-    expect(partialG.valid).toBe(false);
-    expect(partialG.validationStatus).toBe("validating");
-    expect(partialG.issues).toBeDefined();
+    // While typing intermediate partial values ("M", "Mon", "Month")
+    const partialM = validateHeroEditorState('"M"');
+    expect(partialM.valid).toBe(false);
+    expect(partialM.validationStatus).toBe("validating");
+    expect(partialM.issues).toBeDefined();
 
-    const partialGrad = validateHeroEditorState('"grad"');
-    expect(partialGrad.valid).toBe(false);
-    expect(partialGrad.validationStatus).toBe("validating");
+    const partialMon = validateHeroEditorState('"Mon"');
+    expect(partialMon.valid).toBe(false);
+    expect(partialMon.validationStatus).toBe("validating");
 
     // Invalid schema value altogether
-    const invalidVal = validateHeroEditorState('"invalid-variant"');
+    const invalidVal = validateHeroEditorState('"invalid-period"');
     expect(invalidVal.valid).toBe(false);
     expect(invalidVal.validationStatus).toBe("validating");
   });
@@ -183,7 +186,8 @@ describe("PART 3 — Honest Hero Config", () => {
     expect(heroHtml).toContain("Live Config-");
 
     // Subtext <= 20 words
-    const subtext = "Write or prompt a JSON config. AppForge validates every node, renders typed components, and syncs tables to Postgres.";
+    const subtext =
+      "Write or prompt a JSON config. AppForge validates every node, renders typed components, and syncs tables to Postgres.";
     const words = subtext.trim().split(/\s+/);
     expect(words.length).toBeLessThanOrEqual(20);
     expect(heroHtml).toContain("Write or prompt a JSON config.");

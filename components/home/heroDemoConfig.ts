@@ -1,30 +1,63 @@
 import { validateComponentNode } from "@/lib/validation";
 
 export type HeroDemoStateParams = {
-  metricValue?: number;
-  invoiceStatus?: "Idle" | "Running";
+  period?: "Weekly" | "Monthly" | "Yearly";
+  width?: number;
   includeSlackAlerts?: boolean;
-  variant?: "panel" | "gradient";
+};
+
+export const HERO_SAMPLE_DATA = [
+  95, 112, 150, 339, 384, 400, 388, 318, 240, 182, 146, 126, 117, 115, 121, 134, 143,
+];
+
+export const HERO_DEMO_TABLE_CONFIG = {
+  type: "DataTable" as const,
+  entity: "workflows",
+  columns: [
+    { key: "workflow", label: "WORKFLOW", type: "avatar" as const },
+    { key: "trigger", label: "TRIGGER", type: "code" as const },
+    { key: "status", label: "STATUS", type: "badge" as const },
+  ],
+  data: [
+    { workflow: "User Sync", trigger: "cron:hourly", status: "Running", icon: "users" },
+    { workflow: "Invoice Gen", trigger: "webhook:rx", status: "Idle", icon: "file-text" },
+  ],
 };
 
 export function buildHeroDemoConfig({
-  metricValue = 1244,
-  invoiceStatus = "Idle",
-  includeSlackAlerts = false,
-  variant = "gradient",
+  period = "Monthly",
+  width,
+  includeSlackAlerts,
 }: HeroDemoStateParams = {}) {
-  const rows = [
-    { workflow: "User Sync", trigger: "cron:hourly", status: "Running", icon: "users" },
-    { workflow: "Invoice Gen", trigger: "webhook:rx", status: invoiceStatus, icon: "file-text" },
-  ];
-
   if (includeSlackAlerts) {
-    rows.push({
-      workflow: "Slack Alerts",
-      trigger: "event:alert",
-      status: "Running",
-      icon: "bell",
-    });
+    return {
+      app: "ops_demo",
+      pages: [
+        {
+          components: [
+            {
+              type: "Statistic",
+              label: "Active Workflows",
+              value: "1,244",
+            },
+            {
+              type: "DataTable",
+              entity: "workflows",
+              columns: [
+                { key: "workflow", label: "WORKFLOW", type: "avatar" as const },
+                { key: "trigger", label: "TRIGGER", type: "code" as const },
+                { key: "status", label: "STATUS", type: "badge" as const },
+              ],
+              data: [
+                { workflow: "User Sync", trigger: "cron:hourly", status: "Running", icon: "users" },
+                { workflow: "Invoice Gen", trigger: "webhook:rx", status: "Idle", icon: "file-text" },
+                { workflow: "Slack Alerts", trigger: "event:alert", status: "Running", icon: "bell" },
+              ],
+            },
+          ],
+        },
+      ],
+    };
   }
 
   return {
@@ -33,21 +66,17 @@ export function buildHeroDemoConfig({
       {
         components: [
           {
-            type: "Statistic",
-            label: "Active Workflows",
-            value: metricValue.toLocaleString("en-US"),
-            variant,
-            trend: { value: "+12%", sentiment: "positive" as const },
-          },
-          {
-            type: "DataTable",
-            entity: "workflows",
-            columns: [
-              { key: "workflow", label: "WORKFLOW", type: "avatar" as const },
-              { key: "trigger", label: "TRIGGER", type: "code" as const },
-              { key: "status", label: "STATUS", type: "badge" as const },
-            ],
-            data: rows,
+            type: "TrendChart",
+            title: "Workflow executions",
+            caption: "Recorded in current billing cycle",
+            value: 14200,
+            valueSuffix: " runs",
+            trend: "up" as const,
+            updatedText: "Sample data",
+            period,
+            periods: ["Weekly", "Monthly", "Yearly"],
+            data: HERO_SAMPLE_DATA,
+            ...(width !== undefined ? { width } : {}),
           },
         ],
       },
@@ -63,8 +92,7 @@ export type JsonToken = {
 };
 
 export function buildHeroJsonLines(
-  metricDisplayValue: string = "1,244",
-  variantDisplay: string = '"gradient"'
+  periodDisplay: string = '"Monthly"'
 ): readonly (readonly JsonToken[])[] {
   return [
     [{ kind: "bracket", text: "{" }],
@@ -93,49 +121,92 @@ export function buildHeroJsonLines(
       { kind: "plain", text: "      " },
       { kind: "key", text: '"type"' },
       { kind: "punct", text: ": " },
-      { kind: "string", text: '"Statistic"' },
+      { kind: "string", text: '"TrendChart"' },
       { kind: "punct", text: "," },
     ],
     [
       { kind: "plain", text: "      " },
-      { kind: "key", text: '"label"' },
+      { kind: "key", text: '"title"' },
       { kind: "punct", text: ": " },
-      { kind: "string", text: '"Active Workflows"' },
+      { kind: "string", text: '"Workflow executions"' },
+      { kind: "punct", text: "," },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "key", text: '"caption"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"Recorded in current billing cycle"' },
       { kind: "punct", text: "," },
     ],
     [
       { kind: "plain", text: "      " },
       { kind: "key", text: '"value"' },
       { kind: "punct", text: ": " },
-      { kind: "string", text: `"${metricDisplayValue}"` },
+      { kind: "string", text: "14200" },
       { kind: "punct", text: "," },
     ],
     [
       { kind: "plain", text: "      " },
-      { kind: "key", text: '"variant"' },
+      { kind: "key", text: '"valueSuffix"' },
       { kind: "punct", text: ": " },
-      { kind: "string", text: variantDisplay },
-    ],
-    [
-      { kind: "plain", text: "    " },
-      { kind: "bracket", text: "}," },
-    ],
-    [
-      { kind: "plain", text: "    " },
-      { kind: "bracket", text: "{" },
-    ],
-    [
-      { kind: "plain", text: "      " },
-      { kind: "key", text: '"type"' },
-      { kind: "punct", text: ": " },
-      { kind: "string", text: '"DataTable"' },
+      { kind: "string", text: '" runs"' },
       { kind: "punct", text: "," },
     ],
     [
       { kind: "plain", text: "      " },
-      { kind: "key", text: '"entity"' },
+      { kind: "key", text: '"trend"' },
       { kind: "punct", text: ": " },
-      { kind: "string", text: '"workflows"' },
+      { kind: "string", text: '"up"' },
+      { kind: "punct", text: "," },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "key", text: '"updatedText"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"Sample data"' },
+      { kind: "punct", text: "," },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "key", text: '"period"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: periodDisplay },
+      { kind: "punct", text: "," },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "key", text: '"periods"' },
+      { kind: "punct", text: ": " },
+      { kind: "bracket", text: "[" },
+      { kind: "string", text: '"Weekly"' },
+      { kind: "punct", text: ", " },
+      { kind: "string", text: '"Monthly"' },
+      { kind: "punct", text: ", " },
+      { kind: "string", text: '"Yearly"' },
+      { kind: "bracket", text: "]" },
+      { kind: "punct", text: "," },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "key", text: '"data"' },
+      { kind: "punct", text: ": " },
+      { kind: "bracket", text: "[" },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "plain", text: "95, 112, 150, 339, 384, 400," },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "plain", text: "388, 318, 240, 182, 146, 126," },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "plain", text: "117, 115, 121, 134, 143" },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "bracket", text: "]" },
     ],
     [
       { kind: "plain", text: "    " },
@@ -149,7 +220,7 @@ export function buildHeroJsonLines(
   ];
 }
 
-export const HERO_DEMO_JSON_LINES = buildHeroJsonLines("1,244", '"gradient"');
+export const HERO_DEMO_JSON_LINES = buildHeroJsonLines('"Monthly"');
 
 export const HERO_DEMO_RAW_JSON = HERO_DEMO_JSON_LINES.map((line) =>
   line.map((t) => t.text).join("")
@@ -159,8 +230,8 @@ export type HeroScriptedPhase = "initial" | "editing" | "applied";
 
 export type HeroScriptedState = {
   phase: HeroScriptedPhase;
-  variantValue: "panel" | "gradient";
-  displayVariantString: string;
+  periodValue: "Weekly" | "Monthly" | "Yearly";
+  displayPeriodString: string;
   isEditing: boolean;
   validationStatus: "validating" | "valid";
   activeLineHighlighted: boolean;
@@ -169,8 +240,8 @@ export type HeroScriptedState = {
 
 export const INITIAL_HERO_STATE: HeroScriptedState = {
   phase: "initial",
-  variantValue: "panel",
-  displayVariantString: '"panel"',
+  periodValue: "Weekly",
+  displayPeriodString: '"Weekly"',
   isEditing: false,
   validationStatus: "valid",
   activeLineHighlighted: false,
@@ -181,24 +252,29 @@ export const INITIAL_HERO_STATE: HeroScriptedState = {
  * Validates the candidate component AST node generated from the editor's current code string
  * using the real registry schema validator `validateComponentNode`.
  */
-export function validateHeroEditorState(displayVariantString: string): {
+export function validateHeroEditorState(displayPeriodString: string): {
   valid: boolean;
   validationStatus: "validating" | "valid";
   issues?: Array<{ path: string; message: string }>;
 } {
-  let candidateVariant: unknown = undefined;
+  let candidatePeriod: unknown = undefined;
   try {
-    candidateVariant = JSON.parse(displayVariantString);
+    candidatePeriod = JSON.parse(displayPeriodString);
   } catch {
-    candidateVariant = displayVariantString.replace(/^"|"$/g, "");
+    candidatePeriod = displayPeriodString.replace(/^"|"$/g, "");
   }
 
   const candidateNode = {
-    type: "Statistic",
-    label: "Active Workflows",
-    value: "1,244",
-    variant: candidateVariant,
-    trend: { value: "+12%", sentiment: "positive" as const },
+    type: "TrendChart",
+    title: "Workflow executions",
+    caption: "Recorded in current billing cycle",
+    value: 14200,
+    valueSuffix: " runs",
+    trend: "up" as const,
+    updatedText: "Sample data",
+    period: candidatePeriod,
+    periods: ["Weekly", "Monthly", "Yearly"],
+    data: HERO_SAMPLE_DATA,
   };
 
   const res = validateComponentNode(candidateNode);
@@ -212,54 +288,51 @@ export function validateHeroEditorState(displayVariantString: string): {
 /**
  * Deterministic scripted edit state calculator.
  * Cycle duration: 11,000ms.
- * - 0 .. 2800ms: Initial clean state ("panel", valid, no cursor).
- * - 2800 .. 4200ms: Scripted edit in progress (typing "gradient", validating…).
- * - 4200 .. 10200ms: Applied state ("gradient", valid, re-rendered via RenderNode).
+ * - 0 .. 2800ms: Initial clean state ("Weekly", valid, no cursor).
+ * - 2800 .. 4200ms: Scripted edit in progress (typing "Monthly", validating…).
+ * - 4200 .. 10200ms: Applied state ("Monthly", valid, re-rendered via RenderNode).
  * - 10200 .. 11000ms: Reset transition back to initial state.
- *
- * NOTE: validationStatus is NOT hard-coded; it is computed by passing the candidate AST
- * to validateComponentNode at runtime.
  */
 export function computeScriptedHeroState(tMs: number): HeroScriptedState {
   const t = tMs % 11000;
-  const target = '"gradient"';
+  const target = '"Monthly"';
 
   let phase: HeroScriptedPhase = "initial";
-  let variantValue: "panel" | "gradient" = "panel";
-  let displayVariantString = '"panel"';
+  let periodValue: "Weekly" | "Monthly" | "Yearly" = "Weekly";
+  let displayPeriodString = '"Weekly"';
   let isEditing = false;
   let activeLineHighlighted = false;
   let showCursor = false;
 
   if (t < 2800) {
     phase = "initial";
-    variantValue = "panel";
-    displayVariantString = '"panel"';
+    periodValue = "Weekly";
+    displayPeriodString = '"Weekly"';
   } else if (t >= 2800 && t < 4200) {
     phase = "editing";
-    variantValue = "panel"; // not yet applied to preview until fully valid
+    periodValue = "Weekly";
     isEditing = true;
     activeLineHighlighted = true;
     showCursor = true;
     const elapsed = t - 2800;
     const progress = Math.min(1, elapsed / 1200);
     const charCount = Math.max(1, Math.floor(progress * target.length));
-    displayVariantString = target.slice(0, charCount);
+    displayPeriodString = target.slice(0, charCount);
   } else {
     // 4200 .. 11000ms: Applied state
     phase = "applied";
-    variantValue = "gradient";
-    displayVariantString = '"gradient"';
+    periodValue = "Monthly";
+    displayPeriodString = '"Monthly"';
     activeLineHighlighted = t < 5200;
   }
 
   // Real runtime validation via validateComponentNode
-  const runtimeValidation = validateHeroEditorState(displayVariantString);
+  const runtimeValidation = validateHeroEditorState(displayPeriodString);
 
   return {
     phase,
-    variantValue,
-    displayVariantString,
+    periodValue,
+    displayPeriodString,
     isEditing,
     validationStatus: runtimeValidation.validationStatus,
     activeLineHighlighted,

@@ -6,23 +6,19 @@ import { buildHeroDemoConfig, type HeroDemoStateParams } from "./heroDemoConfig"
 type DemoPreviewCardProps = HeroDemoStateParams;
 
 export function DemoPreviewCard({
-  metricValue = 1244,
-  invoiceStatus = "Idle",
-  includeSlackAlerts = false,
-  variant = "panel",
+  period = "Monthly",
+  width = 380,
 }: DemoPreviewCardProps = {}) {
   const config = buildHeroDemoConfig({
-    metricValue,
-    invoiceStatus,
-    includeSlackAlerts,
-    variant,
+    period,
+    width,
   });
   const components = config.pages[0].components;
 
   return (
     <div
       data-testid="hero-preview-card"
-      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto transition-colors relative"
+      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto lg:h-full transition-colors relative"
     >
       {/* Header — matching 44px (h-11) height with code card */}
       <div className="h-11 flex items-center justify-between gap-2 pb-3 border-b border-border shrink-0">
@@ -40,8 +36,8 @@ export function DemoPreviewCard({
         </StatusPill>
       </div>
 
-      {/* Real Registry Component Output — fits content height with no empty band above or below table */}
-      <div className="py-3 flex flex-col gap-4 min-w-0">
+      {/* Real Registry Component Output — centered with responsive geometry */}
+      <div className="py-3 flex flex-1 items-center min-w-0 overflow-hidden">
         {components.map((node, idx) => (
           <RenderNode key={idx} config={node} />
         ))}
@@ -55,3 +51,5 @@ export function DemoPreviewCard({
     </div>
   );
 }
+
+export default DemoPreviewCard;

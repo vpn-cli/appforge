@@ -37,25 +37,25 @@ function TrendChartSkeleton({ width = 380 }: { width?: number }) {
   return (
     <div
       role="status"
-      aria-label="Loading chart data"
+      aria-label="Trend chart preview"
       style={{
         width,
         height,
         borderRadius: radius,
       }}
-      className="bg-[#08101a] border border-white/10 animate-pulse relative overflow-hidden flex flex-col justify-between p-6 select-none"
+      className="bg-[#08101a] border border-white/10 relative overflow-hidden flex flex-col justify-between p-6 select-none opacity-90"
     >
       <div className="flex justify-between items-center">
         <div className="h-4 w-24 bg-white/10 rounded-full" />
         <div className="h-6 w-16 bg-white/10 rounded-full" />
       </div>
       <div className="w-full h-32 flex items-center justify-center">
-        <div className="w-full h-1 bg-white/10 rounded-full" />
+        <div className="w-full h-0.5 bg-white/15 rounded-full" />
       </div>
       <div className="flex flex-col items-center gap-2">
         <div className="h-4 w-32 bg-white/10 rounded-full" />
-        <div className="h-12 w-44 bg-white/10 rounded-lg" />
-        <div className="h-3 w-40 bg-white/10 rounded-full" />
+        <div className="h-10 w-40 bg-white/10 rounded-lg" />
+        <div className="h-3 w-36 bg-white/10 rounded-full" />
       </div>
     </div>
   );
