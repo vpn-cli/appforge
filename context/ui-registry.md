@@ -107,7 +107,7 @@ Respects prefers-reduced-motion.
 
 **Hero Animated Mesh-Gradient Background (`components/home/HeroMeshBackground.tsx`, `components/home/HeroMeshShader.tsx`)**
 ```text
-Library: @paper-design/shaders-react (MeshGradient) — 8.73 KB gzipped (vs 14.15 KB gzipped for ogl before shader code)
+Library: @paper-design/shaders-react (MeshGradient) — PolyForm Shield License 1.0.0 (Copyright Lost Coast Labs, Inc., http://paper.design) — 8.73 KB gzipped
 Tokens (app/globals.css):
   Light: --mesh-c1 (#F8F7FC), --mesh-c2 (#EEEBFF), --mesh-c3 (#E6EDFF), --mesh-c4 (#FFFFFF)
   Dark:  --mesh-c1 (#0B0B14), --mesh-c2 (#12152E), --mesh-c3 (#1D163A), --mesh-c4 (#0E1022)
