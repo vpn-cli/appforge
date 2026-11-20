@@ -20,6 +20,10 @@
 # production
 /build
 
+# database backups
+backups/
+/backups/
+
 # misc
 .DS_Store
 *.pem

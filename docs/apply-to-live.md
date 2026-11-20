@@ -85,14 +85,19 @@ node scripts/check-live-configs.mjs --live
 
 > [!CAUTION]
 > **If ANY apps are reported as INVALID**:
-> 1. Immediately take a fresh logical backup via `pg_dump`:
->    ```bash
->    pg_dump "$LIVE_DATABASE_URL" \
->      --table=apps \
->      --format=custom \
->      --no-owner \
->      --no-privileges \
->      --file="backups/live-apps-pre-strip-$(date +%Y%m%d-%H%M%S).dump"
+> 1. Immediately take a fresh logical backup via Docker `pg_dump` in Windows PowerShell:
+>    ```powershell
+>    # Ensure backups directory exists
+>    New-Item -ItemType Directory -Force -Path "backups" | Out-Null
+>    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+>
+>    # Windows PowerShell Docker pg_dump:
+>    docker run --rm -v "${PWD}/backups:/backups" postgres:16 pg_dump "$env:LIVE_DATABASE_URL" `
+>      --table=apps `
+>      --format=custom `
+>      --no-owner `
+>      --no-privileges `
+>      --file="/backups/live-apps-pre-strip-$timestamp.dump"
 >    ```
 > 2. Run the key stripping migration script in dry-run mode (read-only transaction, 0 writes) to inspect what keys would be stripped:
 >    ```bash
@@ -183,7 +188,7 @@ Before triggering the application deploy in Step 4, audit your Vercel project en
 > Current production instances continue invoking the legacy 2-argument `execute_app_ddl(app_id, query)` function until Vercel completes deployment of the new code.
 > If Migration B is applied before this step completes, production saves will fail immediately. Proceed directly from Step 3 to Step 4 and Step 6 in the same continuous session.
 
-1. Merge the pull request (`feat/landing-redesign` branch) to `main`.
+1. Merge the pull request (`feat/interview-hardening` branch) to `main`.
 2. Allow Vercel (or your hosting platform) to build and deploy the production release.
 3. Confirm deployment status is **Ready** in the Vercel dashboard.
 
