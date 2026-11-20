@@ -1,0 +1,60 @@
+{
+  "runs": [
+    {
+      "run": 1,
+      "perf": 86,
+      "fcp": "1.2 s",
+      "fcpMs": 1231,
+      "lcp": "1.2 s",
+      "lcpMs": 1231,
+      "tbt": "430 ms",
+      "tbtMs": 431,
+      "cls": "0",
+      "clsVal": 0,
+      "si": "4.8 s",
+      "siMs": 4770
+    },
+    {
+      "run": 2,
+      "perf": 74,
+      "fcp": "1.2 s",
+      "fcpMs": 1232,
+      "lcp": "1.2 s",
+      "lcpMs": 1232,
+      "tbt": "1,060 ms",
+      "tbtMs": 1064,
+      "cls": "0",
+      "clsVal": 0,
+      "si": "5.1 s",
+      "siMs": 5061
+    },
+    {
+      "run": 3,
+      "perf": 93,
+      "fcp": "1.2 s",
+      "fcpMs": 1220,
+      "lcp": "1.2 s",
+      "lcpMs": 1220,
+      "tbt": "310 ms",
+      "tbtMs": 309,
+      "cls": "0",
+      "clsVal": 0,
+      "si": "2.9 s",
+      "siMs": 2857
+    }
+  ],
+  "median": {
+    "run": 1,
+    "perf": 86,
+    "fcp": "1.2 s",
+    "fcpMs": 1231,
+    "lcp": "1.2 s",
+    "lcpMs": 1231,
+    "tbt": "430 ms",
+    "tbtMs": 431,
+    "cls": "0",
+    "clsVal": 0,
+    "si": "4.8 s",
+    "siMs": 4770
+  }
+}
