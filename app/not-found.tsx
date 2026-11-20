@@ -28,9 +28,9 @@ export default function NotFound() {
           <Button
             variant="primary"
             size="md"
-            render={<Link href="/dashboard" />}
+            render={<Link href="/apps" />}
           >
-            Dashboard
+            Apps
           </Button>
         </div>
       </main>

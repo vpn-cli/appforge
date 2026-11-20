@@ -326,6 +326,10 @@ function DevRenderersContent() {
 }
 
 export default function DevRenderersPage() {
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   return (
     <Suspense fallback={<div className="p-8 text-xs text-muted-foreground">Loading stress fixtures...</div>}>
       <DevRenderersContent />

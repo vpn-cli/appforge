@@ -12,7 +12,7 @@ export function HomeSidebar() {
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
-    { label: "Apps", href: "/dashboard", icon: LayoutGrid },
+    { label: "Apps", href: "/apps", icon: LayoutGrid },
     { label: "Templates", href: "/templates", icon: LayoutTemplate },
   ];
 

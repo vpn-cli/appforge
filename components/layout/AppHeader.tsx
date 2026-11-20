@@ -27,11 +27,11 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
     (user?.fullName ? `${user.fullName}'s Workspace` : "Vipin's Workspace");
   const orgInitial = (orgName?.[0] || "V").toUpperCase();
 
-  const isAppsActive = pathname === "/dashboard" || pathname.startsWith("/apps");
+  const isAppsActive = pathname === "/apps" || pathname.startsWith("/apps") || pathname === "/dashboard";
   const isTemplatesActive = pathname === "/templates";
 
   const navSegments = [
-    { label: "Apps", href: "/dashboard", active: isAppsActive },
+    { label: "Apps", href: "/apps", active: isAppsActive },
     { label: "Templates", href: "/templates", active: isTemplatesActive },
   ];
 
@@ -157,7 +157,7 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
             />
           </div>
           <Link
-            href="/dashboard"
+            href="/apps"
             onClick={() => setIsMobileMenuOpen(false)}
             className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${
               isAppsActive

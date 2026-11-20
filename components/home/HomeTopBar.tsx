@@ -22,7 +22,7 @@ export function HomeTopBar() {
   const orgInitial = (orgName?.[0] || "V").toUpperCase();
 
   const navSegments = [
-    { label: "Apps", href: "/dashboard" },
+    { label: "Apps", href: "/apps" },
     { label: "Builder", href: "/builder/demo" },
     { label: "Templates", href: "/templates" },
   ];
