@@ -1,6 +1,5 @@
 import {
   ComponentSchemas,
-  DataTableColumnSchema,
 } from "./validation";
 import { z } from "zod";
 
