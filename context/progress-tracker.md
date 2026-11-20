@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Landing Work Frozen (branch `feat/landing-redesign`)
-**Last completed:** Landing Freeze & Hardening Finalization (Audited docs, README, and EVALS.md for superseded numbers; added `.max(100)` to `trend.series` in `lib/validation.ts` with test; confirmed Next.js build bundle for `/` has zero initial `motion` in client chunks [only in lazy chunks]; confirmed middleware and server components on `/` make zero `auth()` or `currentUser()` calls with test in `tests/middleware-home.test.ts`; documented `className` on public apps as a known limitation in `README.md` and `context/code-standards.md`; 137 unit tests across 15 suites and 42 DB tests passing; Next.js production build passing with 0 errors)
-**Next:** Production Review / Branch Promotion
+**Phase:** Landing Background Shootout Evaluation (branch `feat/landing-redesign`)
+**Last completed:** Option 1 (Fix Candidate A MeshGradient) and Option 2 (Candidate D 254KB Video + Mobile Poster Fallback) benchmarks complete. Option 1 contrast fully compliant (Headline 16.67:1 / 7.53:1; Subtext 6.66:1 / 5.12:1). Candidate D optimized to 254KB (48.8 dB PSNR, 0.9968 SSIM) with mobile poster fallback (< 768px / pointer: coarse / prefers-reduced-motion / Save-Data) and deferred post-load video. Mobile Lighthouse production benchmarks measured (Option 1: Perf 86, LCP 1.2s; Option 2: Perf 85, LCP 1.2s). All 188 unit & DB tests pass.
+**Next:** User selection between Option 1 and Option 2 for Part 2 landing page implementation.
 
 ---
 
