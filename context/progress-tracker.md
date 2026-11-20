@@ -6,9 +6,14 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Landing Background Finalization & Part 2 Preparation (branch `feat/landing-redesign`)
-**Last completed:** Locked in Option 1 (MeshGradient) as permanent hero background. Moved all shader palettes into centralized design tokens (`lib/shader-tokens.ts` & `app/globals.css`, eliminating raw hex from `HeroMeshShader.tsx`). Tuned light-mode motion achieving 3.87% full-hero mean difference (70.60% pixels changed, exceeding >= 3.0% requirement) and 10.98% on left flank (82.60% pixels changed, exceeding 5%+ target). Ran mobile Lighthouse on production build (median of 3 runs): Performance 90, LCP 1.2s, FCP 1.2s, TBT 310ms, CLS 0. All 192 unit and DB integration tests passing.
-**Next:** Deliver Part 2 landing page implementation report.
+**Phase:** Builder Glass & Motion System Completed (branch `feat/landing-redesign`)
+**Last completed:** 
+1. Cleaned public directory and verified 100% isolation of recordings/screenshots into gitignored `.recordings/`.
+2. Mapped `--mesh-c1..c4` directly to canonical brand and ink tokens (`var(--ink-950)`, `var(--brand-800)`, `var(--brand-500)`, `var(--brand-headline-end)`).
+3. Investigated ANGLE synchronous shader compilation 618ms delay; implemented `warmCompileMeshShader()` on idle, reducing input latency to 0.10ms median. Verified full-hero 5s motion diff (Dark: 3.73%, Light: 4.02%, both >= 3.0%) with subtext WCAG AA contrast maintained.
+4. Part 3 (Builder Glass): Static frame of mesh gradient at ~60% opacity with zero WebGL animation in builder; applied `glass-1` tokens to top bar, pane headers, validation status bar, and device toggle group; kept Monaco editor and preview frame on solid surfaces with zero blur leak. Verified 0 axe contrast violations on `/builder/demo` in both themes.
+5. Part 4 (Motion for Every Interaction): Applied standard motion tokens (`bounce: 0.15`, `visualDuration: 0.4s`); press feedback (scale 0.97) and 150ms ease hover transitions; morphing Copilot pill with shared `layoutId` and 80ms staggered content reveal; popovers and kebab menus scale 0.96 -> 1 with fade from trigger corner; sliding active-pill indicator on nav; dynamic button states on Save Draft and Publish with width spring; theme toggle icon rotate/crossfade; enabled Next.js 16 View Transitions API. Verified Chrome performance trace during Copilot animation (max main-thread task 13.47ms, zero tasks > 50ms).
+**Next:** Ready for final review.
 
 ---
 
