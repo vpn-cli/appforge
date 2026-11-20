@@ -2,59 +2,59 @@
   "runs": [
     {
       "run": 1,
-      "perf": 86,
+      "perf": 91,
       "fcp": "1.2 s",
-      "fcpMs": 1231,
+      "fcpMs": 1219,
       "lcp": "1.2 s",
-      "lcpMs": 1231,
-      "tbt": "430 ms",
-      "tbtMs": 431,
+      "lcpMs": 1219,
+      "tbt": "350 ms",
+      "tbtMs": 348,
       "cls": "0",
       "clsVal": 0,
-      "si": "4.8 s",
-      "siMs": 4770
+      "si": "3.4 s",
+      "siMs": 3372
     },
     {
       "run": 2,
-      "perf": 74,
+      "perf": 90,
       "fcp": "1.2 s",
-      "fcpMs": 1232,
+      "fcpMs": 1217,
       "lcp": "1.2 s",
-      "lcpMs": 1232,
-      "tbt": "1,060 ms",
-      "tbtMs": 1064,
-      "cls": "0",
-      "clsVal": 0,
-      "si": "5.1 s",
-      "siMs": 5061
-    },
-    {
-      "run": 3,
-      "perf": 93,
-      "fcp": "1.2 s",
-      "fcpMs": 1220,
-      "lcp": "1.2 s",
-      "lcpMs": 1220,
+      "lcpMs": 1217,
       "tbt": "310 ms",
       "tbtMs": 309,
       "cls": "0",
       "clsVal": 0,
-      "si": "2.9 s",
-      "siMs": 2857
+      "si": "5.0 s",
+      "siMs": 4996
+    },
+    {
+      "run": 3,
+      "perf": 90,
+      "fcp": "1.2 s",
+      "fcpMs": 1216,
+      "lcp": "1.2 s",
+      "lcpMs": 1216,
+      "tbt": "310 ms",
+      "tbtMs": 306,
+      "cls": "0",
+      "clsVal": 0,
+      "si": "4.9 s",
+      "siMs": 4910
     }
   ],
   "median": {
-    "run": 1,
-    "perf": 86,
+    "run": 3,
+    "perf": 90,
     "fcp": "1.2 s",
-    "fcpMs": 1231,
+    "fcpMs": 1216,
     "lcp": "1.2 s",
-    "lcpMs": 1231,
-    "tbt": "430 ms",
-    "tbtMs": 431,
+    "lcpMs": 1216,
+    "tbt": "310 ms",
+    "tbtMs": 306,
     "cls": "0",
     "clsVal": 0,
-    "si": "4.8 s",
-    "siMs": 4770
+    "si": "4.9 s",
+    "siMs": 4910
   }
 }

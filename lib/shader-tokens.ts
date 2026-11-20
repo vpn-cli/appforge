@@ -19,8 +19,8 @@ export const MESH_COLOR_TOKENS = [
 export type MeshColorToken = (typeof MESH_COLOR_TOKENS)[number];
 
 export const MESH_DEFAULT_PALETTES = {
-  dark: ["#0B0B12", "#342785", "#5644D8", "#233075"] as const,
-  light: ["#FAF9FD", "#B7ABFD", "#7F6DF6", "#A5BEFD"] as const,
+  dark: ["#0B0B12", "#3E2F9A", "#6D5BF0", "#2A3A8A"] as const,
+  light: ["#F2F1F9", "#CFCBFE", "#ADA6FC", "#C9D8FF"] as const,
 } as const;
 
 export type ShaderThemeKey = keyof typeof MESH_DEFAULT_PALETTES;
@@ -32,10 +32,6 @@ export function readMeshTokensFromDOM(): string[] {
   if (typeof window === "undefined") return [];
   const styles = window.getComputedStyle(document.documentElement);
   const base = MESH_COLOR_TOKENS.map((token) => styles.getPropertyValue(token).trim()).filter(Boolean);
-  if (base.length >= 4) {
-    const [c1, c2, c3, c4] = base;
-    return [c1, c2, c3, c4, c3, c2, c4, c3];
-  }
   return base;
 }
 
@@ -49,6 +45,5 @@ export function getInitialMeshPalette(themeKey: string): string[] {
     return fromDom;
   }
   const key: ShaderThemeKey = themeKey === "light" ? "light" : "dark";
-  const [c1, c2, c3, c4] = MESH_DEFAULT_PALETTES[key];
-  return [c1, c2, c3, c4, c3, c2, c4, c3];
+  return [...MESH_DEFAULT_PALETTES[key]];
 }

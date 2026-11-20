@@ -392,9 +392,9 @@
   --background: var(--ink-950);
   /* Hero Mesh Gradient Palette (Dark: deep navy/violet, low contrast) */
   --mesh-c1: #0B0B12;
-  --mesh-c2: #342785;
-  --mesh-c3: #5644D8;
-  --mesh-c4: #233075;
+  --mesh-c2: #3E2F9A;
+  --mesh-c3: #6D5BF0;
+  --mesh-c4: #2A3A8A;
   --surface: #16161F;
   --surface-glass: rgba(22, 22, 31, 0.78);
   --card: #16161F;

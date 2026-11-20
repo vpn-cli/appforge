@@ -99,8 +99,8 @@ async function run() {
     mobile: false,
   });
 
-  console.log('Navigating to http://localhost:3000/ ...');
-  await send(sessionId, 'Page.navigate', { url: 'http://localhost:3000/' });
+  console.log('Navigating to http://localhost:3001/ ...');
+  await send(sessionId, 'Page.navigate', { url: 'http://localhost:3001/' });
   await sleep(3500);
 
   // 1. GPU Check using fresh canvas
