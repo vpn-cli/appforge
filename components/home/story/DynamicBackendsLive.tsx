@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LazyMotion, domAnimation, m, useReducedMotion } from "motion/react";
+import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import { Database, Layers } from "lucide-react";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
 import { RenderNode } from "@/registry";

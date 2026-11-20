@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LazyMotion, domAnimation, m, useReducedMotion } from "motion/react";
+import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import { CheckCircle2, Sparkles } from "lucide-react";
 import { RenderNode } from "@/registry";
 
