@@ -11,7 +11,12 @@ type AppWithConfig = AppData & {
   published_config?: unknown;
 };
 
-async function AppsContent() {
+export async function AppsContent() {
+  const apps = (await getUserApps()) as AppWithConfig[];
+  return <DashboardView initialApps={apps} />;
+}
+
+export default async function AppsPage() {
   let userId: string | null = null;
 
   if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH_BYPASS === "true") {
@@ -21,16 +26,10 @@ async function AppsContent() {
     const authResult = await auth();
     userId = authResult.userId;
     if (!userId) {
-      redirect("/login");
+      redirect("/sign-in");
     }
   }
 
-  const apps = (await getUserApps()) as AppWithConfig[];
-
-  return <DashboardView initialApps={apps} />;
-}
-
-export default function AppsPage() {
   return (
     <Suspense
       fallback={

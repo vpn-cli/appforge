@@ -7,7 +7,7 @@ export default function SignUpPage() {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <Navbar />
       <main className="flex-1 flex items-center justify-center p-6 py-12">
-        <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
+        <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" fallbackRedirectUrl="/apps" />
       </main>
       <Footer />
     </div>
