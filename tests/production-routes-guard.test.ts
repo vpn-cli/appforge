@@ -13,6 +13,7 @@ vi.mock("@clerk/nextjs/server", () => ({
 
 import { GET as sentryTestGet } from "@/app/api/sentry-test/route";
 import DevRenderersPage from "@/app/dev/renderers/page";
+import DevBackgroundsPage from "@/app/dev/backgrounds/page";
 import TestRenderersPage from "@/app/test-renderers/page";
 import DashboardPage from "@/app/dashboard/page";
 import AppsPage from "@/app/apps/page";
@@ -39,6 +40,12 @@ describe("Production Route Guards & Redirects", () => {
     it("/dev/renderers calls notFound() in production", () => {
       expect(() => {
         DevRenderersPage();
+      }).toThrowError(/NEXT_HTTP_ERROR_FALLBACK;404/);
+    });
+
+    it("/dev/backgrounds calls notFound() in production", () => {
+      expect(() => {
+        DevBackgroundsPage();
       }).toThrowError(/NEXT_HTTP_ERROR_FALLBACK;404/);
     });
 
