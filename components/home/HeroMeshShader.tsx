@@ -3,14 +3,19 @@
 import { Component, type ReactNode, useEffect, useRef, useState } from "react";
 import { MeshGradient } from "@paper-design/shaders-react";
 import type { PaperShaderElement } from "@paper-design/shaders";
+import { getInitialMeshPalette, readMeshTokensFromDOM } from "@/lib/shader-tokens";
 
-const MESH_TOKENS = ["--mesh-c1", "--mesh-c2", "--mesh-c3", "--mesh-c4"] as const;
-
-// Tuned parameters: calm drifting motion with noticeable changes every 2-3s
+// Tuned parameters: color flows across whole hero, folding fields through the middle, noticeable changes every 2-3s
 export const MESH_PARAMS = {
-  distortion: 0.9,
-  swirl: 0.5,
-  speed: 0.75,
+  distortion: 0.95,
+  swirl: 0.85,
+  speed: 1.4,
+  scale: 1.25,
+  rotation: 15,
+  offsetX: 0,
+  offsetY: -0.04,
+  grainMixer: 0,
+  grainOverlay: 0,
   minPixelRatio: 1,
   maxPixelCount: 1500000,
 } as const;
@@ -48,13 +53,6 @@ class ShaderErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 }
 
-function readPaletteFromTokens(): string[] {
-  if (typeof window === "undefined") return [];
-  const styles = getComputedStyle(document.documentElement);
-  const colors = MESH_TOKENS.map((token) => styles.getPropertyValue(token).trim()).filter(Boolean);
-  return colors;
-}
-
 export function HeroMeshShader({
   themeKey,
   isPaused,
@@ -64,20 +62,13 @@ export function HeroMeshShader({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const shaderElRef = useRef<PaperShaderElement | null>(null);
 
-  const [colors, setColors] = useState<string[]>(() => {
-    const initial = readPaletteFromTokens();
-    if (initial.length >= 4) return initial;
-    // Default fallback tokens if CSS custom properties not yet computed
-    return themeKey === "dark"
-      ? ["#0B0B12", "#3E2F9A", "#6D5BF0", "#2A3A8A"]
-      : ["#F2F1F9", "#CFCBFE", "#ADA6FC", "#C9D8FF"];
-  });
+  const [colors, setColors] = useState<string[]>(() => getInitialMeshPalette(themeKey));
 
   // Sync shader colors from CSS tokens whenever active theme or <html> class toggles.
   // Updates uniforms without remounting the canvas or recompiling the shader program.
   useEffect(() => {
     const syncColors = () => {
-      const next = readPaletteFromTokens();
+      const next = readMeshTokensFromDOM();
       if (next.length >= 2) {
         setColors((prev) =>
           prev.length === next.length && prev.every((c, i) => c === next[i]) ? prev : next
@@ -125,8 +116,12 @@ export function HeroMeshShader({
           frame={0}
           distortion={MESH_PARAMS.distortion}
           swirl={MESH_PARAMS.swirl}
-          grainMixer={0}
-          grainOverlay={0}
+          scale={MESH_PARAMS.scale}
+          rotation={MESH_PARAMS.rotation}
+          offsetX={MESH_PARAMS.offsetX}
+          offsetY={MESH_PARAMS.offsetY}
+          grainMixer={MESH_PARAMS.grainMixer}
+          grainOverlay={MESH_PARAMS.grainOverlay}
           minPixelRatio={MESH_PARAMS.minPixelRatio}
           maxPixelCount={MESH_PARAMS.maxPixelCount}
           webGlContextAttributes={{

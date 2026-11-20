@@ -5,9 +5,9 @@ import fs from "fs";
 import path from "path";
 
 describe("Middleware & Route '/' Server Auth Verification", () => {
-  it("immediately returns NextResponse.next() for '/' without calling Clerk auth or redirecting", () => {
+  it("immediately returns NextResponse.next() for '/' without calling Clerk auth or redirecting", async () => {
     const req = new NextRequest("http://localhost:3000/");
-    const res = middleware(req, {} as any);
+    const res = (await middleware(req, {} as any)) as Response;
 
     // Should return next() without headers or redirect
     expect(res).toBeDefined();

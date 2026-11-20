@@ -245,9 +245,9 @@
   --wash-blue: #E3EAFF;
   --brand-headline-end: #4F6BFF;
   --mesh-c1: #F2F1F9;
-  --mesh-c2: #C6C1FD;
-  --mesh-c3: #9E93FB;
-  --mesh-c4: #B8CCFF;
+  --mesh-c2: #CFCBFE;
+  --mesh-c3: #ADA6FC;
+  --mesh-c4: #C9D8FF;
 
   /* Editor Theme Tokens (Light) */
   --editor-bg-light: #FFFFFF;
@@ -392,9 +392,9 @@
   --background: var(--ink-950);
   /* Hero Mesh Gradient Palette (Dark: deep navy/violet, low contrast) */
   --mesh-c1: #0B0B12;
-  --mesh-c2: #3E2F9A;
-  --mesh-c3: #6D5BF0;
-  --mesh-c4: #2A3A8A;
+  --mesh-c2: #342785;
+  --mesh-c3: #5644D8;
+  --mesh-c4: #233075;
   --surface: #16161F;
   --surface-glass: rgba(22, 22, 31, 0.78);
   --card: #16161F;
@@ -921,10 +921,47 @@ body::after {
   background-image:
     radial-gradient(ellipse 65% 55% at 18% 22%, var(--mesh-c2) 0%, transparent 72%),
     radial-gradient(ellipse 60% 55% at 82% 28%, var(--mesh-c3) 0%, transparent 72%),
+    radial-gradient(ellipse 75% 60% at 50% 50%, var(--mesh-c3) 0%, transparent 70%),
     radial-gradient(ellipse 70% 50% at 50% 78%, var(--mesh-c4) 0%, transparent 70%);
 }
 
 .hero-mesh-mask {
   -webkit-mask-image: linear-gradient(to bottom, black 0%, black 72%, transparent 100%);
   mask-image: linear-gradient(to bottom, black 0%, black 72%, transparent 100%);
+}
+
+/* Code panel scrollbar: hidden until hover, thin 5px styled, zero horizontal scrollbar */
+.code-panel-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.15s ease;
+}
+
+.code-panel-scroll:hover {
+  scrollbar-color: var(--border) transparent;
+}
+
+.code-panel-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 0px;
+}
+
+.code-panel-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-panel-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  transition: background-color 0.15s ease;
+}
+
+.code-panel-scroll:hover::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+.code-panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }

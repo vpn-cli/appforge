@@ -87,9 +87,9 @@ export function DemoCodeCard({
       {/* Code Body — scrollable honest JSON showing complete AST matching right-hand preview */}
       <div
         data-testid="code-panel-body"
-        className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col overflow-y-auto max-h-[340px] scrollbar-thin pr-1"
+        className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col code-panel-scroll max-h-[340px] pr-1"
       >
-        <div className="w-full flex flex-col">
+        <div className="w-full flex flex-col min-w-0">
           {lines.map((tokens, lineIdx) => {
             const isVariantLine = tokens.some((t) => t.text === '"variant"');
             const isHighlighted = isVariantLine && activeLineHighlighted;
@@ -97,7 +97,7 @@ export function DemoCodeCard({
             return (
               <div
                 key={lineIdx}
-                className={`flex items-baseline gap-4 min-w-0 rounded px-1.5 -mx-1.5 transition-colors duration-200 ${
+                className={`flex items-baseline gap-3 min-w-0 rounded px-1 transition-colors duration-200 ${
                   isHighlighted ? "bg-brand-light" : ""
                 }`}
               >
@@ -107,7 +107,7 @@ export function DemoCodeCard({
                 >
                   {lineIdx + 1}
                 </span>
-                <code className="whitespace-pre-wrap break-words min-w-0 flex-1">
+                <code className="whitespace-pre-wrap break-words min-w-0 flex-1 [overflow-wrap:anywhere]">
                   {tokens.map((tok, tokIdx) => {
                     if (tok.kind === "fold") {
                       return (
