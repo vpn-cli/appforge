@@ -106,15 +106,23 @@ export function Statistic({
   let trendSeries: number[] | undefined = undefined;
 
   if (typeof trend === "object" && trend !== null) {
-    trendStrValue = trend.value || trend.label || "";
+    if (Array.isArray(trend.series) && trend.series.length >= 2) {
+      trendSeries = trend.series;
+      const first = trend.series[0];
+      const last = trend.series[trend.series.length - 1];
+      const pct = first !== 0 ? Math.round(((last - first) / first) * 100) : 0;
+      trendStrValue = `${pct >= 0 ? "+" : ""}${pct}%`;
+      sentiment = pct >= 0 ? "positive" : "negative";
+      direction = pct >= 0 ? "up" : "down";
+    }
+    if (trend.value || trend.label) {
+      trendStrValue = trend.value || trend.label || trendStrValue;
+    }
     if (trend.sentiment) {
       sentiment = trend.sentiment;
     }
     if (trend.direction) {
       direction = trend.direction;
-    }
-    if (Array.isArray(trend.series)) {
-      trendSeries = trend.series;
     }
   } else if (typeof trend === "string") {
     direction = trend;
@@ -150,7 +158,8 @@ export function Statistic({
     ? `${targetNumber.toLocaleString("en-US")}${valSuffix}`
     : `${formatDisplayValue(targetNumber, format)}${valSuffix}`;
 
-  // Number animation for gradient card: counts up over ~500ms after ~150ms delay
+  // Number animation for gradient card: Frame 0 shows final value (1,244), no count-up from 0.
+  // Subtle roll from a nearby value only over 400ms (duration-slow token) after 150ms delay.
   const [animatedNumber, setAnimatedNumber] = useState<number>(() => targetNumber);
 
   useEffect(() => {
@@ -164,18 +173,17 @@ export function Statistic({
       }
     }
 
-    setAnimatedNumber(0);
-
+    const startNearby = Math.max(0, targetNumber - 6);
     let rafId: number;
     const timer = setTimeout(() => {
       const startTime = performance.now();
-      const duration = 500;
+      const duration = 400;
 
       const animate = (now: number) => {
         const elapsed = now - startTime;
         const progress = Math.min(1, elapsed / duration);
         const easeOut = 1 - Math.pow(1 - progress, 3);
-        const current = Math.round(targetNumber * easeOut);
+        const current = Math.round(startNearby + (targetNumber - startNearby) * easeOut);
         setAnimatedNumber(current);
 
         if (progress < 1) {

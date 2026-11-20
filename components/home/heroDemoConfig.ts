@@ -41,7 +41,7 @@ export function buildHeroDemoConfig({
               value: "+12%",
               sentiment: "positive" as const,
               direction: "up" as const,
-              series: [24, 28, 27, 36, 42, 45, 54],
+              series: [50, 52, 51, 54, 53, 55, 56],
             },
           },
           {

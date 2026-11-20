@@ -103,7 +103,7 @@ describe("PART 3 — Honest Hero Config", () => {
         value: "+12%",
         sentiment: "positive",
         direction: "up",
-        series: [24, 28, 27, 36, 42, 45, 54],
+        series: [50, 52, 51, 54, 53, 55, 56],
       });
 
       const tableComp = fullConfigParsed.data.pages[0].components[1] as any;
@@ -205,14 +205,14 @@ describe("PART 3 — Honest Hero Config", () => {
         value: "+12%",
         sentiment: "positive" as const,
         direction: "up" as const,
-        series: [24, 28, 27, 36, 42, 45, 54],
+        series: [50, 52, 51, 54, 53, 55, 56],
       },
     };
 
     const parsed = StatisticSchema.safeParse(rawStat);
     expect(parsed.success).toBe(true);
     if (parsed.success && typeof parsed.data.trend === "object" && parsed.data.trend !== null) {
-      expect(parsed.data.trend.series).toEqual([24, 28, 27, 36, 42, 45, 54]);
+      expect(parsed.data.trend.series).toEqual([50, 52, 51, 54, 53, 55, 56]);
       // The data must match the trend direction: if trend is "up", series ends higher than it starts
       const series = parsed.data.trend.series!;
       expect(series[series.length - 1]).toBeGreaterThan(series[0]);
@@ -260,5 +260,33 @@ describe("PART 3 — Honest Hero Config", () => {
     expect(matches.length).toBe(1);
     // Verified in the footer section
     expect(previewHtml).toContain("border-t border-border text-[13px] text-muted-foreground");
+  });
+
+  it("computes the trend chip from trend.series ((last - first) / first) and confirms the chip and series agree (+12%)", () => {
+    const series = [50, 52, 51, 54, 53, 55, 56];
+    const expectedPct = Math.round(((series[series.length - 1] - series[0]) / series[0]) * 100);
+    expect(expectedPct).toBe(12);
+
+    const html = renderToString(
+      <Statistic
+        label="Active Workflows"
+        value="1,244"
+        variant="gradient"
+        trend={{ series }}
+      />
+    );
+    expect(html).toContain("+12%");
+  });
+
+  it("renders final value (1,244) on Frame 0 and does not count up from 0", () => {
+    const html = renderToString(
+      <Statistic
+        label="Active Workflows"
+        value="1,244"
+        variant="gradient"
+      />
+    );
+    expect(html).toContain("1,244");
+    expect(html).not.toMatch(/>\s*0\s*<\/div>/);
   });
 });
