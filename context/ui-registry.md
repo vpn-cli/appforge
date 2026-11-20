@@ -108,17 +108,20 @@ Respects prefers-reduced-motion.
 
 **Hero Animated Mesh-Gradient Background (`components/home/HeroMeshBackground.tsx`, `components/home/HeroMeshShader.tsx`)**
 ```text
-Library: @paper-design/shaders-react (MeshGradient) — PolyForm Shield License 1.0.0 (Copyright Lost Coast Labs, Inc., http://paper.design) — 8.73 KB gzipped
-Tokens (app/globals.css):
-  Light: --mesh-c1 (#F8F7FC), --mesh-c2 (#EEEBFF), --mesh-c3 (#E6EDFF), --mesh-c4 (#FFFFFF)
-  Dark:  --mesh-c1 (#0B0B14), --mesh-c2 (#12152E), --mesh-c3 (#1D163A), --mesh-c4 (#0E1022)
-Fallback: .hero-mesh-fallback (static CSS radial mesh) + .hero-mesh-mask (bottom fade to canvas)
-Lifecycle:
-  - Dynamic import with ssr:false after window.load + first paint (rAF + requestIdleCallback + startTransition)
-  - Pauses rAF completely when document.hidden or hero leaves viewport (IntersectionObserver)
-  - DPR capped at 1.5x via minPixelRatio + ResizeObserver maxPixelCount budget
-  - Frame rate capped at ~30fps via speed={0} + throttled setFrame() loop
-  - Automatic CSS fallback for prefers-reduced-motion, no-WebGL2, failIfMajorPerformanceCaveat, or webglcontextlost
+Library: @paper-design/shaders-react (MeshGradient) — PolyForm Shield License 1.0.0 (Copyright Lost Coast Labs, Inc., http://paper.design) — pinned exact version 0.0.82
+Tokens (app/globals.css & lib/shader-tokens.ts):
+  Light: --mesh-c1 (#F2F1F9), --mesh-c2 (#CFCBFE), --mesh-c3 (#ADA6FC), --mesh-c4 (#C9D8FF)
+  Dark:  --mesh-c1 (#0B0B12), --mesh-c2 (#3E2F9A), --mesh-c3 (#6D5BF0), --mesh-c4 (#2A3A8A)
+Parameters: distortion 0.9, swirl 0.5, speed 0.6, minPixelRatio 1, maxPixelCount 1,500,000 (~1.5 DPR cap at 1440×900)
+Mask: .hero-mesh-mask (bottom soft fade to canvas color)
+Guardrails:
+  - Desktop: requestIdleCallback with setTimeout fallback
+  - Mobile (pointer: coarse or width < 768px): zero WebGL, static CSS radial-gradient fallback (.hero-mesh-fallback)
+  - prefers-reduced-motion: static frame (speed: 0) on desktop, static CSS on mobile
+  - Visibility & viewport: pauses on off-screen (IntersectionObserver) and document.hidden (visibilitychange)
+Legibility Scrim & Panels:
+  - Soft radial gradient in canvas color behind hero headline/subtext ensuring >= 4.5:1 WCAG contrast (dark 5.81:1, light 4.63:1)
+  - Smoked glass panels with >= 0.92 opacity preventing background bleed-through
 ```
 
 **Honest Registry-Rendered Hero (`components/home/HomeHero.tsx`, `DemoCodeCard.tsx`, `DemoPreviewCard.tsx`)**
