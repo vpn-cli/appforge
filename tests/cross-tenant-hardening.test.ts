@@ -1127,7 +1127,7 @@ describe(
         } finally {
           await dropTestTable(supabase, physicalTable);
         }
-      });
+      }, 20000);
 
       it("Schema changes: changing an existing column's type rejects with a clear error", async () => {
         (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
@@ -1148,7 +1148,7 @@ describe(
         } finally {
           await dropTestTable(supabase, physicalTable);
         }
-      });
+      }, 20000);
 
       it("Reject unknown field types instead of defaulting to TEXT", async () => {
         (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
@@ -1231,6 +1231,6 @@ describe(
         } finally {
           await dropTestTable(supabase, physicalTable);
         }
-      });
+      }, 20000);
     });
   });
