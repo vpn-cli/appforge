@@ -1,8 +1,12 @@
 # AppForge Generation Evaluation Harness Report
 
 **Evaluation Timestamp:** 2026-11-18T00:15:12Z  
+**Current Prompt Version:** `v1.2.1-backend` (dynamic reflection from `lib/copilot-prompt.ts`)  
 **Reproduction Command:** `node scripts/run-evals.mjs`  
 **Resumption Command (for 120b after quota reset):** `node scripts/run-evals.mjs 120b-only`
+
+> [!NOTE]
+> **Schema & Prompt Version Notice (`v1.2.1-backend`):** `PROMPT_VERSION` is set to `v1.2.1-backend` for the interview-hardening branch. It reflects strict per-component schemas with native AST types (`Header`, `Statistic`, `DataTable`, `Card`, `Grid`, `ButtonAction`) without landing-redesign UI extensions (such as status/icon columns or gradient variants). Historical evaluation benchmarks recorded below predate this version and are not directly comparable to `v1.3.0` or `v1.4.0`. No new LLM evals have been run under `v1.2.1-backend`.
 
 ---
 
