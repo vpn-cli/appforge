@@ -1,16 +1,31 @@
 #!/usr/bin/env node
 import fs from "fs";
 import path from "path";
+import readline from "readline";
+import { pathToFileURL } from "url";
 import pg from "pg";
 import { AppConfigSchema, validateComponentNode } from "../lib/validation.ts";
 
 const { Client } = pg;
 
-// Parse CLI flags
-const isLive = process.argv.includes("--live");
+// Strictly reject connection strings passed via command-line flags or arguments
+export function assertNoCliCredentials(argv = process.argv.slice(2)) {
+  for (const arg of argv) {
+    if (
+      arg.startsWith("--db") ||
+      arg.startsWith("--database") ||
+      arg.includes("postgres://") ||
+      arg.includes("postgresql://")
+    ) {
+      throw new Error(
+        "Security Violation: Database connection strings must NEVER be passed as command-line arguments. Store in .env or enter at interactive prompt."
+      );
+    }
+  }
+}
 
-// Load environment variables
-function loadEnvFile(filePath) {
+// Load environment variables from gitignored env files
+export function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return {};
   const content = fs.readFileSync(filePath, "utf8");
   const env = {};
@@ -30,45 +45,122 @@ function loadEnvFile(filePath) {
   return env;
 }
 
-const envTest = loadEnvFile(path.resolve(process.cwd(), ".env.test"));
-const envLocal = loadEnvFile(path.resolve(process.cwd(), ".env.local"));
-
-let connectionString = "";
-let targetLabel = "";
-
-if (isLive) {
-  targetLabel = "LIVE PRODUCTION DATABASE";
-  connectionString =
-    process.env.LIVE_DATABASE_URL ||
-    process.env.DATABASE_URL ||
-    envLocal.DATABASE_URL ||
-    envLocal.LIVE_DATABASE_URL ||
-    envLocal.POSTGRES_URL;
-
-  if (!connectionString) {
-    console.error("\n❌ Error: LIVE database connection string not found.");
-    console.error("Please supply LIVE_DATABASE_URL or DATABASE_URL in your environment or .env.local.");
-    console.error("Example usage:\n  LIVE_DATABASE_URL=\"postgresql://...\" node scripts/check-live-configs.mjs --live\n");
-    process.exit(1);
+export async function promptForDatabaseUrl(promptText) {
+  if (!process.stdin.isTTY) {
+    return null;
   }
-} else {
-  targetLabel = "TEST DATABASE";
-  connectionString =
-    process.env.TEST_DATABASE_URL ||
-    envTest.TEST_DATABASE_URL;
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  return new Promise((resolve) => {
+    rl.question(promptText, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
 
-  if (!connectionString) {
-    console.error("\n❌ Error: TEST_DATABASE_URL not found in .env.test or environment.");
-    process.exit(1);
+export async function resolveConnectionString(liveMode, customEnv) {
+  const envTest = customEnv?.envTest || loadEnvFile(path.resolve(process.cwd(), ".env.test"));
+  const envLocal = customEnv?.envLocal || loadEnvFile(path.resolve(process.cwd(), ".env.local"));
+
+  if (liveMode) {
+    const fromEnv =
+      envLocal.LIVE_DATABASE_URL ||
+      envLocal.DATABASE_URL ||
+      envLocal.POSTGRES_URL ||
+      process.env.LIVE_DATABASE_URL ||
+      process.env.DATABASE_URL;
+
+    if (fromEnv) return fromEnv;
+
+    if (process.stdin.isTTY) {
+      console.log("LIVE database connection string not found in gitignored .env.local.");
+      const prompted = await promptForDatabaseUrl("Enter LIVE PostgreSQL connection string: ");
+      if (prompted) return prompted;
+    }
+
+    throw new Error(
+      "LIVE database connection string not found. Please add LIVE_DATABASE_URL to gitignored .env.local or run interactively."
+    );
+  } else {
+    const fromEnv =
+      envTest.TEST_DATABASE_URL ||
+      envTest.DATABASE_URL ||
+      process.env.TEST_DATABASE_URL ||
+      process.env.DATABASE_URL;
+
+    if (fromEnv) return fromEnv;
+
+    if (process.stdin.isTTY) {
+      console.log("TEST database connection string not found in gitignored .env.test.");
+      const prompted = await promptForDatabaseUrl("Enter TEST PostgreSQL connection string: ");
+      if (prompted) return prompted;
+    }
+
+    throw new Error(
+      "TEST database connection string not found. Please add TEST_DATABASE_URL to gitignored .env.test or run interactively."
+    );
   }
 }
 
-console.log(`\n========================================================================`);
-console.log(` AppForge Config Strict Schema Compatibility Auditor`);
-console.log(` Target: ${targetLabel}`);
-console.log(`========================================================================\n`);
+export function auditConfig(cfgObj, contextLabel = "draft", invalidKeyTallies = {}) {
+  if (!cfgObj) return { valid: false, issues: ["Null or empty configuration"] };
+  let parsed = cfgObj;
+  if (typeof cfgObj === "string") {
+    try {
+      parsed = JSON.parse(cfgObj);
+    } catch (e) {
+      return { valid: false, issues: [`JSON parse error: ${e.message}`] };
+    }
+  }
 
-async function runAudit() {
+  const issues = [];
+  const appParse = AppConfigSchema.safeParse(parsed);
+  if (!appParse.success) {
+    for (const iss of appParse.error.issues) {
+      const pathStr = iss.path.join(".") || "root";
+      const msg = `${pathStr}: ${iss.message}`;
+      issues.push(msg);
+      invalidKeyTallies[msg] = (invalidKeyTallies[msg] || 0) + 1;
+    }
+  }
+
+  // Deep validate every component node
+  if (parsed && typeof parsed === "object" && Array.isArray(parsed.pages)) {
+    parsed.pages.forEach((page, pageIdx) => {
+      if (Array.isArray(page?.components)) {
+        page.components.forEach((comp, compIdx) => {
+          const compRes = validateComponentNode(comp);
+          if (!compRes.valid && compRes.issues) {
+            for (const iss of compRes.issues) {
+              const pathStr = `pages[${pageIdx}].components[${compIdx}]<${comp?.type || "unknown"}>.${iss.path}`;
+              const msg = `${pathStr}: ${iss.message}`;
+              issues.push(msg);
+              invalidKeyTallies[msg] = (invalidKeyTallies[msg] || 0) + 1;
+            }
+          }
+        });
+      }
+    });
+  }
+
+  return {
+    valid: issues.length === 0,
+    issues,
+  };
+}
+
+export async function runAudit(isLive = false) {
+  const targetLabel = isLive ? "LIVE PRODUCTION DATABASE" : "TEST DATABASE";
+  const connectionString = await resolveConnectionString(isLive);
+
+  console.log(`\n========================================================================`);
+  console.log(` AppForge Config Strict Schema Compatibility Auditor`);
+  console.log(` Target: ${targetLabel}`);
+  console.log(`========================================================================\n`);
+
   const client = new Client({ connectionString });
   await client.connect();
 
@@ -93,62 +185,14 @@ async function runAudit() {
     let publishedTotal = 0;
 
     const invalidKeyTallies = {};
-
-    function auditConfig(cfgObj, contextLabel) {
-      if (!cfgObj) return { valid: false, issues: ["Null or empty configuration"] };
-      let parsed = cfgObj;
-      if (typeof cfgObj === "string") {
-        try {
-          parsed = JSON.parse(cfgObj);
-        } catch (e) {
-          return { valid: false, issues: [`JSON parse error: ${e.message}`] };
-        }
-      }
-
-      const issues = [];
-      const appParse = AppConfigSchema.safeParse(parsed);
-      if (!appParse.success) {
-        for (const iss of appParse.error.issues) {
-          const pathStr = iss.path.join(".") || "root";
-          const msg = `${pathStr}: ${iss.message}`;
-          issues.push(msg);
-          invalidKeyTallies[msg] = (invalidKeyTallies[msg] || 0) + 1;
-        }
-      }
-
-      // Deep validate every component node
-      if (parsed && typeof parsed === "object" && Array.isArray(parsed.pages)) {
-        parsed.pages.forEach((page, pageIdx) => {
-          if (Array.isArray(page?.components)) {
-            page.components.forEach((comp, compIdx) => {
-              const compRes = validateComponentNode(comp);
-              if (!compRes.valid && compRes.issues) {
-                for (const iss of compRes.issues) {
-                  const pathStr = `pages[${pageIdx}].components[${compIdx}]<${comp?.type || "unknown"}>.${iss.path}`;
-                  const msg = `${pathStr}: ${iss.message}`;
-                  issues.push(msg);
-                  invalidKeyTallies[msg] = (invalidKeyTallies[msg] || 0) + 1;
-                }
-              }
-            });
-          }
-        });
-      }
-
-      return {
-        valid: issues.length === 0,
-        issues,
-      };
-    }
-
     const appReports = [];
 
     for (const app of apps) {
       const isPublished = Boolean(app.published_config);
       if (isPublished) publishedTotal++;
 
-      const draftAudit = auditConfig(app.config, "draft");
-      const pubAudit = isPublished ? auditConfig(app.published_config, "published") : null;
+      const draftAudit = auditConfig(app.config, "draft", invalidKeyTallies);
+      const pubAudit = isPublished ? auditConfig(app.published_config, "published", invalidKeyTallies) : null;
 
       if (draftAudit.valid) validDraftCount++;
       else invalidDraftCount++;
@@ -218,6 +262,16 @@ async function runAudit() {
       console.log(`2. If keys are legacy or malicious artifacts, run the stripping migration script:`);
       console.log(`   node scripts/migrate-strip-invalid-keys.mjs --dry-run`);
     }
+
+    return {
+      totalApps: apps.length,
+      publishedTotal,
+      validDraftCount,
+      invalidDraftCount,
+      validPubCount,
+      invalidPubCount,
+      invalidKeyTallies,
+    };
   } finally {
     await client.query("ROLLBACK;");
     await client.end();
@@ -225,7 +279,22 @@ async function runAudit() {
   }
 }
 
-runAudit().catch((err) => {
-  console.error("Audit failed with error:", err);
-  process.exit(1);
-});
+// Direct CLI entry point
+const isDirectRun =
+  Boolean(process.argv[1]) &&
+  pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url;
+
+if (isDirectRun) {
+  try {
+    assertNoCliCredentials();
+  } catch (err) {
+    console.error(`\n❌ ${err.message}\n`);
+    process.exit(1);
+  }
+
+  const isLive = process.argv.includes("--live");
+  runAudit(isLive).catch((err) => {
+    console.error("Audit failed with error:", err.message);
+    process.exit(1);
+  });
+}
