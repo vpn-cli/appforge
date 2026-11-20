@@ -44,10 +44,11 @@ Primary Dark:
   color: #0B0B10;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 10px 28px -10px rgba(88,70,220,.6);
 Secondary Light:
-  background: rgba(255,255,255,.72); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.9);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 6px 20px -8px rgba(60,50,150,.22);
+  background: rgba(255,255,255,.82); backdrop-filter: blur(20px); border: 1px solid var(--ink-500) (#6B6B82 - guaranteed 4.92:1 non-text contrast);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 3px rgba(23,23,31,.08), 0 4px 14px -3px rgba(109,91,240,.10);
 Secondary Dark:
-  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+  background: #1F1F2B; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.28) (3.51:1 contrast);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.20), 0 2px 8px -2px rgba(0,0,0,.40);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
 ```
 

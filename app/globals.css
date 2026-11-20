@@ -245,9 +245,9 @@
   --wash-blue: #E3EAFF;
   --brand-headline-end: #4F6BFF;
   --mesh-c1: #F2F1F9;
-  --mesh-c2: #CFCBFE;
-  --mesh-c3: #ADA6FC;
-  --mesh-c4: #C9D8FF;
+  --mesh-c2: #C6C1FD;
+  --mesh-c3: #9E93FB;
+  --mesh-c4: #B8CCFF;
 
   /* Editor Theme Tokens (Light) */
   --editor-bg-light: #FFFFFF;
@@ -800,17 +800,19 @@ body::after {
 
 .dark .btn-pill-primary {
   background: linear-gradient(180deg, var(--brand-500) 0%, var(--brand-600) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.32);
   color: #FFFFFF;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
     0 10px 28px -10px rgba(109, 91, 240, 0.55);
 }
 
 .dark .btn-pill-primary:hover {
   background: linear-gradient(180deg, var(--brand-400) 0%, var(--brand-500) 100%);
+  border-color: rgba(255, 255, 255, 0.45);
   transform: translateY(-1px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
     0 14px 32px -8px rgba(109, 91, 240, 0.70);
 }
 
@@ -819,21 +821,26 @@ body::after {
 }
 
 .btn-pill-secondary {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--ink-200);
+  border: 1px solid var(--ink-500);
   color: var(--ink-900);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 6px 20px -8px rgba(109, 91, 240, 0.12);
+    0 1px 3px rgba(23, 23, 31, 0.08),
+    0 4px 14px -3px rgba(109, 91, 240, 0.10);
   border-radius: 9999px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-pill-secondary:hover {
-  background: rgba(255, 255, 255, 0.88);
-  border-color: var(--ink-300);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--ink-700);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 6px rgba(23, 23, 31, 0.12),
+    0 6px 18px -4px rgba(109, 91, 240, 0.14);
   transform: translateY(-1px);
 }
 
@@ -845,15 +852,16 @@ body::after {
   background: #1F1F2B;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   color: var(--text-primary);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    0 2px 8px -2px rgba(0, 0, 0, 0.40);
 }
 
 .dark .btn-pill-secondary:hover {
   background: #252535;
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.42);
   transform: translateY(-1px);
 }
 

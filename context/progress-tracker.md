@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Landing Background Shootout Evaluation (branch `feat/landing-redesign`)
-**Last completed:** Option 1 (Fix Candidate A MeshGradient) and Option 2 (Candidate D 254KB Video + Mobile Poster Fallback) benchmarks complete. Option 1 contrast fully compliant (Headline 16.67:1 / 7.53:1; Subtext 6.66:1 / 5.12:1). Candidate D optimized to 254KB (48.8 dB PSNR, 0.9968 SSIM) with mobile poster fallback (< 768px / pointer: coarse / prefers-reduced-motion / Save-Data) and deferred post-load video. Mobile Lighthouse production benchmarks measured (Option 1: Perf 86, LCP 1.2s; Option 2: Perf 85, LCP 1.2s). All 188 unit & DB tests pass.
-**Next:** User selection between Option 1 and Option 2 for Part 2 landing page implementation.
+**Phase:** Landing Background Finalization (branch `feat/landing-redesign`)
+**Last completed:** Locked in Option 1 (MeshGradient) as permanent hero background. Removed Candidate D (CandidateDVideo.tsx, public/candidates/ video/poster assets, and loaders). Strengthened secondary CTA button border (--ink-500 #6B6B82 / dark border highlight) achieving 4.92:1 (light) and 3.51:1 (dark) non-text contrast (PASS >= 3:1). Verified GPU hardware acceleration (AMD Radeon Direct3D11, zero SwiftShader). Verified 5s visible motion delta (Dark: 5.03% diff, 82.65% changed; Light: 3.03% diff, 60.72% changed; both >= 3.0% PASS). Verified full WCAG AA contrast across 8 frames over 4s at peak background frame (Headline 15.75:1 / 9.50:1; Subtext 6.38:1 / 5.15:1; Primary CTA Label 4.77:1 / 4.77:1; Primary CTA Edge 4.14:1 / 4.56:1; Secondary CTA Label 14.08:1 / 13.89:1; Secondary CTA Edge 4.92:1 / 3.51:1). Verified mobile 390x844 pure CSS fallback (0 WebGL canvas mounted). Shipped lazy chunk size measured at 6.78 KB gzipped (26.63 KB uncompressed). All 190 unit and DB integration tests passing.
+**Next:** Proceed with Part 2 landing page implementation.
 
 ---
 

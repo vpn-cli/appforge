@@ -8,10 +8,10 @@ export function HomeHero() {
         {/* Soft radial scrim in canvas color behind the text block for guaranteed contrast */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -inset-x-12 -inset-y-8 -z-10 rounded-full blur-3xl opacity-80"
+          className="pointer-events-none absolute -inset-x-16 -inset-y-10 -z-10 rounded-3xl blur-2xl dark:opacity-95 opacity-85"
           style={{
             background:
-              "radial-gradient(ellipse 70% 60% at 50% 50%, var(--canvas) 20%, transparent 80%)",
+              "radial-gradient(ellipse 80% 75% at 50% 50%, var(--canvas) 50%, transparent 100%)",
           }}
         />
         <h1 className="text-[36px] sm:text-[48px] lg:text-[56px] font-bold tracking-[-0.035em] leading-[1.08] text-foreground mb-4">

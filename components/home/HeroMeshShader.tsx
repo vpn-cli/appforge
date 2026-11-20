@@ -6,11 +6,11 @@ import type { PaperShaderElement } from "@paper-design/shaders";
 
 const MESH_TOKENS = ["--mesh-c1", "--mesh-c2", "--mesh-c3", "--mesh-c4"] as const;
 
-// Default tuned parameters: calm drifting motion with noticeable changes every 2-3s
+// Tuned parameters: calm drifting motion with noticeable changes every 2-3s
 export const MESH_PARAMS = {
-  distortion: 0.8,
+  distortion: 0.9,
   swirl: 0.5,
-  speed: 0.25,
+  speed: 0.75,
   minPixelRatio: 1,
   maxPixelCount: 1500000,
 } as const;

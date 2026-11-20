@@ -1,0 +1,157 @@
+{
+  "gpu": {
+    "vendor": "Google Inc. (AMD)",
+    "renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "isHardwareGpu": true
+  },
+  "motion": {
+    "dark": {
+      "meanDiffPct": 5.0323,
+      "changedPct": 82.65,
+      "meanDiffRaw": 12.83,
+      "pass": true
+    },
+    "light": {
+      "meanDiffPct": 3.0291,
+      "changedPct": 60.72,
+      "meanDiffRaw": 7.72,
+      "pass": true
+    }
+  },
+  "contrast": [
+    {
+      "element": "Headline (\"Live Config-driven Apps\")",
+      "theme": "light",
+      "type": "Large Text (>= 3:1)",
+      "requiredRatio": 3,
+      "fgColor": "rgb(23, 23, 31)",
+      "peakBgRgb": "rgb(241, 240, 248)",
+      "peakBgLum": 0.878,
+      "contrastRatio": 15.75,
+      "pass": true
+    },
+    {
+      "element": "Subtext (\"Write or prompt a JSON config...\")",
+      "theme": "light",
+      "type": "Normal Text (>= 4.5:1)",
+      "requiredRatio": 4.5,
+      "fgColor": "rgb(85, 85, 107)",
+      "peakBgRgb": "rgb(239, 240, 248)",
+      "peakBgLum": 0.8745,
+      "contrastRatio": 6.38,
+      "pass": true
+    },
+    {
+      "element": "Primary CTA Label (\"Start building\")",
+      "theme": "light",
+      "type": "Button Text on Button BG (>= 4.5:1)",
+      "requiredRatio": 4.5,
+      "contrastRatio": 4.77,
+      "pass": true
+    },
+    {
+      "element": "Primary CTA Button Edge",
+      "theme": "light",
+      "type": "UI Component Edge (>= 3:1)",
+      "requiredRatio": 3,
+      "fgColor": "#6D5BF0 (Brand primary fill)",
+      "peakBgRgb": "rgb(239, 238, 247)",
+      "peakBgLum": 0.8622,
+      "contrastRatio": 4.14,
+      "pass": true
+    },
+    {
+      "element": "Secondary CTA Label (\"View templates\")",
+      "theme": "light",
+      "type": "Button Text on Button BG (>= 4.5:1)",
+      "requiredRatio": 4.5,
+      "contrastRatio": 14.08,
+      "pass": true
+    },
+    {
+      "element": "Secondary CTA Button Edge / Border",
+      "theme": "light",
+      "type": "UI Component Edge (>= 3:1)",
+      "requiredRatio": 3,
+      "fgColor": "var(--ink-500) #6B6B82 (Strengthened border)",
+      "peakBgRgb": "rgb(248, 249, 251)",
+      "peakBgLum": 0.9467,
+      "contrastRatio": 4.92,
+      "pass": true
+    },
+    {
+      "element": "Headline (\"Live Config-driven Apps\")",
+      "theme": "dark",
+      "type": "Large Text (>= 3:1)",
+      "requiredRatio": 3,
+      "fgColor": "rgb(242, 242, 247)",
+      "peakBgRgb": "rgb(62, 55, 111)",
+      "peakBgLum": 0.049,
+      "contrastRatio": 9.5,
+      "pass": true
+    },
+    {
+      "element": "Subtext (\"Write or prompt a JSON config...\")",
+      "theme": "dark",
+      "type": "Normal Text (>= 4.5:1)",
+      "requiredRatio": 4.5,
+      "fgColor": "rgb(169, 169, 189)",
+      "peakBgRgb": "rgb(55, 48, 99)",
+      "peakBgLum": 0.0383,
+      "contrastRatio": 5.15,
+      "pass": true
+    },
+    {
+      "element": "Primary CTA Label (\"Start building\")",
+      "theme": "dark",
+      "type": "Button Text on Button BG (>= 4.5:1)",
+      "requiredRatio": 4.5,
+      "contrastRatio": 4.77,
+      "pass": true
+    },
+    {
+      "element": "Primary CTA Button Edge",
+      "theme": "dark",
+      "type": "UI Component Edge (>= 3:1)",
+      "requiredRatio": 3,
+      "fgColor": "rgba(255, 255, 255, 0.32) (Primary button border highlight)",
+      "peakBgRgb": "rgb(50, 48, 60)",
+      "peakBgLum": 0.0312,
+      "contrastRatio": 4.56,
+      "pass": true
+    },
+    {
+      "element": "Secondary CTA Label (\"View templates\")",
+      "theme": "dark",
+      "type": "Button Text on Button BG (>= 4.5:1)",
+      "requiredRatio": 4.5,
+      "contrastRatio": 13.89,
+      "pass": true
+    },
+    {
+      "element": "Secondary CTA Button Edge / Border",
+      "theme": "dark",
+      "type": "UI Component Edge (>= 3:1)",
+      "requiredRatio": 3,
+      "fgColor": "rgba(255, 255, 255, 0.28) (Secondary button border highlight)",
+      "peakBgRgb": "rgb(59, 58, 69)",
+      "peakBgLum": 0.0439,
+      "contrastRatio": 3.51,
+      "pass": true
+    }
+  ],
+  "mobile": {
+    "dark": {
+      "hasCanvas": false,
+      "shaderState": "fallback",
+      "screenshot": "D:\\Projects\\appforge\\.screenshots\\landing-mobile-390x844-dark.png",
+      "pass": true
+    },
+    "light": {
+      "hasCanvas": false,
+      "shaderState": "fallback",
+      "screenshot": "D:\\Projects\\appforge\\.screenshots\\landing-mobile-390x844-light.png",
+      "pass": true
+    }
+  }
+}
