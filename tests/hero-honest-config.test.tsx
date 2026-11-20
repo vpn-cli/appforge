@@ -230,6 +230,33 @@ describe("PART 3 — Honest Hero Config", () => {
     expect(StatisticSchema.safeParse(invalidTrend).success).toBe(false);
   });
 
+  it("enforces trend.series .max(100) limit: accepts 100 elements, rejects 101 elements", () => {
+    const stat100 = {
+      type: "Statistic",
+      label: "Series 100",
+      value: "100",
+      trend: {
+        series: Array.from({ length: 100 }, (_, i) => i + 1),
+      },
+    };
+    const parsed100 = StatisticSchema.safeParse(stat100);
+    expect(parsed100.success).toBe(true);
+
+    const stat101 = {
+      type: "Statistic",
+      label: "Series 101",
+      value: "101",
+      trend: {
+        series: Array.from({ length: 101 }, (_, i) => i + 1),
+      },
+    };
+    const parsed101 = StatisticSchema.safeParse(stat101);
+    expect(parsed101.success).toBe(false);
+    if (!parsed101.success) {
+      expect(parsed101.error.issues[0]?.message).toMatch(/too big|<=100|at most 100/i);
+    }
+  });
+
   it("footer status in DemoCodeCard shows exactly one check mark: '✓ valid' without a duplicate SVG check icon", () => {
     const validHtml = renderToString(<DemoCodeCard validationStatus="valid" />);
     expect(validHtml).toContain("✓ valid");
