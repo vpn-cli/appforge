@@ -8,6 +8,9 @@ const withAnalyzer = withBundleAnalyzer({
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  experimental: {
+    viewTransition: true,
+  },
   devIndicators: {
     position: "bottom-right",
   },

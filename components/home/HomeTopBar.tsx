@@ -4,6 +4,8 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { MOTION_TOKENS } from "@/lib/motion-tokens";
 import { Menu, X } from "lucide-react";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -45,28 +47,35 @@ export function HomeTopBar() {
           </span>
         </Link>
 
-        {/* Desktop Nav */}
+        {/* Desktop Nav with Sliding Active Pill */}
         <nav
           aria-label="Primary navigation"
-          className="hidden sm:flex items-center p-1 rounded-full bg-surface-sunken border border-border"
+          className="hidden sm:flex items-center p-1 rounded-full bg-surface-sunken border border-border relative"
         >
           {NAV_SEGMENTS.map((seg) => {
-            const isActive = pathname === seg.href;
+            const isActive = pathname === seg.href || (seg.href === "/apps" && pathname.startsWith("/apps"));
             return (
               <Link
                 key={seg.label}
                 href={seg.href}
                 prefetch={false}
-                className={`px-4 py-1.5 rounded-full text-[14px] font-medium transition-colors inline-flex items-center gap-1.5 ${
+                className={`relative px-4 py-1.5 rounded-full text-[14px] font-medium transition-colors inline-flex items-center gap-1.5 ${
                   isActive
-                    ? "bg-surface text-brand-link shadow-xs font-semibold"
+                    ? "text-brand-link font-semibold"
                     : "text-text-secondary hover:text-foreground"
                 }`}
               >
                 {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-link shrink-0" />
+                  <motion.span
+                    layoutId="nav-sliding-pill"
+                    className="absolute inset-0 rounded-full bg-surface shadow-xs z-0"
+                    transition={MOTION_TOKENS.springStandard}
+                  />
                 )}
-                <span>{seg.label}</span>
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-link shrink-0 relative z-10" />
+                )}
+                <span className="relative z-10">{seg.label}</span>
               </Link>
             );
           })}

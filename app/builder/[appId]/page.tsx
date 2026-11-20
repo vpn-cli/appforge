@@ -19,10 +19,13 @@ import { IconButton } from "@/components/ui/icon-button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Kbd } from "@/components/ui/kbd";
+import { motion, AnimatePresence } from "framer-motion";
+import { MOTION_TOKENS } from "@/lib/motion-tokens";
 import {
   ArrowLeft,
   Save,
   Play,
+  Check,
   Loader2,
   FileCode,
   Layout,
@@ -346,7 +349,9 @@ function BuilderContent() {
     [configStr],
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const [isPublishing, setIsPublishing] = useState(false);
+  const [publishState, setPublishState] = useState<"idle" | "publishing" | "published">("idle");
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [authRequireMessage, setAuthRequireMessage] = useState<string | null>(
@@ -454,9 +459,11 @@ function BuilderContent() {
 
   const handleSave = async () => {
     setIsSaving(true);
+    setSaveState("saving");
     try {
       const res = await saveAppConfig(appId, configStr);
       if (!res.success) {
+        setSaveState("idle");
         if (res.error?.toLowerCase().includes("unauthorized")) {
           setAuthRequireMessage(
             "Please sign in to save your application to your personal account.",
@@ -469,6 +476,8 @@ function BuilderContent() {
           });
         }
       } else {
+        setSaveState("saved");
+        setTimeout(() => setSaveState("idle"), 2000);
         setNotificationModal({
           type: "success",
           title: "Draft Saved",
@@ -476,6 +485,7 @@ function BuilderContent() {
         });
       }
     } catch (e: unknown) {
+      setSaveState("idle");
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
         setAuthRequireMessage(
@@ -495,9 +505,11 @@ function BuilderContent() {
 
   const handlePublish = async () => {
     setIsPublishing(true);
+    setPublishState("publishing");
     try {
       const res = await publishAppConfig(appId, configStr);
       if (!res.success) {
+        setPublishState("idle");
         if (res.error?.toLowerCase().includes("unauthorized")) {
           setAuthRequireMessage(
             "Please sign in to deploy and publish your dynamic application.",
@@ -510,6 +522,8 @@ function BuilderContent() {
           });
         }
       } else {
+        setPublishState("published");
+        setTimeout(() => setPublishState("idle"), 2000);
         setNotificationModal({
           type: "success",
           title: "App Published!",
@@ -518,6 +532,7 @@ function BuilderContent() {
         });
       }
     } catch (e: unknown) {
+      setPublishState("idle");
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
         setAuthRequireMessage(
@@ -680,35 +695,109 @@ function BuilderContent() {
             <Kbd>⌘K</Kbd>
           </Button>
 
-          {/* Save Draft Button (secondary frosted pill) */}
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
-            {isSaving ? (
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-            ) : (
-              <Save className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-            )}
-            Save Draft
-          </Button>
+          {/* Save Draft Button: dynamic state (idle → "Saving…" → "Saved", with a width spring) */}
+          <motion.div layout transition={MOTION_TOKENS.springStandard}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleSave}
+              disabled={saveState === "saving"}
+              className="overflow-hidden"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {saveState === "saving" ? (
+                  <motion.span
+                    key="saving"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center"
+                  >
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    <span>Saving…</span>
+                  </motion.span>
+                ) : saveState === "saved" ? (
+                  <motion.span
+                    key="saved"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-semibold"
+                  >
+                    <Check className="w-3.5 h-3.5 mr-1.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Saved</span>
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center"
+                  >
+                    <Save className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                    <span>Save Draft</span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Button>
+          </motion.div>
 
-          {/* Publish CTA: Primary pill button */}
-          <Button
-            onClick={() => setShowPublishDialog(true)}
-            disabled={isPublishing}
-            variant="primary"
-            size="sm"
-          >
-            {isPublishing ? (
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-            ) : (
-              <Play className="w-3.5 h-3.5 mr-1.5 fill-current" />
-            )}
-            Publish
-          </Button>
+          {/* Publish CTA: dynamic state (idle → "Publishing…" → "Published", with a width spring) */}
+          <motion.div layout transition={MOTION_TOKENS.springStandard}>
+            <Button
+              onClick={() => {
+                if (publishState === "idle") setShowPublishDialog(true);
+              }}
+              disabled={publishState === "publishing"}
+              variant="primary"
+              size="sm"
+              className="overflow-hidden"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {publishState === "publishing" ? (
+                  <motion.span
+                    key="publishing"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center"
+                  >
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    <span>Publishing…</span>
+                  </motion.span>
+                ) : publishState === "published" ? (
+                  <motion.span
+                    key="published"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center font-semibold"
+                  >
+                    <Check className="w-3.5 h-3.5 mr-1.5 text-white" />
+                    <span>Published</span>
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center"
+                  >
+                    <Play className="w-3.5 h-3.5 mr-1.5 fill-current" />
+                    <span>Publish</span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Button>
+          </motion.div>
         </div>
       </header>
 

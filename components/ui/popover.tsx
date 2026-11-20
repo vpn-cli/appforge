@@ -30,7 +30,7 @@ function PopoverContent({
         <PopoverPrimitive.Popup
           data-slot="popover-content"
           className={cn(
-            "glass-1 rounded-2xl p-4 text-foreground shadow-2xl outline-none z-50 min-w-[220px] transition-all animate-in fade-in zoom-in-95 duration-150",
+            "glass-1 rounded-2xl p-4 text-foreground shadow-2xl outline-none z-50 min-w-[220px] transition-all origin-top-right animate-in fade-in zoom-in-[0.96] duration-150 ease-out",
             className
           )}
           {...props}

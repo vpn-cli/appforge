@@ -142,7 +142,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
                     }}
                   />
                   <div
-                    className="absolute right-0 bottom-full mb-1 w-44 rounded-2xl glass-1 border border-border dark:border-white/10 shadow-xl py-1.5 z-50 text-[13px] animate-in fade-in zoom-in-95 duration-100"
+                    className="absolute right-0 bottom-full mb-1 w-44 rounded-2xl glass-1 border border-border dark:border-white/10 shadow-xl py-1.5 z-50 text-[13px] origin-bottom-right animate-in fade-in zoom-in-[0.96] duration-150 ease-out"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Link

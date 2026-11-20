@@ -784,7 +784,7 @@ body::after {
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
     0 10px 28px -10px rgba(109, 91, 240, 0.55);
   border-radius: 9999px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1), background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1), border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
 }
 
 .btn-pill-primary:hover {
@@ -796,7 +796,7 @@ body::after {
 }
 
 .btn-pill-primary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .dark .btn-pill-primary {
@@ -818,7 +818,7 @@ body::after {
 }
 
 .dark .btn-pill-primary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .btn-pill-secondary {
@@ -832,7 +832,7 @@ body::after {
     0 1px 3px rgba(23, 23, 31, 0.08),
     0 4px 14px -3px rgba(109, 91, 240, 0.10);
   border-radius: 9999px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1), background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1), border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
 }
 
 .btn-pill-secondary:hover {
@@ -846,7 +846,7 @@ body::after {
 }
 
 .btn-pill-secondary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .dark .btn-pill-secondary {
@@ -867,7 +867,55 @@ body::after {
 }
 
 .dark .btn-pill-secondary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+}
+
+/* ========================================================
+   Interactive Clickable Motion System
+   150ms ease transitions on hover; scale 0.97 on press
+   ======================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  .btn-pill-primary:not(:disabled),
+  .btn-pill-secondary:not(:disabled),
+  a[class*="rounded-full"],
+  a[class*="btn"],
+  .interactive-press {
+    transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+                background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+                border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+                box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
+  }
+
+  button:active:not(:disabled),
+  [role="button"]:active:not([aria-disabled="true"]),
+  .btn-pill-primary:active:not(:disabled),
+  .btn-pill-secondary:active:not(:disabled),
+  a[class*="rounded-full"]:active,
+  a[class*="btn"]:active,
+  .interactive-press:active {
+    transform: scale(0.97) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  [role="button"],
+  .btn-pill-primary,
+  .btn-pill-secondary,
+  .interactive-press {
+    transition: opacity 0.15s ease !important;
+    transform: none !important;
+  }
+  button:active,
+  [role="button"]:active,
+  .btn-pill-primary:active,
+  .btn-pill-secondary:active,
+  .interactive-press:active {
+    opacity: 0.8 !important;
+    transform: none !important;
+  }
 }
 
 /* ========================================================
@@ -965,4 +1013,31 @@ body::after {
 
 .code-panel-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
+}
+
+/* ========================================================
+   Popovers & Dropdowns (150-200ms scale 0.96 -> 1 + fade)
+   ======================================================== */
+.cl-userButtonPopoverCard,
+.cl-organizationSwitcherPopoverCard {
+  transform-origin: top right;
+  animation: popover-entrance 0.18s cubic-bezier(0.15, 0, 0.2, 1) forwards;
+}
+
+@keyframes popover-entrance {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Smooth Theme Crossfade */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.15, 0, 0.2, 1);
 }

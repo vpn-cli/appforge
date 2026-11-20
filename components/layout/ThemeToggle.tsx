@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { motion, AnimatePresence } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 import { IconButton } from "@/components/ui/icon-button";
 
@@ -35,32 +36,8 @@ export function ThemeToggle() {
       return;
     }
 
-    const x = event.clientX;
-    const y = event.clientY;
-
-    const endRadius = Math.hypot(
-      Math.max(x, window.innerWidth - x),
-      Math.max(y, window.innerHeight - y)
-    );
-
-    const transition = document.startViewTransition(() => {
+    document.startViewTransition(() => {
       applyTheme(nextDark);
-    });
-
-    transition.ready.then(() => {
-      const clipPath = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${endRadius}px at ${x}px ${y}px)`,
-      ];
-
-      document.documentElement.animate(
-        { clipPath },
-        {
-          duration: 500,
-          easing: "ease-in-out",
-          pseudoElement: "::view-transition-new(root)",
-        }
-      );
     });
   };
 
@@ -72,15 +49,24 @@ export function ThemeToggle() {
       variant="glass"
       size="md"
       aria-label="Toggle theme"
-      className="relative cursor-pointer"
+      className="relative cursor-pointer overflow-hidden"
     >
-      <span className="flex items-center justify-center text-foreground transition-transform duration-200">
-        {isDark ? (
-          <Moon className="h-4 w-4 fill-none" strokeWidth={1.75} />
-        ) : (
-          <Sun className="h-4 w-4 fill-none" strokeWidth={1.75} />
-        )}
-      </span>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={isDark ? "dark" : "light"}
+          initial={{ rotate: -90, opacity: 0, scale: 0.75 }}
+          animate={{ rotate: 0, opacity: 1, scale: 1 }}
+          exit={{ rotate: 90, opacity: 0, scale: 0.75 }}
+          transition={{ duration: 0.2, ease: [0.15, 0, 0.2, 1] }}
+          className="flex items-center justify-center text-foreground"
+        >
+          {isDark ? (
+            <Moon className="h-4 w-4 fill-none" strokeWidth={1.75} />
+          ) : (
+            <Sun className="h-4 w-4 fill-none" strokeWidth={1.75} />
+          )}
+        </motion.span>
+      </AnimatePresence>
     </IconButton>
   );
 }
