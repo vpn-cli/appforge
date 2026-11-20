@@ -244,10 +244,10 @@
   /* Ambient washes & Hero Mesh Gradient Palette (Light: soft lavender/white) */
   --wash-blue: #E3EAFF;
   --brand-headline-end: #4F6BFF;
-  --mesh-c1: #F8F7FC;
-  --mesh-c2: #EEEBFF;
-  --mesh-c3: #E6EDFF;
-  --mesh-c4: #FFFFFF;
+  --mesh-c1: #F2F1F9;
+  --mesh-c2: #CFCBFE;
+  --mesh-c3: #ADA6FC;
+  --mesh-c4: #C9D8FF;
 
   /* Editor Theme Tokens (Light) */
   --editor-bg-light: #FFFFFF;
@@ -391,10 +391,10 @@
   --canvas: var(--ink-950);
   --background: var(--ink-950);
   /* Hero Mesh Gradient Palette (Dark: deep navy/violet, low contrast) */
-  --mesh-c1: #0B0B14;
-  --mesh-c2: #12152E;
-  --mesh-c3: #1D163A;
-  --mesh-c4: #0E1022;
+  --mesh-c1: #0B0B12;
+  --mesh-c2: #3E2F9A;
+  --mesh-c3: #6D5BF0;
+  --mesh-c4: #2A3A8A;
   --surface: #16161F;
   --surface-glass: rgba(22, 22, 31, 0.78);
   --card: #16161F;
@@ -598,7 +598,7 @@ body::after {
 /* Level 1: Primary floating glass surfaces (Nav bar pill, Demo panels) */
 .glass-1 {
   position: relative;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.84));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.92));
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.95);
@@ -619,7 +619,7 @@ body::after {
 }
 
 .dark .glass-1 {
-  background: rgba(22, 22, 31, 0.78);
+  background: rgba(18, 18, 25, 0.92);
   backdrop-filter: blur(28px) saturate(140%);
   -webkit-backdrop-filter: blur(28px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.08);
