@@ -244,10 +244,11 @@
   /* Ambient washes & Hero Mesh Gradient Palette (Light: soft lavender/white) */
   --wash-blue: #E3EAFF;
   --brand-headline-end: #4F6BFF;
-  --mesh-c1: #F2F1F9;
-  --mesh-c2: #CFCBFE;
-  --mesh-c3: #ADA6FC;
-  --mesh-c4: #C9D8FF;
+  --indigo: var(--brand-headline-end);
+  --mesh-c1: var(--ink-50);
+  --mesh-c2: var(--brand-200);
+  --mesh-c3: var(--brand-300);
+  --mesh-c4: var(--wash-blue);
 
   /* Editor Theme Tokens (Light) */
   --editor-bg-light: #FFFFFF;
@@ -390,11 +391,11 @@
 .dark, :root.dark, [data-theme="dark"] {
   --canvas: var(--ink-950);
   --background: var(--ink-950);
-  /* Hero Mesh Gradient Palette (Dark: deep navy/violet, low contrast) */
-  --mesh-c1: #0B0B12;
-  --mesh-c2: #3E2F9A;
-  --mesh-c3: #6D5BF0;
-  --mesh-c4: #2A3A8A;
+  /* Hero Mesh Gradient Palette (Dark: deep brand & ink tokens) */
+  --mesh-c1: var(--ink-950);
+  --mesh-c2: var(--brand-800);
+  --mesh-c3: var(--brand-500);
+  --mesh-c4: var(--brand-headline-end);
   --surface: #16161F;
   --surface-glass: rgba(22, 22, 31, 0.78);
   --card: #16161F;

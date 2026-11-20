@@ -3,6 +3,7 @@
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
+import { warmCompileMeshShader } from "@/lib/shader-warmup";
 
 const DynamicHeroMeshShader = dynamic(
   () => import("./HeroMeshShader").then((mod) => mod.HeroMeshShader),
@@ -50,6 +51,10 @@ export function HeroMeshBackground() {
       setIsMobile(isMobileEnvironment());
     };
     updateDeviceType();
+    // Preload dynamic chunk during idle so module evaluation never blocks input
+    if (!isMobileEnvironment()) {
+      import("./HeroMeshShader").catch(() => {});
+    }
     window.addEventListener("resize", updateDeviceType, { passive: true });
     return () => window.removeEventListener("resize", updateDeviceType);
   }, []);
@@ -72,6 +77,8 @@ export function HeroMeshBackground() {
       if (cancelled) return;
       if (isMobileEnvironment()) return;
       if (hasWebGL2Api()) {
+        // Warm-compile shader during idle before mounting to guarantee ANGLE shader cache hit
+        warmCompileMeshShader();
         startTransition(() => setShaderEnabled(true));
       } else {
         setShaderFailed(true);

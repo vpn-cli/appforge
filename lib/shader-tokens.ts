@@ -19,8 +19,8 @@ export const MESH_COLOR_TOKENS = [
 export type MeshColorToken = (typeof MESH_COLOR_TOKENS)[number];
 
 export const MESH_DEFAULT_PALETTES = {
-  dark: ["#0B0B12", "#3E2F9A", "#6D5BF0", "#2A3A8A"] as const,
-  light: ["#F2F1F9", "#CFCBFE", "#ADA6FC", "#C9D8FF"] as const,
+  dark: ["#0B0B12", "#3E2F9A", "#6D5BF0", "#4F6BFF"] as const,
+  light: ["#F6F6FB", "#CFCBFE", "#ADA6FC", "#E3EAFF"] as const,
 } as const;
 
 export type ShaderThemeKey = keyof typeof MESH_DEFAULT_PALETTES;
