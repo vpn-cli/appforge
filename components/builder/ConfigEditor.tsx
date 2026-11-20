@@ -98,8 +98,8 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
       rules: [
         { token: '', foreground: getRuleColor('--editor-fg-light', '17171F') },
         { token: 'string.key.json', foreground: getRuleColor('--editor-key-light', '5B45E0') },
-        { token: 'string.value.json', foreground: getRuleColor('--editor-val-light', 'D97706') },
-        { token: 'string', foreground: getRuleColor('--editor-val-light', 'D97706') },
+        { token: 'string.value.json', foreground: getRuleColor('--editor-val-light', '92400E') },
+        { token: 'string', foreground: getRuleColor('--editor-val-light', '92400E') },
         { token: 'number', foreground: getRuleColor('--editor-num-light', '2563EB') },
         { token: 'keyword.json', foreground: getRuleColor('--editor-kw-light', '16A34A') },
         { token: 'delimiter', foreground: getRuleColor('--editor-delim-light', '55556B') },

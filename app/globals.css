@@ -253,7 +253,7 @@
   --editor-bg-light: #FFFFFF;
   --editor-fg-light: #17171F;
   --editor-key-light: #5B45E0;
-  --editor-val-light: #D97706;
+  --editor-val-light: #92400E;
   --editor-num-light: #2563EB;
   --editor-kw-light: #16A34A;
   --editor-delim-light: #55556B;
@@ -379,7 +379,7 @@
 
   /* Code Syntax Tokens (Light) */
   --code-key: var(--brand-600);
-  --code-string: var(--warning);
+  --code-string: #92400E;
   --code-punctuation: var(--ink-500);
   --code-bracket: var(--brand-700);
   --code-bool: var(--success);
