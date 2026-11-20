@@ -327,7 +327,7 @@ export function CopilotFloatingPill({
             animate={{ opacity: 1, scale: 1 }}
             exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
             transition={springTransition}
-            className="w-full h-10 px-3.5 rounded-full flex items-center justify-between gap-2 border border-black/10 dark:border-white/15 bg-card/95 dark:bg-card/95 backdrop-blur-xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group"
+            className="w-full h-10 px-3.5 rounded-full flex items-center justify-between gap-2 border border-border/80 dark:border-white/15 glass-1 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group"
             aria-label="Open Copilot chat"
           >
             <div className="flex items-center gap-2 min-w-0">
@@ -360,7 +360,7 @@ export function CopilotFloatingPill({
                 : { opacity: 0, scale: 0.95, originX: 1, originY: 1 }
             }
             transition={springTransition}
-            className="w-full h-full rounded-[22px] border border-black/10 dark:border-white/15 bg-card/96 dark:bg-card/96 backdrop-blur-2xl shadow-[0_24px_70px_-20px_rgba(0,0,0,0.45)] dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden"
+            className="w-full h-full rounded-[22px] border border-border/80 dark:border-white/15 glass-1 shadow-[0_24px_70px_-20px_rgba(0,0,0,0.45)] dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden"
           >
             {/* Header: Title + Esc/Collapse buttons */}
             <div className="h-11 px-4 border-b border-border/40 dark:border-white/8 flex items-center justify-between shrink-0 bg-transparent">

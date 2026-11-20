@@ -616,29 +616,11 @@ function BuilderContent() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-background overflow-hidden text-foreground antialiased select-none relative">
-      {/* Background treatment: same canvas and washes at half strength */}
+      {/* Background treatment: STATIC frame of the mesh gradient at ~60% intensity. No WebGL animation in builder */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden z-0 select-none"
-      >
-        <div className="dark:hidden absolute -top-32 -left-20 w-[580px] h-[580px] rounded-full bg-[radial-gradient(circle_at_center,var(--brand-100)_0%,rgba(242,241,249,0)_70%)] blur-[70px] opacity-40" />
-        <div className="dark:hidden absolute top-[200px] -right-20 w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle_at_center,var(--wash-blue)_0%,rgba(242,241,249,0)_70%)] blur-[80px] opacity-40" />
-        <div
-          className="dark:hidden absolute inset-0 bg-[radial-gradient(rgba(23,23,31,0.02)_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none"
-          style={{
-            maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
-            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
-          }}
-        />
-        <div className="hidden dark:block absolute -top-[120px] left-1/2 -translate-x-1/2 w-[55vw] h-[35vh] max-w-[900px] rounded-full bg-[radial-gradient(ellipse_60%_35%_at_50%_25%,rgba(109,91,240,0.09)_0%,rgba(91,69,224,0.02)_50%,transparent_70%)] blur-[100px] pointer-events-none" />
-        <div
-          className="hidden dark:block absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.02)_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none"
-          style={{
-            maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
-            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
-          }}
-        />
-      </div>
+        className="pointer-events-none absolute inset-0 overflow-hidden z-0 select-none hero-mesh-fallback opacity-60"
+      />
       {/* =========================================================================
           TOP APPLICATION TOOLBAR (h-14, 56px) - Glass top bar
           Sans breadcrumb with App Name, Copilot ⌘K toggle, Save Draft, Publish
@@ -745,7 +727,7 @@ function BuilderContent() {
         {isEditorCollapsed ? (
           <aside
             style={{ width: `${RAIL_WIDTH}px` }}
-            className="h-full border-r border-border bg-card flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
+            className="h-full border-r border-border/80 dark:border-white/10 glass-1 flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
             onClick={() => setIsEditorCollapsed(false)}
             title="Expand Config Editor"
             role="region"
@@ -776,8 +758,8 @@ function BuilderContent() {
             className="h-full flex flex-col border-r border-border bg-card shrink-0 min-w-[320px] overflow-hidden"
             role="region"
           >
-            {/* Editor Panel Header: 36px (h-9) consistent with Preview header */}
-            <div className="h-9 px-4 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
+            {/* Editor Panel Header: 36px (h-9) consistent with Preview header, styled with glass-1 */}
+            <div className="h-9 px-4 border-b border-border/80 dark:border-white/10 glass-1 flex items-center justify-between shrink-0 select-none">
               <div className="flex items-center gap-2">
                 <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="text-[13px] font-medium text-foreground">
@@ -870,8 +852,8 @@ function BuilderContent() {
           className="flex-1 min-w-[400px] flex flex-col h-full bg-background overflow-hidden"
           role="region"
         >
-          {/* Preview Panel Header: 36px (h-9) consistent with Editor header */}
-          <div className="h-9 px-4 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
+          {/* Preview Panel Header: 36px (h-9) consistent with Editor header, styled with glass-1 */}
+          <div className="h-9 px-4 border-b border-border/80 dark:border-white/10 glass-1 flex items-center justify-between shrink-0 select-none">
             <div className="flex items-center gap-2">
               <Layout className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-[13px] font-medium text-foreground">
@@ -879,8 +861,8 @@ function BuilderContent() {
               </span>
             </div>
 
-            {/* Viewport Width Controls in preview panel header */}
-            <div className="flex items-center gap-1 bg-muted/50 p-0.5 rounded-full border border-border">
+            {/* Viewport Width Controls in preview panel header - styled with glass-2-nested */}
+            <div className="flex items-center gap-1 glass-2-nested p-0.5 rounded-full border border-border/80 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setViewport("desktop")}
