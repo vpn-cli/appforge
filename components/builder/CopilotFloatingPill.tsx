@@ -31,6 +31,7 @@ export function CopilotFloatingPill({
   const [isGenerating, setIsGenerating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const internalInputRef = useRef<HTMLInputElement>(null);
+  const pillButtonRef = useRef<HTMLButtonElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
 
@@ -72,12 +73,15 @@ export function CopilotFloatingPill({
     };
   }, [isOpen, onOpenChange]);
 
-  // Handle Esc key to collapse
+  // Handle Esc key to collapse and return focus to pill
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
         e.preventDefault();
         onOpenChange(false);
+        setTimeout(() => {
+          pillButtonRef.current?.focus();
+        }, 50);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -318,7 +322,8 @@ export function CopilotFloatingPill({
              ===================================================================== */
           <motion.button
             key="collapsed-pill"
-            layoutId="copilot-container"
+            ref={pillButtonRef}
+            layoutId={shouldReduceMotion ? undefined : "copilot-container"}
             type="button"
             onClick={() => {
               onOpenChange(true);
@@ -331,6 +336,7 @@ export function CopilotFloatingPill({
             style={{ originX: 1, originY: 1 }}
             className="w-full h-10 px-3.5 rounded-full flex items-center justify-between gap-2 border border-border/80 dark:border-white/15 glass-1 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group"
             aria-label="Open Copilot chat"
+            aria-expanded={isOpen}
           >
             <motion.div
               initial={shouldReduceMotion ? false : { opacity: 0 }}
@@ -358,7 +364,7 @@ export function CopilotFloatingPill({
              ===================================================================== */
           <motion.div
             key="expanded-panel"
-            layoutId="copilot-container"
+            layoutId={shouldReduceMotion ? undefined : "copilot-container"}
             initial={
               shouldReduceMotion
                 ? false
@@ -405,7 +411,10 @@ export function CopilotFloatingPill({
                   <IconButton
                     variant="ghost"
                     size="sm"
-                    onClick={() => onOpenChange(false)}
+                    onClick={() => {
+                      onOpenChange(false);
+                      setTimeout(() => pillButtonRef.current?.focus(), 50);
+                    }}
                     aria-label="Collapse Copilot"
                     className="w-7 h-7 text-muted-foreground hover:text-foreground"
                   >

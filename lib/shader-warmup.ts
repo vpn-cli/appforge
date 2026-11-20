@@ -3,7 +3,7 @@
  *
  * Pre-compiles Paper Shaders MeshGradient GLSL programs during browser idle time.
  * ANGLE and GPU driver store the compiled binary in their process-level shader cache,
- * allowing subsequent synchronous ShaderMount compilation to complete in < 2ms,
+ * allowing subsequent synchronous ShaderMount compilation to leverage the pre-warmed cache,
  * preventing main-thread input delay spikes during user interaction.
  */
 

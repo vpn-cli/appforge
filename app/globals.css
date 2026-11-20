@@ -916,6 +916,11 @@ body::after {
     opacity: 0.8 !important;
     transform: none !important;
   }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+    animation-duration: 0s !important;
+  }
 }
 
 /* ========================================================

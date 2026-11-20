@@ -31,7 +31,11 @@ export function ThemeToggle() {
     (event.currentTarget as HTMLElement)?.blur();
     const nextDark = !isDark;
 
-    if (!document.startViewTransition) {
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+    if (prefersReduced || !document.startViewTransition) {
       applyTheme(nextDark);
       return;
     }
