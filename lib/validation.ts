@@ -46,6 +46,8 @@ export const StatisticSchema = z.object({
   label: z.string().optional(),
   title: z.string().optional(),
   value: z.union([z.string(), z.number()]).optional().default("0"),
+  valueSuffix: z.string().optional(),
+  suffix: z.string().optional(),
   format: z.enum(["compact", "full", "auto"]).optional(),
   trend: StatisticTrendSchema.optional(),
   trendValue: z.string().optional(),

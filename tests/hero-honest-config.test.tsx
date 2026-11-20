@@ -281,6 +281,68 @@ describe("PART 3 — Honest Hero Config", () => {
     expect(htmlWithPropSuffix).not.toContain("14,200runs");
   });
 
+  it("renders units attached in the value exactly as written ('14m', '99.98%', '$1.5M', '-4m', '4.2k')", () => {
+    // 1. "14m" renders exactly as written (not "14")
+    const html14m = renderToString(<Statistic label="Duration" value="14m" />);
+    expect(html14m).toContain("14m");
+    expect(html14m).not.toMatch(/>\s*14\s*</);
+
+    // 2. "99.98%" renders exactly as written (not "99.98")
+    const html99 = renderToString(<Statistic label="Uptime" value="99.98%" />);
+    expect(html99).toContain("99.98%");
+    expect(html99).not.toMatch(/>\s*99\.98\s*</);
+
+    // 3. "$1.5M" renders exactly as written (not "0" or "1.5")
+    const html15m = renderToString(<Statistic label="ARR" value="$1.5M" />);
+    expect(html15m).toContain("$1.5M");
+    expect(html15m).not.toContain("$0");
+
+    // 4. "-4m" renders exactly as written (not "-4")
+    const htmlMinus4m = renderToString(<Statistic label="Latency" value="-4m" />);
+    expect(htmlMinus4m).toContain("-4m");
+
+    // 5. "4.2k" renders exactly as written
+    const html42k = renderToString(<Statistic label="Followers" value="4.2k" />);
+    expect(html42k).toContain("4.2k");
+
+    // Also verified in panel and gradient variants
+    const htmlPanel14m = renderToString(<Statistic label="Duration" value="14m" variant="panel" />);
+    expect(htmlPanel14m).toContain("14m");
+
+    const htmlGradient99 = renderToString(<Statistic label="Uptime" value="99.98%" variant="gradient" />);
+    expect(htmlGradient99).toContain("99.98%");
+  });
+
+  it("ensures only an explicit valueSuffix gets the leading space ('14,200' + ' runs' -> '14,200 runs')", () => {
+    // Explicit valueSuffix with leading space
+    const htmlExplicitWithSpace = renderToString(
+      <Statistic label="Total Runs" value="14,200" valueSuffix=" runs" />
+    );
+    expect(htmlExplicitWithSpace).toContain("14,200 runs");
+
+    // Explicit valueSuffix without leading space (auto-spaced)
+    const htmlExplicitNoSpace = renderToString(
+      <Statistic label="Total Runs" value="14,200" valueSuffix="runs" />
+    );
+    expect(htmlExplicitNoSpace).toContain("14,200 runs");
+    expect(htmlExplicitNoSpace).not.toContain("14,200runs");
+
+    // Numeric value with explicit valueSuffix
+    const htmlNumeric = renderToString(
+      <Statistic label="Total Runs" value={14200} valueSuffix="runs" />
+    );
+    expect(htmlNumeric).toContain("14,200 runs");
+
+    // Passes strict Zod schema validation
+    const schemaValidation = StatisticSchema.safeParse({
+      type: "Statistic",
+      label: "Total Runs",
+      value: "14,200",
+      valueSuffix: " runs",
+    });
+    expect(schemaValidation.success).toBe(true);
+  });
+
   it("'Sample data' appears exactly once, in the footer only", () => {
     const previewHtml = renderToString(<DemoPreviewCard />);
     const matches = previewHtml.match(/Sample data/g) || [];

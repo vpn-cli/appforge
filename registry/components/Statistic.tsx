@@ -17,6 +17,7 @@ export interface StatisticProps {
   label?: string;
   title?: string;
   value?: string | number;
+  valueSuffix?: string;
   suffix?: string;
   format?: "compact" | "full" | "auto";
   trend?: "up" | "down" | "neutral" | TrendObject;
@@ -28,21 +29,15 @@ export interface StatisticProps {
 }
 
 export function parseValueAndSuffix(val: string | number, propSuffix?: string) {
-  if (propSuffix !== undefined && propSuffix !== null) {
+  const hasExplicitSuffix = propSuffix !== undefined && propSuffix !== null;
+  if (hasExplicitSuffix) {
     const s = String(propSuffix);
     const normSuffix = s.startsWith(" ") ? s : ` ${s}`;
     const num = typeof val === "number" ? val : parseFloat(String(val).replace(/,/g, "")) || 0;
-    return { num, suffix: normSuffix, rawVal: val };
-  }
-  if (typeof val === "string") {
-    const match = val.match(/^([\d,.]+)(\s+.*)$/);
-    if (match) {
-      const num = parseFloat(match[1].replace(/,/g, "")) || 0;
-      return { num, suffix: match[2], rawVal: val };
-    }
+    return { num, suffix: normSuffix, rawVal: val, hasExplicitSuffix: true };
   }
   const num = typeof val === "number" ? val : parseFloat(String(val).replace(/,/g, "")) || 0;
-  return { num, suffix: "", rawVal: val };
+  return { num, suffix: "", rawVal: val, hasExplicitSuffix: false };
 }
 
 function formatCompactString(val: string | number) {
@@ -85,6 +80,7 @@ export function Statistic({
   label,
   title,
   value = "1,244",
+  valueSuffix,
   suffix,
   format,
   trend,
@@ -149,21 +145,43 @@ export function Statistic({
     colorClass = "text-error-text";
   }
 
-  // Parse numeric value and suffix (always preserving leading spaces)
-  const parsed = parseValueAndSuffix(value, suffix);
+  // Parse numeric value and suffix (only explicit valueSuffix gets leading space)
+  const explicitSuffix = valueSuffix !== undefined ? valueSuffix : suffix;
+  const parsed = parseValueAndSuffix(value, explicitSuffix);
   const targetNumber = parsed.num;
   const valSuffix = parsed.suffix;
 
-  const effectiveValue = (isPanel || isGradient) && format !== "compact"
-    ? `${targetNumber.toLocaleString("en-US")}${valSuffix}`
-    : `${formatDisplayValue(targetNumber, format)}${valSuffix}`;
+  let effectiveValue: string;
+  if (parsed.hasExplicitSuffix) {
+    const baseFormatted =
+      typeof value === "number"
+        ? format === "compact"
+          ? formatCompactString(value)
+          : value.toLocaleString("en-US")
+        : String(value);
+    effectiveValue = `${baseFormatted}${valSuffix}`;
+  } else if (typeof value === "string") {
+    // Units attached in the value ("14m", "99.98%", "$1.5M", "-4m", "4.2k") render exactly as written
+    effectiveValue = value;
+  } else if (typeof value === "number") {
+    effectiveValue =
+      format === "compact"
+        ? formatCompactString(value)
+        : value.toLocaleString("en-US");
+  } else {
+    effectiveValue = "0";
+  }
+
+  const isPureNumeric =
+    typeof value === "number" ||
+    (typeof value === "string" && /^[-+]?[\d,]+(\.\d+)?$/.test(value.trim()));
 
   // Number animation for gradient card: Frame 0 shows final value (1,244), no count-up from 0.
   // Subtle roll from a nearby value only over 400ms (duration-slow token) after 150ms delay.
   const [animatedNumber, setAnimatedNumber] = useState<number>(() => targetNumber);
 
   useEffect(() => {
-    if (!isGradient) return;
+    if (!isGradient || !isPureNumeric) return;
 
     if (typeof window !== "undefined") {
       const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -200,10 +218,12 @@ export function Statistic({
       clearTimeout(timer);
       cancelAnimationFrame(rafId);
     };
-  }, [targetNumber, isGradient]);
+  }, [targetNumber, isGradient, isPureNumeric]);
 
   if (isGradient) {
-    const gradientDisplayValue = `${animatedNumber.toLocaleString("en-US")}${valSuffix}`;
+    const gradientDisplayValue = isPureNumeric
+      ? `${animatedNumber.toLocaleString("en-US")}${valSuffix}`
+      : effectiveValue;
 
     return (
       <div
