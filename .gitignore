@@ -55,6 +55,7 @@ agent_skills
 claude.md
 agents.md
 # Screenshots & Visual Audits
+.recordings/
 .screenshots/
 public/audit-screenshots/
 .taste-skill/
