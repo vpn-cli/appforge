@@ -1,9 +1,12 @@
 # AppForge Generation Evaluation Harness Report
 
 **Evaluation Timestamp:** 2026-11-18T00:15:12Z  
-**Current Prompt Version:** `v1.3.0` (bumped from `v1.2.0` in `lib/copilot-prompt.ts`)  
+**Current Prompt Version:** `v1.4.0` (bumped from `v1.3.0` in `lib/copilot-prompt.ts`)  
 **Reproduction Command:** `node scripts/run-evals.mjs`  
 **Resumption Command (for 120b after quota reset):** `node scripts/run-evals.mjs 120b-only`
+
+> [!NOTE]
+> **Schema & Prompt Version Notice (`v1.3.0` → `v1.4.0` & Statistic `valueSuffix` Addition):** `PROMPT_VERSION` bumped to `v1.4.0` following the addition of `valueSuffix` (and `suffix` alias) to `StatisticSchema` in `lib/validation.ts`. This dynamically updates the schema-derived Copilot system prompt specification to declare `valueSuffix?: string`. Evaluation results recorded below predate this prompt version.
 
 > [!NOTE]
 > **Schema & Prompt Version Notice (`v1.2.0` → `v1.3.0` & Strict Validation Defense):** All recorded evaluation results below predate the `PROMPT_VERSION` bump to `v1.3.0`. In `v1.3.0`, component AST validation across all schemas (`HeaderSchema`, `StatisticSchema`, `DataTableSchema`, `CardSchema`, `GridSchema`, `ButtonActionSchema`) and `AppConfigSchema` transitioned to `.strict()`. Unrecognized or extra keys that previously passed through or were ignored now strictly fail validation. Consequently, evaluation pass rates, node validity percentages, and benchmark results recorded prior to `v1.3.0` are not comparable with results produced under this version. No new LLM evals have been run under `v1.3.0`.
