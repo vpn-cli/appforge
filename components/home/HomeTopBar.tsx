@@ -17,7 +17,7 @@ const DynamicSignedInControls = dynamic(
 );
 
 const NAV_SEGMENTS = [
-  { label: "Apps", href: "/dashboard" },
+  { label: "Apps", href: "/apps" },
   { label: "Builder", href: "/builder/demo" },
   { label: "Templates", href: "/templates" },
 ] as const;

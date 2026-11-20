@@ -57,7 +57,7 @@ export function Navbar() {
         {["Apps", "Builder", "Templates"].map((text) => (
           <motion.div key={text} variants={item}>
             <Link 
-              href={text === "Apps" ? "/dashboard" : text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
+              href={text === "Apps" ? "/apps" : text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
               className="relative text-muted-foreground text-sm font-medium hover:text-foreground transition-colors group px-1 py-2"
             >
               {text}
@@ -87,14 +87,14 @@ export function Navbar() {
             <ThemeToggle />
           </motion.div>
           <motion.div variants={item} className="hidden sm:block">
-            <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+            <SignInButton mode="modal" fallbackRedirectUrl="/apps">
               <Button variant="ghost" size="md">
                 Log in
               </Button>
             </SignInButton>
           </motion.div>
           <motion.div variants={item} className="hidden sm:block" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
+            <SignUpButton mode="modal" fallbackRedirectUrl="/apps">
               <Button variant="primary" size="md">
                 Start for free
               </Button>
@@ -127,7 +127,7 @@ export function Navbar() {
               {["Apps", "Builder", "Templates"].map((text) => (
                 <Link 
                   key={text}
-                  href={text === "Apps" ? "/dashboard" : text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
+                  href={text === "Apps" ? "/apps" : text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="text-foreground text-sm font-medium p-3 hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border/50"
                 >
@@ -137,12 +137,12 @@ export function Navbar() {
               
               <SignedOut>
                 <div className="h-[1px] w-full bg-border/50 my-2" />
-                <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+                <SignInButton mode="modal" fallbackRedirectUrl="/apps">
                   <Button variant="secondary" size="md" className="w-full justify-center">
                     Log in
                   </Button>
                 </SignInButton>
-                <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
+                <SignUpButton mode="modal" fallbackRedirectUrl="/apps">
                   <Button variant="primary" size="md" className="w-full justify-center">
                     Start for free
                   </Button>

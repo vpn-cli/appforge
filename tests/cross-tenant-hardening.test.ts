@@ -56,6 +56,7 @@ describe(
       }
 
       try {
+        console.log(`\n[DB Test Suite] Connected to TEST host: ${new URL(testDbUrl).host}\n`);
         // Connect to test Supabase database and create a test app owned by User A
         const supabase = await createInsforgeServer();
         const { data, error } = await supabase

@@ -20,12 +20,12 @@ export function PublicHeader() {
 
       <div className="flex items-center gap-3">
         <ThemeToggle />
-        <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+        <SignInButton mode="modal" fallbackRedirectUrl="/apps">
           <Button variant="ghost" size="md">
             Log in
           </Button>
         </SignInButton>
-        <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
+        <SignUpButton mode="modal" fallbackRedirectUrl="/apps">
           <Button variant="primary" size="md">
             Start for free
           </Button>

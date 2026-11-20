@@ -1,5 +1,6 @@
 "use client";
 
+import { notFound } from "next/navigation";
 import { DataTable } from "@/registry/components/DataTable";
 import { Grid } from "@/registry/components/Grid";
 import { Card } from "@/registry/components/Card";
@@ -20,6 +21,10 @@ const sampleData = [
 ];
 
 export default function TestRenderersPage() {
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground p-8 flex flex-col gap-12 max-w-5xl mx-auto">
       <div>

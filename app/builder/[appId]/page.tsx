@@ -649,8 +649,8 @@ function BuilderContent() {
           <IconButton
             variant="ghost"
             size="sm"
-            render={<Link href="/dashboard" />}
-            aria-label="Back to dashboard"
+            render={<Link href="/apps" />}
+            aria-label="Back to apps"
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />

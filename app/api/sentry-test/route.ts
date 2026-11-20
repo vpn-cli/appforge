@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   try {
     throw new Error("🚀 AppForge Global Error Test [Sentry Observability Pipeline Verified]");
   } catch (err) {
