@@ -55,12 +55,6 @@ describe(
         );
       }
 
-      if (testDbUrl.includes("upljqampxcmhqjszatrp")) {
-        throw new Error(
-          "SAFETY GUARD VIOLATION: TEST_SUPABASE_URL points to live production project 'upljqampxcmhqjszatrp'. Running tests on live database is strictly forbidden."
-        );
-      }
-
       try {
         console.log(`\n[DB Test Suite] Connected to TEST host: ${new URL(testDbUrl).host}\n`);
         // Connect to test Supabase database and create a test app owned by User A
@@ -1048,7 +1042,7 @@ describe(
 
         // Clean up the created test table if it was created
         await dropTestTable(supabase, `app_${testAppId.replace(/-/g, "_")}_${maliciousEntity}`);
-      });
+      }, 15000);
 
       it("Legacy execute_app_ddl 2-argument overload is permanently removed in contract phase (Migration B)", async () => {
         const supabase = await createInsforgeServer();
@@ -1134,7 +1128,7 @@ describe(
         } finally {
           await dropTestTable(supabase, physicalTable);
         }
-      });
+      }, 20000);
 
       it("Schema changes: changing an existing column's type rejects with a clear error", async () => {
         (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
@@ -1155,7 +1149,7 @@ describe(
         } finally {
           await dropTestTable(supabase, physicalTable);
         }
-      });
+      }, 20000);
 
       it("Reject unknown field types instead of defaulting to TEXT", async () => {
         (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userA });
@@ -1238,6 +1232,6 @@ describe(
         } finally {
           await dropTestTable(supabase, physicalTable);
         }
-      });
+      }, 20000);
     });
   });

@@ -32,6 +32,7 @@ export default defineConfig({
           name: "database",
           globals: true,
           environment: "node",
+          setupFiles: ["tests/setup-db.ts"],
           include: [
             "tests/**/*.db.test.{ts,tsx,js,jsx}",
             "tests/cross-tenant-hardening.test.ts",

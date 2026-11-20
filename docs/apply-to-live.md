@@ -74,6 +74,39 @@ npm test
 
 ---
 
+## Step 3B: Audit Live App Configurations Against Strict Schemas
+
+Before running Migration A or touching the live production database, audit all existing application configurations to confirm compatibility with the strict `.strict()` AST schemas:
+
+```bash
+# Run compatibility check against live production database (read-only transaction, 0 writes):
+node scripts/check-live-configs.mjs --live
+```
+
+> [!CAUTION]
+> **If ANY apps are reported as INVALID**:
+> 1. Immediately take a fresh logical backup via Docker `pg_dump` in Windows PowerShell:
+>    ```powershell
+>    # Ensure backups directory exists
+>    New-Item -ItemType Directory -Force -Path "backups" | Out-Null
+>    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+>
+>    # Windows PowerShell Docker pg_dump:
+>    docker run --rm -v "${PWD}/backups:/backups" postgres:16 pg_dump "$env:LIVE_DATABASE_URL" `
+>      --table=apps `
+>      --format=custom `
+>      --no-owner `
+>      --no-privileges `
+>      --file="/backups/live-apps-pre-strip-$timestamp.dump"
+>    ```
+> 2. Run the key stripping migration script in dry-run mode (read-only transaction, 0 writes) to inspect what keys would be stripped:
+>    ```bash
+>    node scripts/migrate-strip-invalid-keys.mjs --live
+>    ```
+> 3. **STOP AND WAIT FOR CONFIRMATION**: Do NOT apply the stripping migration or proceed with Migration A or the merge. Wait for user review and explicit approval before taking any further action.
+
+---
+
 ## Step 3: Apply Migration A to the LIVE Project
 
 ### ⚠️ MANDATORY BACKUP (`pg_dump`) BEFORE MIGRATION A ON LIVE
