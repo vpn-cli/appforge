@@ -2,6 +2,7 @@
 // Acts as a parser for the app config and generates DDL commands for the app
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { authorizeAppAccess } from "@/lib/app-access";
+import { isSandboxAppId } from "@/lib/sandbox";
 
 // Whitelist of valid PostgreSQL column types for runtime entities
 const COLUMN_TYPE_WHITELIST: Record<string, string> = {
@@ -21,6 +22,13 @@ const ENTITY_IDENTIFIER_RE = /^[a-zA-Z0-9_]{1,22}$/;
 const COLUMN_IDENTIFIER_RE = /^[a-zA-Z0-9_]{1,63}$/;
 
 export async function syncAppSchema(appId: string, entities: unknown, userId: string | null) {
+  if (isSandboxAppId(appId)) {
+    return {
+      success: false,
+      message: "Sandbox demo and template schemas cannot be synchronized to the database.",
+    };
+  }
+
   const supabase = await createInsforgeServer();
 
   // If there's no Clerk userId (e.g. guest mode)

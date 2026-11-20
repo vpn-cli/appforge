@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { syncAppSchema } from "@/actions/schema";
 import { normalizeConfigFieldNames } from "@/lib/config-normalizer";
+import { isSandboxAppId } from "@/lib/sandbox";
 
 /**
  * Resolves the authenticated user ID.
@@ -263,6 +264,14 @@ export async function createAppFromTemplate(templateId: string) {
 }
 
 export async function saveAppConfig(appId: string, configStr: string) {
+  if (isSandboxAppId(appId)) {
+    return {
+      success: false,
+      error: "Sandbox demo and template applications cannot be modified in the database.",
+      status: 400,
+    };
+  }
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
@@ -337,6 +346,14 @@ export async function saveAppConfig(appId: string, configStr: string) {
 }
 
 export async function publishAppConfig(appId: string, configStr: string) {
+  if (isSandboxAppId(appId)) {
+    return {
+      success: false,
+      error: "Sandbox demo and template applications cannot be published to the database.",
+      status: 400,
+    };
+  }
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
@@ -396,6 +413,12 @@ export async function publishAppConfig(appId: string, configStr: string) {
 }
 
 export async function deleteApp(appId: string) {
+  if (isSandboxAppId(appId)) {
+    const err = new Error("Sandbox demo and template applications cannot be deleted.");
+    (err as unknown as { status: number }).status = 400;
+    throw err;
+  }
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
@@ -422,6 +445,12 @@ export async function deleteApp(appId: string) {
 }
 
 export async function renameApp(appId: string, newName: string) {
+  if (isSandboxAppId(appId)) {
+    const err = new Error("Sandbox demo and template applications cannot be renamed.");
+    (err as unknown as { status: number }).status = 400;
+    throw err;
+  }
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
@@ -448,7 +477,7 @@ export async function renameApp(appId: string, newName: string) {
 }
 
 export async function getAppConfig(appId: string) {
-  if (appId === "demo" || appId.startsWith("template-") || appId.startsWith("mock-")) return null;
+  if (isSandboxAppId(appId)) return null;
 
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
