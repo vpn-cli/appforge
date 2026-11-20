@@ -463,12 +463,20 @@ describe(
           const pubResult = await publishAppConfig(appId, JSON.stringify(unsavedConfig));
           expect(pubResult.success).toBe(true);
 
-          // 3. Verify physical table was provisioned in Postgres
-          const { data: inserted, error: insertErr } = await supabase
-            .from(projectsTableName)
-            .insert({ title: "Apollo Program", budget: 25000000000 })
-            .select()
-            .single();
+          // 3. Verify physical table was provisioned in Postgres (with schema reload retry)
+          let inserted: any = null;
+          let insertErr: any = null;
+          for (let attempt = 0; attempt < 5; attempt++) {
+            const res = await supabase
+              .from(projectsTableName)
+              .insert({ title: "Apollo Program", budget: 25000000000 })
+              .select()
+              .single();
+            inserted = res.data;
+            insertErr = res.error;
+            if (!insertErr || insertErr.code !== "PGRST205") break;
+            await new Promise((r) => setTimeout(r, 800));
+          }
 
           expect(insertErr).toBeNull();
           expect(inserted?.title).toBe("Apollo Program");
@@ -749,13 +757,18 @@ describe(
           // Act as User B
           (auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: userB });
 
-          // 1. User B POST row to B's own app
-          const postReq = new Request(`http://localhost:3000/api/proxy/${userBAppId}/items`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: "User B Private Item" }),
-          });
-          const postRes = await POST(postReq, { params: Promise.resolve({ appId: userBAppId, entity: "items" }) });
+          // 1. User B POST row to B's own app (with schema reload retry)
+          let postRes: any;
+          for (let attempt = 0; attempt < 5; attempt++) {
+            const postReq = new Request(`http://localhost:3000/api/proxy/${userBAppId}/items`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: "User B Private Item" }),
+            });
+            postRes = await POST(postReq, { params: Promise.resolve({ appId: userBAppId, entity: "items" }) });
+            if (postRes.status === 201) break;
+            await new Promise((r) => setTimeout(r, 800));
+          }
           expect(postRes.status).toBe(201);
           const createdRow = await postRes.json();
           expect(createdRow.name).toBe("User B Private Item");
