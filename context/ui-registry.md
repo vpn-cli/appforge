@@ -272,3 +272,19 @@ Copilot Floating Pill (components/builder/CopilotFloatingPill.tsx):
     Surface: bg-white/96 dark:bg-[#121218]/96 backdrop-blur-2xl (>=92% opaque smoked glass)
     Dismissal: Esc key, click outside, collapse chevron button, or ⌘K shortcut
 ```
+
+### Background Candidates Suite (`/dev/backgrounds`)
+```text
+Candidate Frame:
+  Dimensions: 1440x900 full desktop viewport with real HomeHero and DemoRow overlay
+  Controls: Sticky header with light/dark toggle and quick anchor jump links
+  Header: w-full max-w-[1440px] px-6 py-4 flex items-center justify-between border-b border-border bg-card/60 backdrop-blur-md rounded-t-2xl
+  Underlay:
+    Candidate A: @paper-design/shaders-react MeshGradient (distortion 0.65, swirl 0.4, 12s cycle, brand-200/400/#8FB4FF on light, brand-900/600/#2A3A8A on ink-950)
+    Candidate B: 21st.dev Canvas Aurora (4 drifting multi-color blobs, 2D canvas blur 40px, adapted to AppForge tokens)
+    Candidate C: ReactBits Iridescence (OGL micro-engine with simplex noise wave shader, DPR <= 1.5)
+    Candidate D: Looping 3D Glass Ribbon Video (VP9 WebM 1.2MB + H.264 MP4 485KB under 2MB with still poster fallback)
+  Telemetry Bar:
+    Container: w-full max-w-[1440px] px-6 py-5 bg-card border-x border-b border-border rounded-b-2xl shadow-sm
+    Metrics: Gzipped JS/asset size, Average FPS over 10s (measured via rAF timestamp delta), Main-thread ms/s (measured), and Hero text area contrast (> 4.5:1 AA check)
+```
