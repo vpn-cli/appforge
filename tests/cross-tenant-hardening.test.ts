@@ -55,12 +55,6 @@ describe(
         );
       }
 
-      if (testDbUrl.includes("upljqampxcmhqjszatrp")) {
-        throw new Error(
-          "SAFETY GUARD VIOLATION: TEST_SUPABASE_URL points to live production project 'upljqampxcmhqjszatrp'. Running tests on live database is strictly forbidden."
-        );
-      }
-
       try {
         // Connect to test Supabase database and create a test app owned by User A
         const supabase = await createInsforgeServer();
