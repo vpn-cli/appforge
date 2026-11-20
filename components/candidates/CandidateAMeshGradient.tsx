@@ -33,10 +33,10 @@ class ShaderErrorBoundary extends Component<ErrorBoundaryProps, { hasError: bool
   }
 }
 
-// Candidate A palettes strictly adhering to user instructions:
-// Light: brand-200/brand-400/#8FB4FF on the light canvas
-// Dark: brand-900/brand-600/#2A3A8A on ink-950
-const LIGHT_COLORS = ["#C7D2FE", "#818CF8", "#8FB4FF", "#EEF2FF"];
+// Candidate A tuned palette:
+// Light: ultra-light, low-saturation pastel tints with high base luminance
+// Dark: brand-900 / ink-950 depth
+const LIGHT_COLORS = ["#F8F9FE", "#E4EBFF", "#EDF2FE", "#FFFFFF"];
 const DARK_COLORS = ["#1E1B4B", "#4F46E5", "#2A3A8A", "#0B0B10"];
 
 export function CandidateAMeshGradient({ isDark = false, isPaused = false }: Props) {
@@ -107,7 +107,16 @@ export function CandidateAMeshGradient({ isDark = false, isPaused = false }: Pro
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full relative overflow-hidden pointer-events-none">
+    <div
+      ref={containerRef}
+      className="w-full h-full relative overflow-hidden pointer-events-none opacity-60 dark:opacity-90 transition-opacity"
+      style={{
+        maskImage:
+          "radial-gradient(ellipse 520px 240px at 50% 240px, transparent 0%, rgba(0,0,0,0.08) 45%, rgba(0,0,0,0.65) 75%, black 100%)",
+        WebkitMaskImage:
+          "radial-gradient(ellipse 520px 240px at 50% 240px, transparent 0%, rgba(0,0,0,0.08) 45%, rgba(0,0,0,0.65) 75%, black 100%)",
+      }}
+    >
       {pixelConfig && (
         <ShaderErrorBoundary onError={() => setHasError(true)}>
           <MeshGradient

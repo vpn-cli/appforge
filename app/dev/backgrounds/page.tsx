@@ -64,6 +64,8 @@ export default function DevBackgroundsPage() {
 
             {/* Theme Toggle */}
             <button
+              id="theme-toggle-btn"
+              data-is-dark={isDark ? "true" : "false"}
               onClick={() => setTheme(isDark ? "light" : "dark")}
               className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-xl border border-border bg-card hover:bg-muted text-foreground transition-all shadow-sm"
               title="Toggle theme"

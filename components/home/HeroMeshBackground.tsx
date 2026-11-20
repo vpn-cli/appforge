@@ -156,7 +156,15 @@ export function HeroMeshBackground() {
 
       {/* Dynamically imported WebGL mesh gradient compiled in requestIdleCallback on desktop */}
       {shouldRenderShader && (
-        <div className="absolute inset-0 transition-opacity duration-500 opacity-100">
+        <div
+          className="absolute inset-0 transition-opacity duration-500 opacity-60 dark:opacity-90"
+          style={{
+            maskImage:
+              "radial-gradient(ellipse 520px 240px at 50% 240px, transparent 0%, rgba(0,0,0,0.08) 45%, rgba(0,0,0,0.65) 75%, black 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 520px 240px at 50% 240px, transparent 0%, rgba(0,0,0,0.08) 45%, rgba(0,0,0,0.65) 75%, black 100%)",
+          }}
+        >
           <DynamicHeroMeshShader
             themeKey={resolvedTheme || "dark"}
             isPaused={isPaused}
