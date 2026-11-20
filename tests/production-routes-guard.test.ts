@@ -6,10 +6,16 @@ vi.mock("@sentry/nextjs", () => ({
   flush: vi.fn().mockResolvedValue(true),
 }));
 
+// Mock Clerk auth for logged-out route testing
+vi.mock("@clerk/nextjs/server", () => ({
+  auth: vi.fn().mockResolvedValue({ userId: null }),
+}));
+
 import { GET as sentryTestGet } from "@/app/api/sentry-test/route";
 import DevRenderersPage from "@/app/dev/renderers/page";
 import TestRenderersPage from "@/app/test-renderers/page";
 import DashboardPage from "@/app/dashboard/page";
+import AppsPage from "@/app/apps/page";
 
 describe("Production Route Guards & Redirects", () => {
   const originalNodeEnv = process.env.NODE_ENV;
@@ -79,6 +85,20 @@ describe("Production Route Guards & Redirects", () => {
         const error = err as { message?: string; digest?: string };
         expect(error.message).toBe("NEXT_REDIRECT");
         expect(error.digest).toContain("/apps");
+      }
+    });
+  });
+
+  describe("/apps Route Auth Guard", () => {
+    it("/apps redirects to /sign-in when there is no userId in production", async () => {
+      (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+      try {
+        await AppsPage();
+        expect.unreachable("AppsPage should have redirected");
+      } catch (err: unknown) {
+        const error = err as { message?: string; digest?: string };
+        expect(error.message).toBe("NEXT_REDIRECT");
+        expect(error.digest).toContain("/sign-in");
       }
     });
   });
