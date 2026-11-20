@@ -316,4 +316,61 @@ describe("PART 3 — Honest Hero Config", () => {
     expect(html).toContain("1,244");
     expect(html).not.toMatch(/>\s*0\s*<\/div>/);
   });
+
+  it("every key rendered on the right in preview config appears in the config shown on the left", () => {
+    // Extract every property key recursively from preview components
+    function extractKeys(item: unknown): Set<string> {
+      const keys = new Set<string>();
+      function walk(node: unknown) {
+        if (!node || typeof node !== "object") return;
+        if (Array.isArray(node)) {
+          for (const el of node) walk(el);
+        } else {
+          for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+            keys.add(k);
+            walk(v);
+          }
+        }
+      }
+      walk(item);
+      return keys;
+    }
+
+    const previewComponents = HERO_DEMO_CONFIG.pages[0].components;
+    const rightKeys = extractKeys(previewComponents);
+
+    // Verify right keys include all expected structural fields
+    expect(rightKeys).toContain("type");
+    expect(rightKeys).toContain("label");
+    expect(rightKeys).toContain("value");
+    expect(rightKeys).toContain("variant");
+    expect(rightKeys).toContain("trend");
+    expect(rightKeys).toContain("series");
+    expect(rightKeys).toContain("entity");
+    expect(rightKeys).toContain("columns");
+    expect(rightKeys).toContain("data");
+    expect(rightKeys).toContain("workflow");
+    expect(rightKeys).toContain("trigger");
+    expect(rightKeys).toContain("status");
+    expect(rightKeys).toContain("icon");
+
+    // Render left panel to string
+    const leftHtml = renderToString(<DemoCodeCard />);
+
+    // Verify every key rendered on the right appears in the config shown on the left
+    for (const key of rightKeys) {
+      const matchesQuote = leftHtml.includes(`"${key}"`) || leftHtml.includes(`&quot;${key}&quot;`);
+      expect(
+        matchesQuote,
+        `Key "${key}" rendered on the right preview was missing from the left code panel`
+      ).toBe(true);
+    }
+  });
+
+  it("shows series array with fold marker [7 values] ▸ when collapsed", () => {
+    const leftHtml = renderToString(<DemoCodeCard />);
+    expect(leftHtml).toContain("[7 values] ▸");
+    expect(leftHtml.includes(`"series"`) || leftHtml.includes(`&quot;series&quot;`)).toBe(true);
+    expect(leftHtml.includes(`"trend"`) || leftHtml.includes(`&quot;trend&quot;`)).toBe(true);
+  });
 });

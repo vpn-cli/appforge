@@ -15,7 +15,9 @@ const TOKEN_CLASSES: Record<JsonToken["kind"], string> = {
   punct: "token-punct",
   bracket: "token-bracket font-medium",
   bool: "token-bool font-medium",
+  number: "token-num font-medium",
   plain: "",
+  fold: "token-fold font-medium cursor-pointer select-none",
 };
 
 type DemoCodeCardProps = {
@@ -34,7 +36,9 @@ export function DemoCodeCard({
   showCursor = false,
 }: DemoCodeCardProps = {}) {
   const [copied, setCopied] = useState(false);
-  const lines = buildHeroJsonLines(metricDisplayValue, variantDisplay);
+  const [seriesExpanded, setSeriesExpanded] = useState(false);
+
+  const lines = buildHeroJsonLines(metricDisplayValue, variantDisplay, { seriesExpanded });
 
   const handleCopy = async () => {
     try {
@@ -80,10 +84,10 @@ export function DemoCodeCard({
         </Button>
       </div>
 
-      {/* Code Body — wraps cleanly with zero horizontal scroll and fits content */}
+      {/* Code Body — scrollable honest JSON showing complete AST matching right-hand preview */}
       <div
         data-testid="code-panel-body"
-        className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col overflow-x-hidden"
+        className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col overflow-y-auto max-h-[340px] scrollbar-thin pr-1"
       >
         <div className="w-full flex flex-col">
           {lines.map((tokens, lineIdx) => {
@@ -104,11 +108,28 @@ export function DemoCodeCard({
                   {lineIdx + 1}
                 </span>
                 <code className="whitespace-pre-wrap break-words min-w-0 flex-1">
-                  {tokens.map((tok, tokIdx) => (
-                    <span key={tokIdx} className={TOKEN_CLASSES[tok.kind]}>
-                      {tok.text}
-                    </span>
-                  ))}
+                  {tokens.map((tok, tokIdx) => {
+                    if (tok.kind === "fold") {
+                      return (
+                        <button
+                          key={tokIdx}
+                          type="button"
+                          onClick={() => setSeriesExpanded((prev) => !prev)}
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/70 transition-colors cursor-pointer select-none"
+                          title={seriesExpanded ? "Collapse series array" : "Expand series array"}
+                          aria-expanded={seriesExpanded}
+                        >
+                          {tok.text}
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <span key={tokIdx} className={TOKEN_CLASSES[tok.kind]}>
+                        {tok.text}
+                      </span>
+                    );
+                  })}
                   {isVariantLine && showCursor && (
                     <span
                       aria-hidden="true"

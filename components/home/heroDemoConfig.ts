@@ -63,15 +63,21 @@ export function buildHeroDemoConfig({
 export const HERO_DEMO_CONFIG = buildHeroDemoConfig();
 
 export type JsonToken = {
-  kind: "bracket" | "key" | "string" | "punct" | "bool" | "plain";
+  kind: "bracket" | "key" | "string" | "punct" | "bool" | "number" | "plain" | "fold";
   text: string;
+  foldKey?: string;
 };
 
 export function buildHeroJsonLines(
   metricDisplayValue: string = "1,244",
-  variantDisplay: string = '"gradient"'
+  variantDisplay: string = '"gradient"',
+  options: {
+    seriesExpanded?: boolean;
+  } = {}
 ): readonly (readonly JsonToken[])[] {
-  return [
+  const isSeriesExpanded = options.seriesExpanded ?? false;
+
+  const lines: (readonly JsonToken[])[] = [
     [{ kind: "bracket", text: "{" }],
     [
       { kind: "plain", text: "  " },
@@ -90,6 +96,7 @@ export function buildHeroJsonLines(
       { kind: "punct", text: ": " },
       { kind: "bracket", text: "[" },
     ],
+    // Component 1: Statistic
     [
       { kind: "plain", text: "    " },
       { kind: "bracket", text: "{" },
@@ -120,11 +127,61 @@ export function buildHeroJsonLines(
       { kind: "key", text: '"variant"' },
       { kind: "punct", text: ": " },
       { kind: "string", text: variantDisplay },
+      { kind: "punct", text: "," },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "key", text: '"trend"' },
+      { kind: "punct", text: ": " },
+      { kind: "bracket", text: "{" },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "key", text: '"value"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"+12%"' },
+      { kind: "punct", text: "," },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "key", text: '"sentiment"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"positive"' },
+      { kind: "punct", text: "," },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "key", text: '"direction"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"up"' },
+      { kind: "punct", text: "," },
+    ],
+    // series array with fold marker
+    isSeriesExpanded
+      ? [
+          { kind: "plain", text: "        " },
+          { kind: "key", text: '"series"' },
+          { kind: "punct", text: ": " },
+          { kind: "bracket", text: "[" },
+          { kind: "fold", text: "▾", foldKey: "series" },
+          { kind: "plain", text: " 50, 52, 51, 54, 53, 55, 56 " },
+          { kind: "bracket", text: "]" },
+        ]
+      : [
+          { kind: "plain", text: "        " },
+          { kind: "key", text: '"series"' },
+          { kind: "punct", text: ": " },
+          { kind: "fold", text: "[7 values] ▸", foldKey: "series" },
+        ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "bracket", text: "}" },
     ],
     [
       { kind: "plain", text: "    " },
       { kind: "bracket", text: "}," },
     ],
+    // Component 2: DataTable
     [
       { kind: "plain", text: "    " },
       { kind: "bracket", text: "{" },
@@ -141,6 +198,135 @@ export function buildHeroJsonLines(
       { kind: "key", text: '"entity"' },
       { kind: "punct", text: ": " },
       { kind: "string", text: '"workflows"' },
+      { kind: "punct", text: "," },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "key", text: '"columns"' },
+      { kind: "punct", text: ": " },
+      { kind: "bracket", text: "[" },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "bracket", text: "{" },
+      { kind: "key", text: '"key"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"workflow"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"label"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"WORKFLOW"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"type"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"avatar"' },
+      { kind: "bracket", text: "}," },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "bracket", text: "{" },
+      { kind: "key", text: '"key"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"trigger"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"label"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"TRIGGER"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"type"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"code"' },
+      { kind: "bracket", text: "}," },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "bracket", text: "{" },
+      { kind: "key", text: '"key"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"status"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"label"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"STATUS"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"type"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"badge"' },
+      { kind: "bracket", text: "}" },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "bracket", text: "]," },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "key", text: '"data"' },
+      { kind: "punct", text: ": " },
+      { kind: "bracket", text: "[" },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "bracket", text: "{" },
+      { kind: "key", text: '"workflow"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"User Sync"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"trigger"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"cron:hourly"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"status"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"Running"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"icon"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"users"' },
+      { kind: "bracket", text: "}," },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "bracket", text: "{" },
+      { kind: "key", text: '"workflow"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"Invoice Gen"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"trigger"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"webhook:rx"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"status"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"Idle"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"icon"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"file-text"' },
+      { kind: "bracket", text: "}," },
+    ],
+    [
+      { kind: "plain", text: "        " },
+      { kind: "bracket", text: "{" },
+      { kind: "key", text: '"workflow"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"Slack Alerts"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"trigger"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"event:alert"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"status"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"Running"' },
+      { kind: "punct", text: ", " },
+      { kind: "key", text: '"icon"' },
+      { kind: "punct", text: ": " },
+      { kind: "string", text: '"bell"' },
+      { kind: "bracket", text: "}" },
+    ],
+    [
+      { kind: "plain", text: "      " },
+      { kind: "bracket", text: "]" },
     ],
     [
       { kind: "plain", text: "    " },
@@ -152,13 +338,13 @@ export function buildHeroJsonLines(
     ],
     [{ kind: "bracket", text: "}" }],
   ];
+
+  return lines;
 }
 
 export const HERO_DEMO_JSON_LINES = buildHeroJsonLines("1,244", '"gradient"');
 
-export const HERO_DEMO_RAW_JSON = HERO_DEMO_JSON_LINES.map((line) =>
-  line.map((t) => t.text).join("")
-).join("\n");
+export const HERO_DEMO_RAW_JSON = JSON.stringify(HERO_DEMO_CONFIG, null, 2);
 
 export type HeroScriptedPhase = "initial" | "editing" | "applied";
 
