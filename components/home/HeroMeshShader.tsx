@@ -4,15 +4,21 @@ import { Component, type ReactNode, useEffect, useRef, useState } from "react";
 import { MeshGradient } from "@paper-design/shaders-react";
 import type { PaperShaderElement } from "@paper-design/shaders";
 
-const MAX_DPR = 1.5;
-const TARGET_FPS = 30;
-const FRAME_INTERVAL_MS = 1000 / TARGET_FPS;
-const DRIFT_SPEED = 0.22;
 const MESH_TOKENS = ["--mesh-c1", "--mesh-c2", "--mesh-c3", "--mesh-c4"] as const;
+
+// Default tuned parameters: calm drifting motion with noticeable changes every 2-3s
+export const MESH_PARAMS = {
+  distortion: 0.8,
+  swirl: 0.5,
+  speed: 0.25,
+  minPixelRatio: 1,
+  maxPixelCount: 1500000,
+} as const;
 
 type Props = {
   themeKey: string;
   isPaused: boolean;
+  prefersReducedMotion: boolean;
   onFallback: () => void;
 };
 
@@ -45,35 +51,30 @@ class ShaderErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
 function readPaletteFromTokens(): string[] {
   if (typeof window === "undefined") return [];
   const styles = getComputedStyle(document.documentElement);
-  return MESH_TOKENS.map((token) => styles.getPropertyValue(token).trim()).filter(Boolean);
+  const colors = MESH_TOKENS.map((token) => styles.getPropertyValue(token).trim()).filter(Boolean);
+  return colors;
 }
 
-function computePixelConfig(width: number, height: number): {
-  dpr: number;
-  maxPixelCount: number;
-} {
-  const rawDpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
-  const dpr = Math.min(Math.max(1, rawDpr), MAX_DPR);
-  const w = Math.max(1, Math.round(width));
-  const h = Math.max(1, Math.round(height));
-  return {
-    dpr: 1,
-    maxPixelCount: Math.max(1, Math.floor(w * h * dpr * dpr)),
-  };
-}
-
-export function HeroMeshShader({ themeKey, isPaused, onFallback }: Props) {
+export function HeroMeshShader({
+  themeKey,
+  isPaused,
+  prefersReducedMotion,
+  onFallback,
+}: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const shaderElRef = useRef<PaperShaderElement | null>(null);
-  const frameMsRef = useRef<number>(0);
 
-  const [colors, setColors] = useState<string[]>(() => readPaletteFromTokens());
-  const [pixelConfig, setPixelConfig] = useState<{
-    dpr: number;
-    maxPixelCount: number;
-  } | null>(null);
+  const [colors, setColors] = useState<string[]>(() => {
+    const initial = readPaletteFromTokens();
+    if (initial.length >= 4) return initial;
+    // Default fallback tokens if CSS custom properties not yet computed
+    return themeKey === "dark"
+      ? ["#0B0B12", "#3E2F9A", "#6D5BF0", "#2A3A8A"]
+      : ["#F2F1F9", "#CFCBFE", "#ADA6FC", "#C9D8FF"];
+  });
 
-  // Sync shader colors from CSS custom properties whenever the active theme or <html> class changes
+  // Sync shader colors from CSS tokens whenever active theme or <html> class toggles.
+  // Updates uniforms without remounting the canvas or recompiling the shader program.
   useEffect(() => {
     const syncColors = () => {
       const next = readPaletteFromTokens();
@@ -84,36 +85,16 @@ export function HeroMeshShader({ themeKey, isPaused, onFallback }: Props) {
       }
     };
 
+    syncColors();
     const raf = requestAnimationFrame(syncColors);
     const mo = new MutationObserver(syncColors);
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
 
     return () => {
       cancelAnimationFrame(raf);
       mo.disconnect();
     };
   }, [themeKey]);
-
-  // Measure actual hero bounds once before mounting WebGL so ShaderMount initializes at exact capped DPR <= 1.5
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const updatePixelBudget = () => {
-      const rect = el.getBoundingClientRect();
-      if (rect.width <= 0 || rect.height <= 0) return;
-      const next = computePixelConfig(rect.width, rect.height);
-      setPixelConfig((prev) =>
-        prev && prev.dpr === next.dpr && prev.maxPixelCount === next.maxPixelCount ? prev : next
-      );
-    };
-
-    updatePixelBudget();
-    if (typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(updatePixelBudget);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
 
   // Listen for WebGL context loss and degrade gracefully to CSS fallback
   useEffect(() => {
@@ -129,56 +110,35 @@ export function HeroMeshShader({ themeKey, isPaused, onFallback }: Props) {
 
     canvas.addEventListener("webglcontextlost", handleContextLost);
     return () => canvas.removeEventListener("webglcontextlost", handleContextLost);
-  }, [onFallback, pixelConfig]);
+  }, [onFallback]);
 
-  // Drive shader animation at ~30fps only while active (unpaused); 0 rAF when paused
-  useEffect(() => {
-    if (isPaused || !pixelConfig) return;
-
-    let rafId = 0;
-    let lastDrawTime = performance.now();
-
-    const tick = (now: number) => {
-      const elapsed = now - lastDrawTime;
-      if (elapsed >= FRAME_INTERVAL_MS) {
-        lastDrawTime = now - (elapsed % FRAME_INTERVAL_MS);
-        frameMsRef.current += Math.min(elapsed, 100) * DRIFT_SPEED;
-        shaderElRef.current?.paperShaderMount?.setFrame(frameMsRef.current);
-      }
-      rafId = requestAnimationFrame(tick);
-    };
-
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
-  }, [isPaused, pixelConfig]);
+  // Speed is 0 when paused or when prefers-reduced-motion is requested (rendering static frame)
+  const activeSpeed = isPaused || prefersReducedMotion ? 0 : MESH_PARAMS.speed;
 
   return (
-    <div ref={containerRef} className="w-full h-full">
-      {pixelConfig && colors.length >= 2 && (
-        <ShaderErrorBoundary onError={onFallback}>
-          <MeshGradient
-            ref={shaderElRef}
-            colors={colors}
-            speed={0}
-            frame={0}
-            distortion={0.45}
-            swirl={0.18}
-            grainMixer={0}
-            grainOverlay={0}
-            minPixelRatio={pixelConfig.dpr}
-            maxPixelCount={pixelConfig.maxPixelCount}
-            webGlContextAttributes={{
-              powerPreference: "low-power",
-              failIfMajorPerformanceCaveat: true,
-              antialias: false,
-              depth: false,
-              stencil: false,
-              preserveDrawingBuffer: false,
-            }}
-            className="w-full h-full block"
-          />
-        </ShaderErrorBoundary>
-      )}
+    <div ref={containerRef} className="w-full h-full relative">
+      <ShaderErrorBoundary onError={onFallback}>
+        <MeshGradient
+          ref={shaderElRef}
+          colors={colors}
+          speed={activeSpeed}
+          frame={0}
+          distortion={MESH_PARAMS.distortion}
+          swirl={MESH_PARAMS.swirl}
+          grainMixer={0}
+          grainOverlay={0}
+          minPixelRatio={MESH_PARAMS.minPixelRatio}
+          maxPixelCount={MESH_PARAMS.maxPixelCount}
+          webGlContextAttributes={{
+            powerPreference: "high-performance",
+            antialias: false,
+            depth: false,
+            stencil: false,
+            preserveDrawingBuffer: false,
+          }}
+          className="w-full h-full block"
+        />
+      </ShaderErrorBoundary>
     </div>
   );
 }

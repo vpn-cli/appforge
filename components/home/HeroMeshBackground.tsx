@@ -43,7 +43,7 @@ export function HeroMeshBackground() {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  // Track mobile vs desktop viewport/input capability: CSS gradient ONLY on mobile
+  // Track mobile vs desktop viewport/input capability: Mobile gets pure CSS radial-gradient
   useEffect(() => {
     if (typeof window === "undefined") return;
     const updateDeviceType = () => {
@@ -54,10 +54,10 @@ export function HeroMeshBackground() {
     return () => window.removeEventListener("resize", updateDeviceType);
   }, []);
 
-  // On desktop: WebGL compiles strictly in requestIdleCallback without any interaction triggers.
-  // On mobile: CSS gradient only (shader never enabled).
+  // Desktop guardrail: Mount WebGL strictly after first paint via requestIdleCallback
+  // Mobile guardrail: Zero WebGL (stays on static CSS fallback)
   useEffect(() => {
-    if (prefersReducedMotion || shaderFailed || isMobile) {
+    if (shaderFailed || isMobile) {
       if (isMobile && shaderEnabled) {
         setShaderEnabled(false);
       }
@@ -102,9 +102,9 @@ export function HeroMeshBackground() {
         window.clearTimeout(timerId);
       }
     };
-  }, [prefersReducedMotion, shaderFailed, isMobile, shaderEnabled]);
+  }, [shaderFailed, isMobile, shaderEnabled]);
 
-  // Pause when document.hidden
+  // Pause when document is hidden (tab switch or minimized)
   useEffect(() => {
     const handleVisibility = () => {
       setIsDocumentHidden(document.hidden);
@@ -114,7 +114,7 @@ export function HeroMeshBackground() {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
-  // Pause when hero leaves viewport (IntersectionObserver)
+  // Pause when hero is off-screen (IntersectionObserver)
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
@@ -135,13 +135,17 @@ export function HeroMeshBackground() {
     setShaderEnabled(false);
   }, []);
 
-  const shouldRenderShader = shaderEnabled && !shaderFailed && !prefersReducedMotion && !isMobile;
-  const isPaused = isDocumentHidden || !isVisibleInViewport || prefersReducedMotion;
+  // Desktop mounts WebGL; on mobile or failure, stays on CSS fallback.
+  // When prefers-reduced-motion is true on desktop, shader runs with speed 0 (static frame).
+  const shouldRenderShader = shaderEnabled && !shaderFailed && !isMobile;
+  const isPaused = isDocumentHidden || !isVisibleInViewport;
   const shaderState = !shouldRenderShader
     ? "fallback"
     : isPaused
       ? "paused"
-      : "running";
+      : prefersReducedMotion
+        ? "reduced-motion"
+        : "running";
 
   return (
     <div
@@ -151,23 +155,16 @@ export function HeroMeshBackground() {
       data-shader-state={shaderState}
       className="pointer-events-none absolute inset-0 overflow-hidden z-0 select-none hero-mesh-mask"
     >
-      {/* Immediate static CSS mesh-gradient fallback (mobile, first paint, reduced-motion, no-WebGL) */}
+      {/* Immediate static CSS radial-gradient version in the same palette (mobile, first paint, fallback) */}
       <div className="absolute inset-0 hero-mesh-fallback" />
 
-      {/* Dynamically imported WebGL mesh gradient compiled in requestIdleCallback on desktop */}
+      {/* Desktop WebGL MeshGradient mounted in requestIdleCallback without remounting on theme switch */}
       {shouldRenderShader && (
-        <div
-          className="absolute inset-0 transition-opacity duration-500 opacity-60 dark:opacity-90"
-          style={{
-            maskImage:
-              "radial-gradient(ellipse 520px 240px at 50% 240px, transparent 0%, rgba(0,0,0,0.08) 45%, rgba(0,0,0,0.65) 75%, black 100%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 520px 240px at 50% 240px, transparent 0%, rgba(0,0,0,0.08) 45%, rgba(0,0,0,0.65) 75%, black 100%)",
-          }}
-        >
+        <div className="absolute inset-0 transition-opacity duration-700 opacity-90 dark:opacity-95">
           <DynamicHeroMeshShader
             themeKey={resolvedTheme || "dark"}
             isPaused={isPaused}
+            prefersReducedMotion={prefersReducedMotion}
             onFallback={handleFallback}
           />
         </div>
