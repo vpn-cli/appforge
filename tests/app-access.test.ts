@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { authorizeAppAccess } from "@/lib/app-access";
-import { GET, getClientIp } from "@/app/api/proxy/[appId]/[entity]/route";
+import { GET } from "@/app/api/proxy/[appId]/[entity]/route";
+import { getClientIp } from "@/lib/proxy-helpers";
 
 // Mock Clerk auth
 vi.mock("@clerk/nextjs/server", () => ({
