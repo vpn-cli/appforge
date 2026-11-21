@@ -1,8 +1,10 @@
 # Production Smoke Test Checklist
 
-Post-deployment verification protocol for AppForge production releases. Execute this checklist in a browser immediately following code deployment and before applying contract migrations.
+Post-deployment verification protocol for AppForge production releases. Execute this checklist in a browser immediately following code deployment and table repair, and **strictly before** applying contract migrations (Migration B).
 
-Published App Smoke-Test URL: [TODO]
+Published App Smoke-Test URLs (Live Published Apps):
+- **fisrt**: `/apps/6b0e3994-e4c4-4c0a-a8c5-5b705e0885aa`
+- **Analytics CRM**: `/apps/df557309-95e1-4b71-be92-759bf3ff33fc`
 
 ---
 
@@ -15,7 +17,17 @@ Published App Smoke-Test URL: [TODO]
 
 ---
 
-## Core Application & Database Integration Checklist
+## Existing Published Apps Verification
+
+- [ ] **Existing Published Apps Render (fisrt & Analytics CRM)**:
+  - In an Incognito / Private browsing window (signed out), navigate to each of the two pre-existing live published applications:
+    - [ ] **fisrt**: `/apps/6b0e3994-e4c4-4c0a-a8c5-5b705e0885aa`
+    - [ ] **Analytics CRM**: `/apps/df557309-95e1-4b71-be92-759bf3ff33fc`
+  - Expected after repair: both render logged-out with **EMPTY tables and no error boxes** (verified Nov 21 fact: LIVE had 0 per-app data tables before; `repair-missing-tables` provisioned the empty physical tables so proxy returns 200 with `[]` rather than throwing 503 error boxes).
+
+---
+
+## Core Application & Database Integration Checklist (New App Lifecycle)
 
 Follow these steps directly in the production web interface (do NOT run direct database queries):
 
@@ -42,7 +54,7 @@ Follow these steps directly in the production web interface (do NOT run direct d
   - Open a new Incognito / Private browsing window (ensuring you are completely signed out).
   - Navigate to the published app URL.
   - Verify the application renders cleanly in the standalone `AppShell` with zero 401, 404, or 500 errors.
-  - Verify that the persisted record inserted in Step 3 is rendered in the public view.
+  - Verify that the **logged-out view shows DATA rows** (persisted record inserted in Step 3 is rendered; this requirement to show populated data rows applies to the NEW app created, filled, and published during this smoke test).
 
 ---
 
@@ -54,6 +66,21 @@ Follow these steps directly in the production web interface (do NOT run direct d
   - [ ] `/api/sentry-test` → Returns 404
   - [ ] `/dev/renderers` → Returns 404
   - [ ] `/test-renderers` → Returns 404
+- [ ] **Anonymous PostgREST Lockdown**: Execute anon curl probe against `/rest/v1/apps`:
+  ```bash
+  curl -s -i -H "apikey: $NEXT_PUBLIC_INSFORGE_ANON_KEY" -H "Authorization: Bearer $NEXT_PUBLIC_INSFORGE_ANON_KEY" "$NEXT_PUBLIC_INSFORGE_URL/rest/v1/apps"
+  ```
+  Confirm request returns permission error (401 / 403 / 42501).
+
+---
+
+## Rollback Procedure (If Smoke Test Fails)
+
+- [ ] **Rollback Rule**: If any check in this smoke test fails:
+  1. **STOP IMMEDIATELY before applying Migration B**.
+  2. Execute **Vercel Instant Rollback** in the Vercel dashboard to revert to the previous working deployment.
+  3. *(Note: The repaired empty tables in Postgres are completely harmless to the old code).*
+  4. Do NOT apply Migration B until issues are resolved.
 
 ---
 
