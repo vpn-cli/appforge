@@ -24,6 +24,11 @@ const eslintConfig = defineConfig([
     ".agent/**",
     "scripts/**",
     "infrasity_ref/**",
+    ".recordings/**",
+    ".screenshots/**",
+    "public/audit-screenshots/**",
+    ".taste-skill/**",
+    "backups/**",
   ]),
 ]);
 

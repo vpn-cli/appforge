@@ -328,18 +328,12 @@ Copilot Floating Pill (components/builder/CopilotFloatingPill.tsx):
     Dismissal: Esc key, click outside, collapse chevron button, or ⌘K shortcut
 ```
 
-### Background Candidates Suite (`/dev/backgrounds`)
+### Shipped Hero Background (`HeroMeshBackground`)
 ```text
-Candidate Frame:
-  Dimensions: 1440x900 full desktop viewport with real HomeHero and DemoRow overlay
-  Controls: Sticky header with light/dark toggle and quick anchor jump links
-  Header: w-full max-w-[1440px] px-6 py-4 flex items-center justify-between border-b border-border bg-card/60 backdrop-blur-md rounded-t-2xl
-  Underlay:
-    Candidate A: @paper-design/shaders-react MeshGradient (distortion 0.65, swirl 0.4, 12s cycle, brand-200/400/#8FB4FF on light, brand-900/600/#2A3A8A on ink-950)
-    Candidate B: 21st.dev Canvas Aurora (4 drifting multi-color blobs, 2D canvas blur 40px, adapted to AppForge tokens)
-    Candidate C: ReactBits Iridescence (OGL micro-engine with simplex noise wave shader, DPR <= 1.5)
-    Candidate D: Looping 3D Glass Ribbon Video (VP9 WebM 1.2MB + H.264 MP4 485KB under 2MB with still poster fallback)
-  Telemetry Bar:
-    Container: w-full max-w-[1440px] px-6 py-5 bg-card border-x border-b border-border rounded-b-2xl shadow-sm
-    Metrics: Gzipped JS/asset size, Average FPS over 10s (measured via rAF timestamp delta), Main-thread ms/s (measured), and Hero text area contrast (> 4.5:1 AA check)
+Underlay:
+  Engine: @paper-design/shaders-react MeshGradient (v0.0.82)
+  Parameters: distortion 0.95, swirl 0.85, speed 1.4, scale 1.25, rotation 15, DPR <= 1.5
+  Theme Sync: Synchronized via CSS variables and DOM MutationObserver without canvas remount
+  Performance: Desktop requestIdleCallback compilation; zero WebGL on mobile/coarse pointers (pure CSS radial fallback); auto-pause on hidden tab and off-screen
+  Contrast: WCAG 2.2 AA compliant with radial scrim overlay (5.81:1 in dark mode, 4.63:1 in light mode)
 ```
