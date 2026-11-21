@@ -7,6 +7,7 @@ const withAnalyzer = withBundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   devIndicators: {
     position: "bottom-right",
   },
