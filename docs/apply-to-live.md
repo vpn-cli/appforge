@@ -7,10 +7,13 @@ This runbook outlines the exact sequence to verify all security hardening change
 
 > [!IMPORTANT]
 > **Zero-Downtime Expand/Contract Architecture (Single Session Requirement)**:
+> - **Execution Pipeline**:
+>   `check-live-configs --live` → `Vercel env` → `pg_dump backup` → `Migration A` → `merge to master (Vercel deploys)` → `repair-missing-tables DRY-RUN` → `review output` → `repair-missing-tables EXECUTE` → `smoke test` → `Migration B` → `anon curl /rest/v1/apps → permission error`.
 > - **Migration A (Expand Phase)**: Provisions the new 3-argument `execute_app_ddl(app_id, entity_name, fields)` with column addition and type validation, while preserving the legacy 2-argument `execute_app_ddl(app_id, query)` with strict safety guards. This ensures existing running production code continues functioning without disruption when Migration A is applied before code deployment.
 > - **Application Deploy**: The new code exclusively uses the 3-argument `execute_app_ddl`.
-> - **Migration B (Contract Phase)**: Permanently drops the legacy 2-argument `execute_app_ddl(text, text)` overload once the new application deployment is verified.
-> - **CRITICAL: Single-Session Execution**: The entire pipeline (`Migration A → Code Deploy → Migration B`) **MUST be executed in one single session**. Currently running production instances continue invoking the legacy 2-argument overload until Vercel completes deployment of the new code. Never leave the system in an intermediate state, and never apply Migration B before the application deployment is healthy and ready.
+> - **Table Repair**: Syncs missing dynamic Postgres tables for legitimate apps in `app_schemas` so published apps don't 503.
+> - **Migration B (Contract Phase)**: Permanently drops the legacy 2-argument `execute_app_ddl(text, text)` overload once the new application deployment and smoke test are verified.
+> - **CRITICAL: Single-Session Execution**: The entire pipeline (`Migration A → Code Deploy → Table Repair → Smoke Test → Migration B`) **MUST be executed in one single session**. Currently running production instances continue invoking the legacy 2-argument overload until Vercel completes deployment of the new code. Never leave the system in an intermediate state, and never apply Migration B before the application deployment and smoke tests are verified healthy.
 > - **Safety Rule**: Never apply test-only migrations or run test suites against the live production database. Execute each step in the strict order specified below.
 
 ---
@@ -74,7 +77,7 @@ npm test
 
 ---
 
-## Step 3B: Audit Live App Configurations Against Strict Schemas
+## Step 3: Audit Live App Configurations Against Strict Schemas (`check-live-configs --live`)
 
 Before running Migration A or touching the live production database, audit all existing application configurations to confirm compatibility with the strict `.strict()` AST schemas:
 
@@ -107,28 +110,10 @@ node scripts/check-live-configs.mjs --live
 
 ---
 
-## Step 3: Apply Migration A to the LIVE Project
+## Step 4: Pre-Deployment Audit: Vercel Environment Variables (`Vercel env`)
 
-### ⚠️ MANDATORY BACKUP (`pg_dump`) BEFORE MIGRATION A ON LIVE
-Before running any DDL or privilege changes on the live database (`upljqampxcmhqjszatrp`), take a full logical backup via `pg_dump` using the live pooler session-mode connection string (port `5432`, supplied via environment variable — never commit or print credentials):
+Before executing Migration A or deploying code, audit your hosting environment settings. The hardened codebase enforces strict secret checking (no fallbacks to public keys).
 
-```bash
-# Export a timestamped custom-format backup (schema + data) of the public schema
-pg_dump "$LIVE_DATABASE_URL" \
-  --schema=public \
-  --format=custom \
-  --no-owner \
-  --no-privileges \
-  --file="backups/live-pre-migration-a-$(date +%Y%m%d-%H%M%S).dump"
-
-# Verify the backup file exists and is readable before proceeding
-pg_restore --list backups/live-pre-migration-a-*.dump | head -n 20
-```
-
-> [!IMPORTANT]
-> Store the `.dump` file outside the git repository (or in a gitignored directory) and verify `pg_restore --list` succeeds before executing Migration A.
-
-### ⚠️ MANDATORY PRE-CHECK BEFORE MIGRATION A ON LIVE
 > [!CAUTION]
 > **CRITICAL PRE-REQUISITE**: Before executing Migration A on live, you MUST confirm:
 > 1. `SUPABASE_SERVICE_ROLE_KEY` exists in Vercel Production environment variables (`Project Settings` → `Environment Variables`).
@@ -138,25 +123,6 @@ pg_restore --list backups/live-pre-migration-a-*.dump | head -n 20
 > Migration A immediately executes `REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;` to eliminate public table leaks. If the live production deployment were ever to fall back to the anon key, all server database queries would immediately fail with permission denied errors, causing a catastrophic production outage.
 > 
 > In this release, the server client (`lib/insforge-server.ts`) and startup instrumentation (`instrumentation.ts`) have permanently eliminated the anon-key fallback: any missing service role key will fail loudly at startup. Verify that `SUPABASE_SERVICE_ROLE_KEY` is present in Vercel Production before running Migration A.
-
-In your **LIVE** production Supabase project (`upljqampxcmhqjszatrp`) dashboard (SQL Editor):
-
-Copy and execute the entire contents of:
-`sql/migrations/20261118_fix_published_apps_leak.sql`
-
-> [!CAUTION]
-> **DO NOT** run `sql/test-only/20261118_test_teardown_helper.sql` on the live database. The test teardown helper must remain exclusively in the test project.
-
-### Verification on Live:
-- PostgREST direct access is locked down (`anon` and `authenticated` have 0 direct table privileges across `apps`, `app_schemas`, `validation_logs`, and all `app_*` tables, with no permissive `USING (true)` policies remaining).
-- Default privileges revoke future tables, sequences, and functions for `postgres`.
-- The new 3-argument `execute_app_ddl` is active; the 2-argument `execute_app_ddl` remains available with safeguards for in-flight traffic.
-
----
-
-## Pre-Deployment Audit: Vercel Environment Variables
-
-Before triggering the application deploy in Step 4, audit your Vercel project environment settings. The new codebase enforces strict secret checking (no fallbacks to public keys).
 
 ### Vercel Environment Variables Checklist
 
@@ -181,12 +147,51 @@ Before triggering the application deploy in Step 4, audit your Vercel project en
 
 ---
 
-## Step 4: Merge and Deploy Application Code
+## Step 5: Mandatory Logical Backup (`pg_dump backup`) Before Migration A on Live
+
+Before running any DDL or privilege changes on the live database (`upljqampxcmhqjszatrp`), take a full logical backup via `pg_dump` using the live pooler session-mode connection string (port `5432`, supplied via environment variable — never commit or print credentials):
+
+```bash
+# Export a timestamped custom-format backup (schema + data) of the public schema
+pg_dump "$LIVE_DATABASE_URL" \
+  --schema=public \
+  --format=custom \
+  --no-owner \
+  --no-privileges \
+  --file="backups/live-pre-migration-a-$(date +%Y%m%d-%H%M%S).dump"
+
+# Verify the backup file exists and is readable before proceeding
+pg_restore --list backups/live-pre-migration-a-*.dump | head -n 20
+```
+
+> [!IMPORTANT]
+> Store the `.dump` file outside the git repository (or in a gitignored directory) and verify `pg_restore --list` succeeds before executing Migration A.
+
+---
+
+## Step 6: Apply Migration A to the LIVE Project (Expand Phase)
+
+In your **LIVE** production Supabase project (`upljqampxcmhqjszatrp`) dashboard (SQL Editor):
+
+Copy and execute the entire contents of:
+`sql/migrations/20261118_fix_published_apps_leak.sql`
+
+> [!CAUTION]
+> **DO NOT** run `sql/test-only/20261118_test_teardown_helper.sql` on the live database. The test teardown helper must remain exclusively in the test project.
+
+### Verification on Live:
+- PostgREST direct access is locked down (`anon` and `authenticated` have 0 direct table privileges across `apps`, `app_schemas`, `validation_logs`, and all `app_*` tables, with no permissive `USING (true)` policies remaining).
+- Default privileges revoke future tables, sequences, and functions for `postgres`.
+- The new 3-argument `execute_app_ddl` is active; the 2-argument `execute_app_ddl` remains available with safeguards for in-flight traffic.
+
+---
+
+## Step 7: Merge and Deploy Application Code (`merge to master (Vercel deploys)`)
 
 > [!WARNING]
 > **Single Session Invariant**: Do NOT pause or end your deployment session here.
 > Current production instances continue invoking the legacy 2-argument `execute_app_ddl(app_id, query)` function until Vercel completes deployment of the new code.
-> If Migration B is applied before this step completes, production saves will fail immediately. Proceed directly from Step 3 to Step 4 and Step 6 in the same continuous session.
+> If Migration B is applied before this step completes, production saves will fail immediately. Proceed directly through Table Repair, Smoke Test, and Migration B in the same continuous session.
 
 1. Merge the pull request (`feat/interview-hardening` branch) to `main`.
 2. Allow Vercel (or your hosting platform) to build and deploy the production release.
@@ -194,24 +199,70 @@ Before triggering the application deploy in Step 4, audit your Vercel project en
 
 ---
 
-## Step 5: Post-Deploy Smoke Test in Production
+## Step 8: Repair Missing Dynamic Tables on Live: Dry-Run Verification (`repair-missing-tables DRY-RUN`)
 
-Execute this exact end-to-end smoke test against the live deployment **before** running Migration B:
+> [!NOTE]
+> **Verified Production Baseline (Nov 21)**: LIVE has 0 per-app data tables (public schema has only `apps`=13, `app_schemas`=7, `validation_logs`=0).
+> The proxy returns 503 for missing tables, so existing published apps render error boxes before table repair.
+> Running `repair-missing-tables.mjs` before the smoke test provisions the physical tables so existing apps render cleanly with empty tables instead of error boxes. The repaired empty tables are completely harmless to the old code.
 
-1. **Create an app from a template**: Log in to production, create a new app from a template (e.g., Employee Directory), and confirm the builder opens with its physical table provisioned.
-2. **Add a field**: In the builder, add a new field to an existing entity and save. Confirm `Draft Saved` succeeds and inspect Vercel logs to verify the 3-argument `execute_app_ddl` RPC succeeded without errors.
-3. **Insert a row**: Insert a record into that entity (including a value for the newly added field) and verify it persists and renders back cleanly.
-4. **Publish**: Click **Publish** and confirm the app publishes without errors.
-5. **View the published app logged out**: Open `/apps/<appId>` in an incognito/private browser window (signed out) and confirm the published application renders cleanly **and displays its persisted data rows** (including the row inserted in step 3 via `GET /api/proxy/<appId>/<entity>`), not just the layout shell, with no 401/404/500 errors.
+Run the repair script in dry-run mode (safe check, 0 writes):
 
-*(Clean up the smoke-test app after completing Step 8.)*
+```bash
+node scripts/repair-missing-tables.mjs
+```
 
 ---
 
-## Step 6: Apply Migration B to the LIVE Project (Contract Phase)
+## Step 9: Review Repair Dry-Run Output (`review output`)
+
+Review the dry-run console output carefully:
+1. Verify each app and entity to be provisioned matches expectations from `app_schemas`.
+2. Confirm the exact `execute_app_ddl` payloads (columns, types) match registered schema definitions.
+3. Verify zero errors or unexpected table definitions are reported.
+
+---
+
+## Step 10: Execute Table Repair on Live (`repair-missing-tables EXECUTE`)
+
+Once the dry-run output is reviewed and confirmed, execute the repair migration against live:
+
+```bash
+node scripts/repair-missing-tables.mjs --execute
+```
+
+This provisions the missing physical tables via structured `execute_app_ddl`.
+
+---
+
+## Step 11: Post-Deploy Smoke Test in Production (`smoke test`)
+
+Execute the production smoke test protocol (see [smoke-test.md](file:///d:/Projects/appforge/docs/smoke-test.md)) against the live deployment **before** running Migration B:
+
+1. **Verify existing published apps**: Open the two existing live published applications in an incognito/private browser window (signed out):
+   - **fisrt**: `/apps/6b0e3994-e4c4-4c0a-a8c5-5b705e0885aa`
+   - **Analytics CRM**: `/apps/df557309-95e1-4b71-be92-759bf3ff33fc`
+   Expected after repair: both render logged-out with **EMPTY tables and no error boxes** (verified fact Nov 21: LIVE had 0 per-app data tables before; repair provisioned the empty physical tables so proxy returns 200 with `[]` without error boxes).
+2. **Create an app from a template**: Log in to production, create a new app from a template (e.g., Employee Directory), and confirm the builder opens with its physical table provisioned.
+3. **Add a field**: In the builder, add a new field to an existing entity and save. Confirm `Draft Saved` succeeds and inspect Vercel logs to verify the 3-argument `execute_app_ddl` RPC succeeded without errors.
+4. **Insert a row**: Insert a record into that entity (including a value for the newly added field) and verify it persists and renders back cleanly.
+5. **Publish**: Click **Publish** and confirm the app publishes without errors.
+6. **View the published app logged out**: Open the newly published app (`/apps/<newAppId>`) in an incognito/private browser window (signed out) and confirm the published application renders cleanly and **logged-out view shows DATA rows** (including the row inserted in step 4 via `GET /api/proxy/<appId>/<entity>`), with zero 401/404/500 errors. Note: The requirement to display populated DATA rows applies specifically to this NEW app created, filled, and published during the smoke test.
+
+> [!CAUTION]
+> **Rollback Procedure**: If any smoke test step fails, **STOP IMMEDIATELY before applying Migration B**.
+> Perform a **Vercel Instant Rollback** in the Vercel dashboard to revert to the previous working deployment.
+> *(Note: The repaired empty tables in Postgres are completely harmless to the old code).*
+> Do NOT proceed to Migration B until all issues are investigated and resolved.
+
+*(Clean up the smoke-test app after completing Step 13.)*
+
+---
+
+## Step 12: Apply Migration B to the LIVE Project (Contract Phase)
 
 > [!IMPORTANT]
-> Apply Migration B immediately after Step 5 confirms healthy operation of the new code on live.
+> Apply Migration B immediately after Step 11 confirms healthy operation of the new code on live.
 > Do NOT postpone Migration B to a future session, as leaving the legacy 2-argument overload exposed undermines the security perimeter established by Migration A.
 
 In your **LIVE** Supabase dashboard (SQL Editor), copy and execute:
@@ -219,25 +270,21 @@ In your **LIVE** Supabase dashboard (SQL Editor), copy and execute:
 
 **Key operation performed:**
 - `DROP FUNCTION IF EXISTS execute_app_ddl(text, text);`
-- Eliminates the legacy raw-query overload completely. The database now exclusively accepts structured DDL calls.
+- Permanently drops the legacy raw-query overload completely. The database now exclusively accepts structured DDL calls.
 
 ---
 
-## Step 7: Run Repair Script on Live
+## Step 13: Final Live Sanity Check & Anonymous Lockdown (`anon curl /rest/v1/apps → permission error`)
 
-Sync missing dynamic Postgres physical tables for legitimate user applications registered in `app_schemas`:
+1. **Verify Anonymous Client Access Denied via PostgREST curl**:
+   Execute curl against PostgREST with the anon key to confirm direct table access is permanently locked down:
+   ```bash
+   curl -s -i \
+     -H "apikey: $NEXT_PUBLIC_INSFORGE_ANON_KEY" \
+     -H "Authorization: Bearer $NEXT_PUBLIC_INSFORGE_ANON_KEY" \
+     "$NEXT_PUBLIC_INSFORGE_URL/rest/v1/apps"
+   ```
+   **Expected Result**: Permission error (HTTP 401 Unauthorized or HTTP 403 Forbidden / PostgreSQL code `42501` insufficient privilege). Direct access to `apps`, `app_schemas`, `validation_logs`, and dynamic tables is strictly forbidden.
 
-```bash
-# 7A. Dry-run verification (safe check, 0 writes):
-node scripts/repair-missing-tables.mjs
-
-# 7B. Execute repair (provisions physical tables via structured execute_app_ddl):
-node scripts/repair-missing-tables.mjs --execute
-```
-
----
-
-## Step 8: Final Live Sanity Check
-
-1. Verify anonymous client cannot read or write to any application tables (returns 0 rows or 42501).
-2. Verify legitimate users can load, view, and interact with published apps through server-mediated proxy routes (`/api/proxy/[appId]/[entity]`).
+2. **Verify Server Proxy Routes**:
+   Verify legitimate users and public visitors can load and view published apps through server-mediated proxy routes (`/api/proxy/[appId]/[entity]`).
