@@ -152,17 +152,21 @@ Before executing Migration A or deploying code, audit your hosting environment s
 Before running any DDL or privilege changes on the live database (`upljqampxcmhqjszatrp`), take a full logical backup via `pg_dump` using the live pooler session-mode connection string (port `5432`, supplied via environment variable — never commit or print credentials):
 
 ```bash
-# Export a timestamped custom-format backup (schema + data) of the public schema
-pg_dump "$LIVE_DATABASE_URL" \
-  --schema=public \
-  --format=custom \
-  --no-owner \
-  --no-privileges \
-  --file="backups/live-pre-migration-a-$(date +%Y%m%d-%H%M%S).dump"
+MSYS_NO_PATHCONV=1 docker run --rm -e LIVE_DB_URL -v "D:/backups/appforge:/backup" postgres:17 \
+  sh -c 'pg_dump "$LIVE_DB_URL" -Fc -f /backup/live-pre-migration-a-$(date +%Y%m%d-%H%M).dump && echo DUMP_OK'
 
 # Verify the backup file exists and is readable before proceeding
-pg_restore --list backups/live-pre-migration-a-*.dump | head -n 20
+MSYS_NO_PATHCONV=1 docker run --rm -v "D:/backups/appforge:/backup" postgres:17 \
+  sh -c 'pg_restore -l /backup/live-pre-migration-a-*.dump'
 ```
+
+Full custom-format dump that KEEPS owners and privileges. Migration A changes privileges, so this backup can
+fully roll it back. LIVE_DB_URL = Session pooler string (port 5432), exported from a temporary file outside
+the repo and deleted right after; if the password contains @ : / ? # %, URL-encode them (@ → %40).
+Restore test (local only): postgres:17 container, first create roles anon/authenticated/service_role,
+schemas extensions + auth, extensions uuid-ossp + pgcrypto in schema extensions, stub functions
+auth.uid()/auth.jwt()/auth.role(); then pg_restore --no-owner --no-privileges -n public and compare
+row counts of apps / app_schemas / validation_logs with LIVE.
 
 > [!IMPORTANT]
 > Store the `.dump` file outside the git repository (or in a gitignored directory) and verify `pg_restore --list` succeeds before executing Migration A.
