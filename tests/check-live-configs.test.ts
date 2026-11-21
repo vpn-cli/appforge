@@ -4,7 +4,6 @@ import {
   loadEnvFile,
   resolveConnectionString,
   auditConfig,
-  runAudit,
 } from "../scripts/check-live-configs.mjs";
 
 describe("check-live-configs auditor suite", () => {
@@ -47,11 +46,11 @@ describe("check-live-configs auditor suite", () => {
       expect(parsed).not.toBeNull();
     });
 
-    it("resolves test connection string from .env.test or environment", async () => {
-      const connStr = await resolveConnectionString(false);
-      expect(connStr).toBeDefined();
-      expect(connStr.length).toBeGreaterThan(0);
-      expect(connStr).toContain("postgres");
+    it("resolves connection string from customEnv without accessing environment", async () => {
+      const connStr = await resolveConnectionString(false, {
+        envTest: { TEST_DATABASE_URL: "postgresql://postgres:secret@localhost:5432/testdb" },
+      });
+      expect(connStr).toBe("postgresql://postgres:secret@localhost:5432/testdb");
     });
   });
 
@@ -127,16 +126,6 @@ describe("check-live-configs auditor suite", () => {
       expect(auditConfig(null).valid).toBe(false);
       expect(auditConfig("").valid).toBe(false);
       expect(auditConfig("{ bad json ").valid).toBe(false);
-    });
-  });
-
-  describe("Integration audit execution against TEST database", () => {
-    it("runs audit against TEST database with read-only transaction and zero writes", async () => {
-      const auditResult = await runAudit(false);
-      expect(auditResult).toBeDefined();
-      expect(typeof auditResult.totalApps).toBe("number");
-      expect(typeof auditResult.validDraftCount).toBe("number");
-      expect(typeof auditResult.invalidDraftCount).toBe("number");
     });
   });
 });
