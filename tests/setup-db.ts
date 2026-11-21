@@ -18,7 +18,6 @@ if (!testDbUrl) {
 
 if (!testDbUrl.includes("dvkmkubcplroecqkfjuf")) {
   throw new Error(
-    `SAFETY GUARD VIOLATION: Database tests are strictly locked to the dedicated TEST project. TEST_DATABASE_URL must contain 'dvkmkubcplroecqkfjuf'. Got: '${testDbUrl}'. Aborting test execution.`
+    `SAFETY GUARD VIOLATION: Database tests are strictly locked to the dedicated TEST project. TEST_DATABASE_URL must contain 'dvkmkubcplroecqkfjuf'. (value hidden: it contains a password). Aborting test execution.`
   );
 }
-
