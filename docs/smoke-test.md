@@ -27,6 +27,20 @@ Published App Smoke-Test URLs (Live Published Apps):
 
 ---
 
+## Post-Repair Live Data Curation
+
+Following table repair (`repair-missing-tables.mjs --execute`) and initial empty-table verification:
+
+- [ ] **Rename or Unpublish "fisrt"**:
+  - In the production dashboard/builder as the owner, open the app named `fisrt` (`/apps/6b0e3994-e4c4-4c0a-a8c5-5b705e0885aa`).
+  - Either rename the app to a proper, descriptive name or click **Unpublish** if it is a disposable test app.
+- [ ] **Populate "Analytics CRM"**:
+  - In the production builder UI as the owner, open `Analytics CRM` (`/apps/df557309-95e1-4b71-be92-759bf3ff33fc`).
+  - Insert a few realistic sample rows into its entities via the preview/builder interface and click **Save Draft** (or Publish).
+  - Open `/apps/df557309-95e1-4b71-be92-759bf3ff33fc` in an incognito/signed-out window to confirm the public view now renders populated data rows rather than an empty table.
+
+---
+
 ## Core Application & Database Integration Checklist (New App Lifecycle)
 
 Follow these steps directly in the production web interface (do NOT run direct database queries):
@@ -66,11 +80,19 @@ Follow these steps directly in the production web interface (do NOT run direct d
   - [ ] `/api/sentry-test` → Returns 404
   - [ ] `/dev/renderers` → Returns 404
   - [ ] `/test-renderers` → Returns 404
-- [ ] **Anonymous PostgREST Lockdown**: Execute anon curl probe against `/rest/v1/apps`:
-  ```bash
-  curl -s -i -H "apikey: $NEXT_PUBLIC_INSFORGE_ANON_KEY" -H "Authorization: Bearer $NEXT_PUBLIC_INSFORGE_ANON_KEY" "$NEXT_PUBLIC_INSFORGE_URL/rest/v1/apps"
-  ```
-  Confirm request returns permission error (401 / 403 / 42501).
+- [ ] **Anonymous PostgREST Lockdown (Explicit LIVE Target)**:
+  - Run the anon curl probe explicitly targeting the LIVE Supabase production host (`https://upljqampxcmhqjszatrp.supabase.co`) with a LIVE anon key provided at runtime (do **not** use `$NEXT_PUBLIC_INSFORGE_URL` or `.env.local`, which points to the TEST project):
+    ```bash
+    # Supply the LIVE anon key at runtime (do NOT commit secrets to git):
+    LIVE_ANON_KEY="<paste-live-anon-key-here>"
+
+    curl -s -i -v \
+      -H "apikey: $LIVE_ANON_KEY" \
+      -H "Authorization: Bearer $LIVE_ANON_KEY" \
+      "https://upljqampxcmhqjszatrp.supabase.co/rest/v1/apps"
+    ```
+  - **Confirm Host**: Confirm the host in the output explicitly shows connection to `upljqampxcmhqjszatrp.supabase.co` before trusting the result.
+  - **Confirm Permission Error**: Verify the response returns an HTTP permission error (`401 Unauthorized` or `403 Forbidden` / PostgreSQL error `42501` insufficient privilege), proving direct access to `apps`, `app_schemas`, `validation_logs`, and dynamic tables is strictly denied.
 
 ---
 

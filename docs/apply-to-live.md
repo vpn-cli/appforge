@@ -8,7 +8,7 @@ This runbook outlines the exact sequence to verify all security hardening change
 > [!IMPORTANT]
 > **Zero-Downtime Expand/Contract Architecture (Single Session Requirement)**:
 > - **Execution Pipeline**:
->   `check-live-configs --live` → `Vercel env` → `pg_dump backup` → `Migration A` → `merge to master (Vercel deploys)` → `repair-missing-tables DRY-RUN` → `review output` → `repair-missing-tables EXECUTE` → `smoke test` → `Migration B` → `anon curl /rest/v1/apps → permission error`.
+>   `check-live-configs --live` → `Vercel env` → `pg_dump backup` → `Migration A` → `merge to master (Vercel deploys)` → `repair-missing-tables DRY-RUN` → `review output` → `repair-missing-tables EXECUTE` → `post-repair data curation` → `smoke test` → `Migration B` → `anon curl /rest/v1/apps → permission error`.
 > - **Migration A (Expand Phase)**: Provisions the new 3-argument `execute_app_ddl(app_id, entity_name, fields)` with column addition and type validation, while preserving the legacy 2-argument `execute_app_ddl(app_id, query)` with strict safety guards. This ensures existing running production code continues functioning without disruption when Migration A is applied before code deployment.
 > - **Application Deploy**: The new code exclusively uses the 3-argument `execute_app_ddl`.
 > - **Table Repair**: Syncs missing dynamic Postgres tables for legitimate apps in `app_schemas` so published apps don't 503.
@@ -193,7 +193,7 @@ Copy and execute the entire contents of:
 > Current production instances continue invoking the legacy 2-argument `execute_app_ddl(app_id, query)` function until Vercel completes deployment of the new code.
 > If Migration B is applied before this step completes, production saves will fail immediately. Proceed directly through Table Repair, Smoke Test, and Migration B in the same continuous session.
 
-1. Merge the pull request (`feat/interview-hardening` branch) to `main`.
+1. Merge the pull request (`feat/landing-redesign` branch) to `master`.
 2. Allow Vercel (or your hosting platform) to build and deploy the production release.
 3. Confirm deployment status is **Ready** in the Vercel dashboard.
 
@@ -235,14 +235,27 @@ This provisions the missing physical tables via structured `execute_app_ddl`.
 
 ---
 
-## Step 11: Post-Deploy Smoke Test in Production (`smoke test`)
+## Step 11: Post-Repair Live Data Curation
+
+Following table repair, curate the existing live applications:
+1. **Rename or Unpublish "fisrt"**:
+   - In the production dashboard/builder as the owner, open the app named `fisrt` (`/apps/6b0e3994-e4c4-4c0a-a8c5-5b705e0885aa`).
+   - Either rename the app to a proper, descriptive name or click **Unpublish** if it is a disposable test app.
+2. **Add Sample Rows to "Analytics CRM"**:
+   - Open `/apps/df557309-95e1-4b71-be92-759bf3ff33fc` ("Analytics CRM") in the builder UI as the owner.
+   - Add a few realistic sample records via the preview/builder interface and save/publish.
+   - This ensures the public view displays populated data rows rather than an empty table to external visitors.
+
+---
+
+## Step 12: Post-Deploy Smoke Test in Production (`smoke test`)
 
 Execute the production smoke test protocol (see [smoke-test.md](file:///d:/Projects/appforge/docs/smoke-test.md)) against the live deployment **before** running Migration B:
 
 1. **Verify existing published apps**: Open the two existing live published applications in an incognito/private browser window (signed out):
    - **fisrt**: `/apps/6b0e3994-e4c4-4c0a-a8c5-5b705e0885aa`
    - **Analytics CRM**: `/apps/df557309-95e1-4b71-be92-759bf3ff33fc`
-   Expected after repair: both render logged-out with **EMPTY tables and no error boxes** (verified fact Nov 21: LIVE had 0 per-app data tables before; repair provisioned the empty physical tables so proxy returns 200 with `[]` without error boxes).
+   Expected after repair: both render logged-out with **EMPTY tables and no error boxes** (verified fact Nov 21: LIVE had 0 per-app data tables before; repair provisioned the empty physical tables so proxy returns 200 with `[]` without error boxes). After curation in Step 11, Analytics CRM will render populated data rows, and `fisrt` will be renamed or unpublished.
 2. **Create an app from a template**: Log in to production, create a new app from a template (e.g., Employee Directory), and confirm the builder opens with its physical table provisioned.
 3. **Add a field**: In the builder, add a new field to an existing entity and save. Confirm `Draft Saved` succeeds and inspect Vercel logs to verify the 3-argument `execute_app_ddl` RPC succeeded without errors.
 4. **Insert a row**: Insert a record into that entity (including a value for the newly added field) and verify it persists and renders back cleanly.
@@ -255,14 +268,14 @@ Execute the production smoke test protocol (see [smoke-test.md](file:///d:/Proje
 > *(Note: The repaired empty tables in Postgres are completely harmless to the old code).*
 > Do NOT proceed to Migration B until all issues are investigated and resolved.
 
-*(Clean up the smoke-test app after completing Step 13.)*
+*(Clean up the smoke-test app after completing Step 14.)*
 
 ---
 
-## Step 12: Apply Migration B to the LIVE Project (Contract Phase)
+## Step 13: Apply Migration B to the LIVE Project (Contract Phase)
 
 > [!IMPORTANT]
-> Apply Migration B immediately after Step 11 confirms healthy operation of the new code on live.
+> Apply Migration B immediately after Step 12 confirms healthy operation of the new code on live.
 > Do NOT postpone Migration B to a future session, as leaving the legacy 2-argument overload exposed undermines the security perimeter established by Migration A.
 
 In your **LIVE** Supabase dashboard (SQL Editor), copy and execute:
@@ -274,17 +287,21 @@ In your **LIVE** Supabase dashboard (SQL Editor), copy and execute:
 
 ---
 
-## Step 13: Final Live Sanity Check & Anonymous Lockdown (`anon curl /rest/v1/apps → permission error`)
+## Step 14: Final Live Sanity Check & Anonymous Lockdown (`anon curl /rest/v1/apps → permission error`)
 
-1. **Verify Anonymous Client Access Denied via PostgREST curl**:
-   Execute curl against PostgREST with the anon key to confirm direct table access is permanently locked down:
+1. **Verify Anonymous Client Access Denied via PostgREST curl (Explicit LIVE Target)**:
+   Execute curl against PostgREST explicitly targeting the LIVE Supabase production host (`https://upljqampxcmhqjszatrp.supabase.co`) with a LIVE anon key provided at runtime (do **not** use `$NEXT_PUBLIC_INSFORGE_URL` or `.env.local` which points to the TEST project):
    ```bash
-   curl -s -i \
-     -H "apikey: $NEXT_PUBLIC_INSFORGE_ANON_KEY" \
-     -H "Authorization: Bearer $NEXT_PUBLIC_INSFORGE_ANON_KEY" \
-     "$NEXT_PUBLIC_INSFORGE_URL/rest/v1/apps"
+   # Supply the LIVE anon key at runtime (do NOT commit secrets to git):
+   LIVE_ANON_KEY="<paste-live-anon-key-here>"
+
+   curl -s -i -v \
+     -H "apikey: $LIVE_ANON_KEY" \
+     -H "Authorization: Bearer $LIVE_ANON_KEY" \
+     "https://upljqampxcmhqjszatrp.supabase.co/rest/v1/apps"
    ```
-   **Expected Result**: Permission error (HTTP 401 Unauthorized or HTTP 403 Forbidden / PostgreSQL code `42501` insufficient privilege). Direct access to `apps`, `app_schemas`, `validation_logs`, and dynamic tables is strictly forbidden.
+   - **Confirm Host in Output**: Explicitly confirm the verbose curl output shows connection to `upljqampxcmhqjszatrp.supabase.co` before trusting the result.
+   - **Confirm Permission Error**: Verify the response returns an HTTP permission error (`401 Unauthorized` or `403 Forbidden` / PostgreSQL code `42501` insufficient privilege). Direct access to `apps`, `app_schemas`, `validation_logs`, and dynamic tables is strictly forbidden for the anonymous role.
 
 2. **Verify Server Proxy Routes**:
    Verify legitimate users and public visitors can load and view published apps through server-mediated proxy routes (`/api/proxy/[appId]/[entity]`).
