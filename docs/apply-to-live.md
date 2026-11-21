@@ -188,7 +188,7 @@ Before triggering the application deploy in Step 4, audit your Vercel project en
 > Current production instances continue invoking the legacy 2-argument `execute_app_ddl(app_id, query)` function until Vercel completes deployment of the new code.
 > If Migration B is applied before this step completes, production saves will fail immediately. Proceed directly from Step 3 to Step 4 and Step 6 in the same continuous session.
 
-1. Merge the pull request (`feat/interview-hardening` branch) to `main`.
+1. Merge the pull request (`feat/interview-hardening` branch) to `master`.
 2. Allow Vercel (or your hosting platform) to build and deploy the production release.
 3. Confirm deployment status is **Ready** in the Vercel dashboard.
 

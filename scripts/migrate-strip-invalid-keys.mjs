@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "fs";
 import path from "path";
+import readline from "readline";
 import pg from "pg";
 import { AppConfigSchema, validateComponentNode, ComponentSchemas } from "../lib/validation.ts";
 
@@ -9,6 +10,20 @@ const { Client } = pg;
 const isApply = process.argv.includes("--apply");
 const isLive = process.argv.includes("--live");
 const isDryRun = !isApply;
+
+// Strictly reject connection strings passed via command-line flags or arguments
+for (const arg of process.argv.slice(2)) {
+  if (
+    arg.startsWith("--db") ||
+    arg.startsWith("--database") ||
+    arg.includes("postgres://") ||
+    arg.includes("postgresql://")
+  ) {
+    console.error("\n❌ Security Violation: Database connection strings must NEVER be passed as command-line arguments.");
+    console.error("Store the connection string in a gitignored env file (.env.local or .env.test) or enter it at the interactive prompt.\n");
+    process.exit(1);
+  }
+}
 
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return {};
@@ -33,35 +48,58 @@ function loadEnvFile(filePath) {
 const envTest = loadEnvFile(path.resolve(process.cwd(), ".env.test"));
 const envLocal = loadEnvFile(path.resolve(process.cwd(), ".env.local"));
 
-let connectionString = "";
-let targetLabel = "";
-
-if (isLive) {
-  targetLabel = "LIVE PRODUCTION DATABASE";
-  connectionString =
-    process.env.LIVE_DATABASE_URL ||
-    process.env.DATABASE_URL ||
-    envLocal.DATABASE_URL ||
-    envLocal.LIVE_DATABASE_URL ||
-    envLocal.POSTGRES_URL;
-
-  if (!connectionString) {
-    console.error("❌ LIVE_DATABASE_URL or DATABASE_URL not found.");
-    process.exit(1);
+async function promptForDatabaseUrl(promptText) {
+  if (!process.stdin.isTTY) {
+    return null;
   }
-} else {
-  targetLabel = "TEST DATABASE";
-  connectionString = process.env.TEST_DATABASE_URL || envTest.TEST_DATABASE_URL;
-  if (!connectionString) {
-    console.error("❌ TEST_DATABASE_URL not found.");
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  return new Promise((resolve) => {
+    rl.question(promptText, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
+async function resolveConnectionString(liveMode) {
+  if (liveMode) {
+    const fromEnv =
+      envLocal.LIVE_DATABASE_URL ||
+      envLocal.DATABASE_URL ||
+      envLocal.POSTGRES_URL ||
+      process.env.LIVE_DATABASE_URL ||
+      process.env.DATABASE_URL;
+
+    if (fromEnv) return fromEnv;
+
+    console.log("LIVE database connection string not found in gitignored .env.local.");
+    const prompted = await promptForDatabaseUrl("Enter LIVE PostgreSQL connection string: ");
+    if (prompted) return prompted;
+
+    console.error("\n❌ Error: LIVE database connection string not found.");
+    console.error("Please add LIVE_DATABASE_URL or DATABASE_URL to your gitignored .env.local file or run interactively to be prompted.\n");
+    process.exit(1);
+  } else {
+    const fromEnv =
+      envTest.TEST_DATABASE_URL ||
+      envTest.DATABASE_URL ||
+      process.env.TEST_DATABASE_URL ||
+      process.env.DATABASE_URL;
+
+    if (fromEnv) return fromEnv;
+
+    console.log("TEST database connection string not found in gitignored .env.test.");
+    const prompted = await promptForDatabaseUrl("Enter TEST PostgreSQL connection string: ");
+    if (prompted) return prompted;
+
+    console.error("\n❌ Error: TEST database connection string not found.");
+    console.error("Please add TEST_DATABASE_URL to your gitignored .env.test file or run interactively to be prompted.\n");
     process.exit(1);
   }
 }
-
-console.log(`\n========================================================================`);
-console.log(` AppForge Config Sanitizer & Key Stripper`);
-console.log(` Target: ${targetLabel} | Mode: ${isDryRun ? "DRY-RUN (Safe, No writes)" : "APPLY"}`);
-console.log(`========================================================================\n`);
 
 function stripUnknownComponentKeys(node) {
   if (!node || typeof node !== "object" || Array.isArray(node)) return node;
@@ -165,6 +203,14 @@ function sanitizeConfig(cfg) {
 }
 
 async function runMigration() {
+  const targetLabel = isLive ? "LIVE PRODUCTION DATABASE" : "TEST DATABASE";
+  const connectionString = await resolveConnectionString(isLive);
+
+  console.log(`\n========================================================================`);
+  console.log(` AppForge Config Sanitizer & Key Stripper`);
+  console.log(` Target: ${targetLabel} | Mode: ${isDryRun ? "DRY-RUN (Safe, No writes)" : "APPLY"}`);
+  console.log(`========================================================================\n`);
+
   const client = new Client({ connectionString });
   await client.connect();
 
