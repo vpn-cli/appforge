@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -31,7 +31,7 @@ export function Navbar() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="max-w-7xl mx-auto px-4 w-full flex items-center justify-between py-4 border-b border-border relative z-50 bg-background"
+      className="max-w-[1200px] mx-auto px-6 w-full flex items-center justify-between py-4 border-b border-border relative z-50 bg-background"
     >
       <Link 
         href="/" 
@@ -39,21 +39,11 @@ export function Navbar() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-         <motion.div 
-          animate={isHovered ? { scale: 1.1 } : { scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 10 }}
-          className="w-10 h-10 bg-gradient-to-br from-brand to-brand-dark rounded-xl flex items-center justify-center shadow-lg shadow-brand/30 relative overflow-hidden"
-        >
-           <AppForgeLogo size={22} isHovered={isHovered} className="text-white drop-shadow-md relative z-10" />
-           <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        </motion.div>
-        <div className="relative font-bold text-xl tracking-tight">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand to-brand-dark dark:from-indigo-200 dark:to-purple-300 transition-opacity duration-300 group-hover:opacity-0 relative z-10 block">
-            AppForge
-          </span>
-          <span className="absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-clip-text text-transparent animate-text-gradient bg-[linear-gradient(to_right,#4C1D95,#7E22CE,#BE185D,#4C1D95)] dark:bg-[linear-gradient(to_right,#C084FC,#F472B6,#818CF8,#C084FC)] bg-[length:200%_auto] z-20 block whitespace-nowrap">
-            AppForge
-          </span>
+        <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center text-foreground relative overflow-hidden">
+          <AppForgeLogo size={18} isHovered={isHovered} className="text-foreground relative z-10" />
+        </div>
+        <div className="font-bold text-lg tracking-tight text-foreground transition-colors">
+          AppForge
         </div>
       </Link>
 
@@ -64,14 +54,14 @@ export function Navbar() {
         animate="show"
         className="hidden md:flex items-center gap-6"
       >
-        {["Dashboard", "Builder", "Templates"].map((text) => (
+        {["Apps", "Builder", "Templates"].map((text) => (
           <motion.div key={text} variants={item}>
             <Link 
-              href={text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
+              href={text === "Apps" ? "/apps" : text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
               className="relative text-muted-foreground text-sm font-medium hover:text-foreground transition-colors group px-1 py-2"
             >
               {text}
-              <span className="absolute left-0 bottom-0 w-full h-[2px] bg-brand scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out" />
+              <span className="absolute left-0 bottom-0 w-full h-[2px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out" />
             </Link>
           </motion.div>
         ))}
@@ -87,8 +77,8 @@ export function Navbar() {
         <SignedIn>
           <motion.div variants={item} className="flex gap-2 sm:gap-4 items-center">
             <ThemeToggle />
-            <OrganizationSwitcher appearance={{ elements: { organizationSwitcherTrigger: "border border-border/50 bg-muted/50 rounded-md py-1 px-3" } }} />
-            <UserButton appearance={{ elements: { avatarBox: "w-9 h-9 border-2 border-brand/20 shadow-md" } }} />
+            <OrganizationSwitcher appearance={{ elements: { organizationSwitcherTrigger: "border border-border bg-muted/50 rounded-md py-1.5 px-3 text-sm font-medium text-foreground", organizationPreviewAvatarBox: "bg-muted text-foreground border border-border" } }} />
+            <UserButton appearance={{ elements: { avatarBox: "w-8 h-8 border border-border bg-muted text-foreground" } }} />
           </motion.div>
         </SignedIn>
         
@@ -97,15 +87,15 @@ export function Navbar() {
             <ThemeToggle />
           </motion.div>
           <motion.div variants={item} className="hidden sm:block">
-            <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
-              <Button variant="ghost" className="text-sm font-medium hover:bg-muted">
+            <SignInButton mode="modal" fallbackRedirectUrl="/apps">
+              <Button variant="ghost" size="md">
                 Log in
               </Button>
             </SignInButton>
           </motion.div>
-          <motion.div variants={item} className="hidden sm:block" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-              <Button className="bg-brand hover:bg-brand-dark text-white shadow-md shadow-brand/20">
+          <motion.div variants={item} className="hidden sm:block" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <SignUpButton mode="modal" fallbackRedirectUrl="/apps">
+              <Button variant="primary" size="md">
                 Start for free
               </Button>
             </SignUpButton>
@@ -131,15 +121,15 @@ export function Navbar() {
             animate={{ opacity: 1, height: "auto", borderBottomWidth: 1 }}
             exit={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute top-full left-0 w-full bg-background border-border shadow-2xl flex flex-col md:hidden overflow-hidden origin-top z-40"
+            className="absolute top-full left-0 w-full bg-background border-border shadow-md border-b flex flex-col md:hidden overflow-hidden origin-top z-40"
           >
             <div className="p-4 flex flex-col gap-3">
-              {["Dashboard", "Builder", "Templates"].map((text) => (
+              {["Apps", "Builder", "Templates"].map((text) => (
                 <Link 
                   key={text}
-                  href={text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
+                  href={text === "Apps" ? "/apps" : text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-foreground text-sm font-semibold p-3 hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border/50"
+                  className="text-foreground text-sm font-medium p-3 hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border/50"
                 >
                   {text}
                 </Link>
@@ -147,13 +137,13 @@ export function Navbar() {
               
               <SignedOut>
                 <div className="h-[1px] w-full bg-border/50 my-2" />
-                <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
-                  <Button variant="outline" className="w-full justify-center h-10 border-border">
+                <SignInButton mode="modal" fallbackRedirectUrl="/apps">
+                  <Button variant="secondary" size="md" className="w-full justify-center">
                     Log in
                   </Button>
                 </SignInButton>
-                <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
-                  <Button className="w-full justify-center h-10 bg-brand hover:bg-brand-dark text-white shadow-brand/20">
+                <SignUpButton mode="modal" fallbackRedirectUrl="/apps">
+                  <Button variant="primary" size="md" className="w-full justify-center">
                     Start for free
                   </Button>
                 </SignUpButton>
@@ -165,4 +155,3 @@ export function Navbar() {
     </motion.header>
   );
 }
-

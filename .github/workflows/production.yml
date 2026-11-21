@@ -2,9 +2,7 @@ name: AppForge Enterprise CI/CD Pipeline
 
 on:
   push:
-    branches: [ "master", "main" ]
   pull_request:
-    branches: [ "master", "main" ]
 
 jobs:
   # Job 1: Linting and Code Integrity Verification
@@ -15,10 +13,10 @@ jobs:
       - name: Checkout Codebase
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install Dependencies
@@ -30,11 +28,70 @@ jobs:
       - name: ESLint Code Quality Scan
         run: npm run lint
 
-  # Job 2: Build Verification & Dockerization
+  # Job 2A: Unit Test Suite (Pure Logic, AST, Proxy Payload & Component Tests)
+  unit-tests:
+    name: Unit Tests (Pure Logic, AST, Proxy Payload & Components)
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Vitest Unit Tests
+        run: npm run test:unit
+
+  # Job 2B: Database Integration Test Suite (Multi-Tenant Isolation & RLS Verification)
+  database-tests:
+    name: Database Tests (Multi-Tenant Isolation & RLS Verification)
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Check Required Test Database Secrets
+        run: |
+          if [ -z "${{ secrets.TEST_SUPABASE_URL }}" ] || [ -z "${{ secrets.TEST_SUPABASE_ANON_KEY }}" ] || [ -z "${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}" ]; then
+            echo "::error::CRITICAL: Dedicated test database secrets (TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY, TEST_SUPABASE_SERVICE_ROLE_KEY) are missing in GitHub repository secrets! Testing against production database (upljqampxcmhqjszatrp) is strictly forbidden."
+            exit 1
+          fi
+
+      - name: Run Vitest Database Tests
+        env:
+          NEXT_PUBLIC_INSFORGE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NEXT_PUBLIC_INSFORGE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+        run: npm run test:db
+
+  # Job 3: Build Verification & Dockerization
   build-and-containerize:
     name: Docker Multi-Stage Build
     runs-on: ubuntu-latest
-    needs: lint-and-typecheck # Only build if the code is syntactically perfect!
+    needs: [unit-tests, database-tests]
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
@@ -47,7 +104,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          push: false # Set to true later when mapping to AWS ECR or Docker Hub
+          push: false
           load: true
           tags: appforge:latest
           cache-from: type=gha

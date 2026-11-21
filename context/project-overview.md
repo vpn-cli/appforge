@@ -137,7 +137,6 @@ Once a generated app is open at `/apps/[appId]`, navigation switches to whatever
 - Final Tweaks: Global dark mode toggle, Bento component visual overhaul, **Lenis** smooth scrolling, **GSAP ScrollTrigger** / Framer Motion parallax effects, and orchestrated loading/skeleton animations.
 - Enterprise Copilot Integration: Natural-language generative "Prompt-to-Software" UI generation powered by a robust Vercel AI SDK dual-provider pipeline (Groq + Gemini).
 - Enterprise Readiness: API Rate Limiting and Semantic Prompt Caching (Upstash Redis).
-- Enterprise Readiness: Serverless Kafka event queue for background jobs (analytics).
 - Enterprise Readiness: AppForge DevOps (Docker containerization) and Jira Action Integration.
 - Enterprise Readiness: Clerk B2B Authentication and Supabase JWT syncing.
 

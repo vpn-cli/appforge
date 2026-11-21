@@ -1,58 +1,77 @@
-﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity } from "lucide-react";
+import { Globe, FileEdit, Clock } from "lucide-react";
 import type { AppData } from "./AppGrid";
+import { formatRelativeTime } from "./AppCard";
 
-function getTimeAgo(dateStr: string) {
-  if (!dateStr) return "Just now";
-  const ms = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.max(1, Math.floor(ms / 60000));
-  if (mins < 60) return `${mins} mins ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} hrs ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days} days ago`;
-}
-
-export function RecentActivity({ apps = [] }: { apps?: AppData[] }) {
-  const activities = apps.slice(0, 4).map(app => ({
-    action: app.status === "Published" ? "Published" : "Saved",
-    subject: app.name || "Untitled App",
-    time: getTimeAgo(app.updated_at)
+export function RecentlyUpdated({ apps = [] }: { apps?: AppData[] }) {
+  // Read real state and latest timestamps directly from the user's database records
+  const recentApps = apps.slice(0, 5).map((app) => ({
+    id: app.id,
+    isPublished: app.status === "Published",
+    status: app.status === "Published" ? "Published" : "Draft",
+    name: app.name || "Untitled App",
+    time: formatRelativeTime(app.updated_at),
   }));
 
-  if (activities.length === 0) {
-    activities.push({ action: "System", subject: "Environment initialized", time: "Just now" });
-  }
+  const hasApps = recentApps.length > 0;
 
   return (
-    <Card className="bg-card border-border h-full shadow-sm">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-sm font-bold flex items-center text-foreground uppercase tracking-wider">
-          <Activity className="w-4 h-4 mr-2 text-brand" />
-          Recent Activity
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          {activities.map((item, i) => (
-            <div key={i} className="flex items-start gap-4">
-              <div className="mt-1 relative">
-                <div className="w-2 h-2 rounded-full bg-brand shadow-[0_0_8px_rgba(108,87,164,0.6)]" />
-                {i !== activities.length - 1 && (
-                  <div className="absolute top-3 left-1 w-[1px] h-10 bg-border/50" />
+    <aside className="w-full h-full rounded-2xl bg-card border border-border p-5 shadow-xs flex flex-col">
+      <div className="flex items-center justify-between pb-3 mb-4 border-b border-border/50 dark:border-white/5 shrink-0">
+        <h2 className="text-[15px] font-semibold text-foreground flex items-center gap-2">
+          <Clock className="w-4 h-4 text-muted-foreground" />
+          <span>Recently updated</span>
+        </h2>
+        <span className="text-[12px] font-medium text-muted-foreground">
+          {hasApps ? `${recentApps.length} ${recentApps.length === 1 ? "app" : "apps"}` : "0 apps"}
+        </span>
+      </div>
+
+      {!hasApps ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center py-8 px-4">
+          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-3">
+            <Clock className="w-4 h-4 opacity-60" />
+          </div>
+          <p className="text-[13px] font-medium text-foreground">No recently updated apps</p>
+          <p className="text-[12px] text-muted-foreground mt-1 max-w-[200px] leading-relaxed">
+            Your recently created, edited, and published apps will appear here.
+          </p>
+        </div>
+      ) : (
+        <div className="relative pl-2.5 space-y-4.5 before:absolute before:left-[19px] before:top-2 before:bottom-3 before:w-[1px] before:bg-border/60 dark:before:bg-white/10 flex-1">
+          {recentApps.map((item) => (
+            <div key={item.id} className="flex items-start gap-3 relative">
+              {/* Publication state indicator node */}
+              <div
+                className={`w-5 h-5 rounded-full border text-[10px] font-semibold flex items-center justify-center shrink-0 z-10 mt-0.5 shadow-2xs ${
+                  item.isPublished
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                    : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20"
+                }`}
+                title={item.isPublished ? "Published" : "Draft"}
+              >
+                {item.isPublished ? (
+                  <Globe className="w-2.5 h-2.5" />
+                ) : (
+                  <FileEdit className="w-2.5 h-2.5" />
                 )}
               </div>
-              <div className="flex-1 mt-[-2px]">
-                <p className="text-sm text-foreground font-medium tracking-tight">
-                  {item.action} <span className="font-normal text-muted-foreground">{item.subject}</span>
+
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] text-foreground leading-snug truncate">
+                  <span className="font-semibold text-foreground">{item.status}</span>{" "}
+                  <span className="text-foreground/90 font-medium">{item.name}</span>
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5 font-medium uppercase tracking-wider">{item.time}</p>
+                <span className="text-[12px] text-muted-foreground block mt-0.5">
+                  {item.time}
+                </span>
               </div>
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </aside>
   );
 }
 
+// Backward-compatible export
+export const RecentActivity = RecentlyUpdated;

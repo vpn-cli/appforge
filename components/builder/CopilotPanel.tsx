@@ -1,13 +1,47 @@
-﻿import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Sparkles, X, Loader2, Send } from "lucide-react";
+"use client";
 
-export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: { onApply: (components: unknown[]) => void, onStreamStart?: () => void, onStream?: (text: string) => void, onStreamEnd?: () => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [prompt, setPrompt] = useState("");
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Loader2, ArrowUp, Bot, PanelLeftClose } from "lucide-react";
+
+type CopilotPanelProps = {
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+  width: number;
+  onApply: (components: unknown[]) => void;
+  onStreamStart?: () => void;
+  onStreamEnd?: () => void;
+  initialPrompt?: string;
+  inputRef?: React.RefObject<HTMLTextAreaElement | null>;
+};
+
+export function CopilotPanel({
+  isCollapsed,
+  onToggleCollapse,
+  width,
+  onApply,
+  onStreamStart,
+  onStreamEnd,
+  initialPrompt,
+  inputRef,
+}: CopilotPanelProps) {
+  const [prompt, setPrompt] = useState(initialPrompt || "");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [messages, setMessages] = useState<{ role: "ai" | "user"; content: string }[]>([
-    { role: "ai", content: "I am ready to build! Ask me to generate headers, grids, buttons, or full dashboard layouts for you." }
+
+  useEffect(() => {
+    if (initialPrompt) {
+      setPrompt(initialPrompt);
+    }
+  }, [initialPrompt]);
+
+  const [messages, setMessages] = useState<
+    { role: "ai" | "user"; content: string }[]
+  >([
+    {
+      role: "ai",
+      content:
+        "Describe your data requirements or UI updates. I'll generate structured JSON matching the component registry.",
+    },
   ]);
 
   const handleGenerate = async (e: React.FormEvent) => {
@@ -15,18 +49,22 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
     if (!prompt.trim() || isGenerating) return;
 
     const currentPrompt = prompt;
-    setMessages(prev => [...prev, { role: "user", content: currentPrompt }]);
+    setMessages((prev) => [...prev, { role: "user", content: currentPrompt }]);
     setPrompt("");
 
     setIsGenerating(true);
     let streamedText = "";
-    
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+
     try {
       if (onStreamStart) onStreamStart();
       const res = await fetch("/api/copilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: currentPrompt }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -45,14 +83,8 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
 
         const chunk = decoder.decode(value, { stream: true });
         streamedText += chunk;
-
-        // Pass the raw chunk stream directly to the UI without heavy parsing
-        if (onStream) {
-          onStream(streamedText);
-        }
       }
 
-      // 1. Strip conversational filler and markdown blocks by precisely isolating the JSON array/object
       let finalText = streamedText
         .replace(/```json/gi, "")
         .replace(/```/g, "")
@@ -74,134 +106,235 @@ export function CopilotPanel({ onApply, onStreamStart, onStream, onStreamEnd }: 
       if (finalText) {
         let parsed = JSON.parse(finalText);
 
-        // 2. Unpack double-stringified LLM JSON artifacts
         if (typeof parsed === "string") {
           try {
             parsed = JSON.parse(parsed);
           } catch {}
         }
 
-        // 3. Drill down if it hallucinated the overarching registry structure
+        // Validate entity identifier length and format in generated AST / schema
+        // If an entity name is longer than 22 characters, show the user a clear message, not a database error
+        const checkEntityLengths = (obj: unknown): string | null => {
+          if (!obj || typeof obj !== "object") return null;
+          const candidate = obj as Record<string, unknown>;
+          if (candidate.entities && typeof candidate.entities === "object") {
+            for (const entityKey of Object.keys(candidate.entities as Record<string, unknown>)) {
+              if (entityKey.length > 22) {
+                return `Entity name "${entityKey}" exceeds maximum length of 22 characters. Please use a shorter snake_case name (at most 22 characters).`;
+              }
+            }
+          }
+          if (typeof candidate.entity === "string" && candidate.entity.length > 22) {
+            return `Entity name "${candidate.entity}" exceeds maximum length of 22 characters. Please use a shorter snake_case name (at most 22 characters).`;
+          }
+          for (const val of Object.values(candidate)) {
+            if (typeof val === "object" && val !== null) {
+              const err = checkEntityLengths(val);
+              if (err) return err;
+            }
+          }
+          return null;
+        };
+
+        const lengthError = checkEntityLengths(parsed);
+        if (lengthError) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "ai",
+              content: `Naming Error: ${lengthError}`,
+            },
+          ]);
+          return;
+        }
+
         if (parsed?.pages?.[0]?.components) {
           parsed = parsed.pages[0].components;
         } else if (parsed?.components && Array.isArray(parsed.components)) {
           parsed = parsed.components;
         }
 
-        // 4. Force strict schema structure for the UI array
         const finalArray = Array.isArray(parsed) ? parsed : [parsed];
-
         onApply(finalArray);
         setMessages((prev) => [
           ...prev,
           {
             role: "ai",
-            content:
-              "I've correctly compiled the new canvas UI from the generated AST!",
+            content: "Components compiled and applied to your config.",
           },
         ]);
       }
     } catch (err) {
       const e = err as Error;
-      if (e.message && (e.message.includes("exhausted") || e.message.includes("429"))) {
-        setMessages(prev => [...prev, { role: "ai", content: "All configured Gemini API Keys have exhausted their daily quotas. Please add GEMINI_API_KEY_2 to your .env.local file to continue." }]);
+      if (e.name === "AbortError") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            content: "Request timed out after 25s. The model was slow to respond; please try again.",
+          },
+        ]);
+      } else if (
+        e.message &&
+        (e.message.includes("exhausted") || e.message.includes("429"))
+      ) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            content:
+              "AI rate limit reached. Please check API keys or retry in a few moments.",
+          },
+        ]);
       } else {
-        setMessages(prev => [...prev, { role: "ai", content: `Sorry, I encountered an error: ${e.message}` }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: "ai", content: `Error: ${e.message}` },
+        ]);
       }
     } finally {
+      clearTimeout(timeoutId);
       setIsGenerating(false);
       if (onStreamEnd) onStreamEnd();
     }
   };
 
-  if (!isOpen) {
+  // Collapsed state renders slim rail (icon + label)
+  if (isCollapsed) {
     return (
-      <Button 
-        onClick={() => setIsOpen(true)}
-        className="absolute bottom-6 left-6 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shadow-purple-500/25 rounded-full px-6 h-12 flex gap-2 font-medium"
+      <aside
+        style={{ width: "38px" }}
+        className="h-full border-r border-border bg-card flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
+        onClick={onToggleCollapse}
+        title="Expand Copilot (⌘K)"
+        role="region"
+        aria-label="Copilot rail"
       >
-        <Sparkles className="w-5 h-5" />
-        Ask AI
-      </Button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleCollapse();
+          }}
+          className="p-1 rounded-md text-muted-foreground group-hover:text-foreground hover:bg-muted transition-colors mb-3"
+          aria-label="Expand Copilot panel"
+        >
+          <Bot className="w-4 h-4" />
+        </button>
+        <div className="flex-1 flex items-center justify-center">
+          <span className="[writing-mode:vertical-lr] rotate-180 text-[11px] font-medium text-muted-foreground group-hover:text-foreground tracking-wider select-none">
+            Copilot
+          </span>
+        </div>
+        <kbd className="text-[9px] font-mono text-muted-foreground/70 bg-muted/50 border border-border/80 px-1 py-0.5 rounded mt-auto">
+          ⌘K
+        </kbd>
+      </aside>
     );
   }
 
+  const hasText = prompt.trim().length > 0;
+
   return (
-    <div className="absolute bottom-6 left-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] max-w-[400px] bg-card border border-border shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200">
-      <div className="bg-gradient-to-r from-purple-600/10 to-indigo-600/10 p-4 border-b border-white/5 flex items-center justify-between">
-         <div className="flex items-center gap-2">
-           <Sparkles className="w-4 h-4 text-purple-400" />
-           <span className="font-semibold text-foreground text-sm tracking-wide">AppForge Copilot</span>
-         </div>
-         <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-4 h-4" />
-         </button>
-      </div>
-
-      <div data-lenis-prevent className="w-full bg-background/50 h-[300px] max-h-[300px] overflow-y-auto p-4 text-xs font-medium flex flex-col justify-start space-y-4 scroll-smooth">
-         {messages.map((m, i) => (
-           <div key={i} className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-             <div 
-               className={`p-3 max-w-[85%] shadow-sm ${
-                 m.role === 'user' 
-                   ? 'bg-purple-600 text-white text-left rounded-2xl' 
-                   : 'bg-muted border border-white/5 text-foreground rounded-2xl'
-               }`}
-               style={{
-                 borderTopRightRadius: m.role === 'user' ? '4px' : undefined,
-                 borderTopLeftRadius: m.role === 'ai' ? '4px' : undefined,
-                 border: m.role === 'user' ? '1px solid rgba(192, 132, 252, 0.5)' : undefined
-               }}
-             >
-                {m.role === 'ai' && i === 0 && (
-                  <div className="flex items-center gap-1.5 mb-1 text-purple-400">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">AppForge</span>
-                  </div>
-                )}
-                <span className="leading-relaxed whitespace-pre-wrap">{m.content}</span>
-             </div>
-           </div>
-         ))}
-         {isGenerating && (
-           <div className="flex w-full justify-start">
-             <div className="bg-muted border border-border text-foreground rounded-2xl rounded-tl-sm p-3 inline-flex items-center gap-2.5 shadow-sm max-w-[85%]">
-               <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-500" />
-               <span className="leading-relaxed">Synthesizing UI...</span>
-             </div>
-           </div>
-         )}
-      </div>
-
-      <form 
-        onSubmit={(e) => { e.preventDefault(); void handleGenerate(e); }} 
-        className="p-3 border-t border-border bg-card flex items-end gap-2"
-      >
-        <textarea 
-           data-lenis-prevent
-           value={prompt}
-           onChange={e => setPrompt(e.target.value)}
-           onKeyDown={e => {
-             if (e.key === 'Enter' && !e.shiftKey) {
-               e.preventDefault();
-               void handleGenerate(e);
-             }
-           }}
-           placeholder="e.g. Generate a dark-mode CRM..."
-           className="flex-1 bg-muted border border-border/50 rounded-2xl min-h-[44px] max-h-[120px] py-3 px-4 text-sm text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-brand/50 transition-all overflow-y-auto leading-relaxed"
-           disabled={isGenerating}
-           rows={prompt.length > 50 ? 2 : 1}
-        />
-        <Button 
-           type="submit" 
-           disabled={isGenerating || !prompt.trim()}
-           size="icon"
-           className="w-[44px] h-[44px] rounded-2xl bg-gradient-to-br from-brand to-brand-dark hover:from-brand-light hover:to-brand text-white flex-shrink-0 shadow-[0_4px_14px_rgba(76,29,149,0.3)] transition-all duration-300 hover:scale-[1.05] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 border border-brand/20"
+    <aside
+      style={{ width: `${width}px` }}
+      aria-label="Copilot Assistant"
+      className="h-full border-r border-border bg-card flex flex-col shrink-0 relative select-none min-w-[300px]"
+      role="region"
+    >
+      {/* Panel Header: 36px (h-9) */}
+      <div className="h-9 px-3 border-b border-border bg-card flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <Bot className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs font-medium text-foreground">Copilot</span>
+          <span className="text-[10px] font-mono text-muted-foreground border border-border px-1 py-0.2 rounded">
+            ⌘K
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
+          aria-label="Collapse Copilot to slim rail"
+          title="Collapse to slim rail"
         >
-          {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4 ml-0.5" />}
+          <PanelLeftClose className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Messages Feed */}
+      <div
+        data-lenis-prevent
+        className="flex-1 bg-card overflow-y-auto p-3 text-xs font-normal flex flex-col space-y-3"
+      >
+        {messages.map((m, i) => (
+          <div
+            key={i}
+            className={`flex w-full ${m.role === "user" ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`p-2.5 max-w-[90%] text-xs leading-relaxed rounded-lg border ${
+                m.role === "user"
+                  ? "bg-primary text-primary-foreground border-primary font-medium"
+                  : "bg-muted/40 border-border text-foreground"
+              }`}
+            >
+              <span className="leading-relaxed whitespace-pre-wrap">
+                {m.content}
+              </span>
+            </div>
+          </div>
+        ))}
+        {isGenerating && (
+          <div className="flex w-full justify-start">
+            <div className="bg-muted/40 border border-border text-foreground rounded-lg p-2.5 inline-flex items-center gap-2 text-xs">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+              <span>Synthesizing components...</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Input Box: Solid primary with AA contrast when text, neutral gray when disabled */}
+      <form
+        onSubmit={handleGenerate}
+        className="p-2.5 border-t border-border bg-card flex items-end gap-2 shrink-0"
+      >
+        <textarea
+          ref={inputRef}
+          data-lenis-prevent
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              void handleGenerate(e);
+            }
+          }}
+          placeholder="Ask Copilot to generate or modify components..."
+          className="flex-1 bg-muted/40 border border-border rounded-lg min-h-[38px] max-h-[100px] py-2 px-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring transition-colors leading-relaxed"
+          disabled={isGenerating}
+          rows={2}
+        />
+
+        <Button
+          type="submit"
+          disabled={isGenerating || !hasText}
+          size="sm"
+          className={`h-[38px] w-[38px] p-0 rounded-lg shrink-0 transition-colors flex items-center justify-center ${
+            hasText && !isGenerating
+              ? "bg-primary hover:bg-[var(--primary-hover)] text-primary-foreground font-medium"
+              : "bg-muted text-muted-foreground border-transparent cursor-not-allowed"
+          }`}
+          aria-label="Send prompt to Copilot"
+        >
+          {isGenerating ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <ArrowUp className="w-4 h-4" />
+          )}
         </Button>
       </form>
-    </div>
+    </aside>
   );
 }
-

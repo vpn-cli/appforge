@@ -1,50 +1,76 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { LayoutTemplate } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { RenderNode } from "@/registry";
+
+const demoConfig = {
+  app: "ops_dashboard",
+  pages: [
+    {
+      components: [
+        {
+          type: "Statistic",
+          label: "Active Workflows",
+          value: 1244,
+          trend: {
+            value: "+12%",
+            sentiment: "positive" as const,
+          },
+        },
+        {
+          type: "DataTable",
+          columns: [
+            { key: "workflow", label: "Workflow", type: "avatar" as const },
+            { key: "trigger", label: "Trigger", type: "code" as const },
+            { key: "status", label: "Status", type: "badge" as const },
+          ],
+          data: [
+            { workflow: "User Sync", trigger: "cron:hourly", status: "Running" },
+            { workflow: "Invoice Gen", trigger: "webhook:rx", status: "Idle" },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
 export function Hero() {
-
-
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.15, delayChildren: 0.1 }
-    }
+      transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+    },
   };
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const } }
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
+    },
   };
 
   return (
     <section className="w-full relative overflow-hidden min-h-[110vh] pb-32">
-      {/* 1. Deep Atmospheric Glows (The "Mesh" inside the grid) */}
-      <div className="absolute top-[10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand/[0.03] dark:bg-brand/10 blur-[120px] bg-blob-1 pointer-events-none z-0 mix-blend-multiply dark:mix-blend-screen" />
-      <div className="absolute top-[30%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-success/[0.03] dark:bg-success/[0.05] blur-[100px] bg-blob-2 pointer-events-none z-0 mix-blend-multiply dark:mix-blend-screen" />
-
-      {/* 2. Full-Width Architectural Grid Layer */}
-      <div className="absolute inset-0 pointer-events-none z-0 bg-grid-pattern mask-vignette" />
-
-      {/* 3. Hero Content (Top Layer) */}
-      <div className="max-w-7xl mx-auto px-4 py-24 text-center relative group/hero z-20">
-        <motion.div 
+      <div className="max-w-7xl mx-auto px-4 py-24 text-center relative z-20">
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="max-w-3xl mx-auto"
         >
-          <motion.h1 
+          <motion.h1
             variants={itemVariants}
-            className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight bg-clip-text text-transparent animate-text-gradient bg-[linear-gradient(to_right,#4C1D95,#7E22CE,#BE185D,#4C1D95)] dark:bg-[linear-gradient(to_right,#C084FC,#F472B6,#818CF8,#C084FC)]"
+            className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight text-foreground"
           >
             Live Config-driven Apps
           </motion.h1>
-          <motion.p 
+          <motion.p
             variants={itemVariants}
             className="text-muted-foreground text-lg mb-10 leading-relaxed max-w-2xl mx-auto"
           >
@@ -52,159 +78,100 @@ export function Hero() {
             instantly renders a working application, complete with a database,
             dynamic APIs, and zero boilerplate.
           </motion.p>
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             className="flex justify-center gap-4 mb-16"
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/builder/demo" tabIndex={-1}>
-                <Button size="lg" className="bg-brand hover:bg-brand-dark text-white px-8 shadow-[0_10px_25px_-5px_rgba(156,135,218,0.4)] hover:shadow-[0_20px_35px_-5px_rgba(156,135,218,0.6)] transition-all duration-300">
-                  Start Building
-                </Button>
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/templates" tabIndex={-1}>
-                <Button size="lg" variant="outline" className="border-border text-foreground px-8 bg-card hover:bg-muted shadow-md hover:shadow-lg transition-all duration-300">
-                  View Templates
-                </Button>
-              </Link>
-            </motion.div>
+            <div>
+              <Button
+                size="lg"
+                variant="primary"
+                showArrow
+                render={<Link href="/builder/demo" />}
+              >
+                Start Building
+              </Button>
+            </div>
+            <div>
+              <Button
+                size="lg"
+                variant="secondary"
+                render={<Link href="/templates" />}
+              >
+                View Templates
+              </Button>
+            </div>
           </motion.div>
         </motion.div>
 
         {/* Split screen graphic */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ 
-            boxShadow: '0 30px 60px -12px rgba(108,87,164,0.25), 0 18px 36px -18px rgba(0,0,0,0.1)' 
-          }}
-          data-cursor="hero"
-          className="bg-card rounded-xl border border-border shadow-[0_15px_35px_-10px_rgba(0,0,0,0.1),0_5px_15px_-5px_rgba(108,87,164,0.1)] flex flex-col md:flex-row overflow-hidden text-left min-h-[440px] transition-all duration-500 relative z-10 w-full"
+          className="bg-card rounded-xl border border-border flex flex-col md:flex-row overflow-hidden text-left min-h-[440px] relative z-10 w-full"
         >
-          {/* Editor Side: Full Mac Window Pane */}
-          <div className="w-full md:w-1/2 min-w-0 bg-[#1a1b24]/90 backdrop-blur-xl border-b md:border-b-0 md:border-r border-border relative flex flex-col font-mono overflow-hidden">
-            {/* Traffic Light Menu Bar */}
-            <div className="h-12 bg-[#2d2d33]/50 border-b border-white/5 flex items-center px-5 relative shrink-0">
-              <div className="flex gap-[6px]">
-                <div className="w-3.5 h-3.5 rounded-full bg-[#ff5f56]" />
-                <div className="w-3.5 h-3.5 rounded-full bg-[#ffbd2e]" />
-                <div className="w-3.5 h-3.5 rounded-full bg-[#27c93f]" />
+          {/* Editor Side: Mac Window Pane */}
+          <div className="w-full md:w-1/2 min-w-0 bg-card border-b md:border-b-0 md:border-r border-border relative flex flex-col font-mono overflow-hidden">
+            {/* Window Chrome with neutral dots in --border-strong */}
+            <div className="h-11 bg-muted/40 border-b border-border flex items-center px-4 relative shrink-0">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full border border-border-strong bg-transparent" />
+                <div className="w-3 h-3 rounded-full border border-border-strong bg-transparent" />
+                <div className="w-3 h-3 rounded-full border border-border-strong bg-transparent" />
               </div>
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                 <span className="text-white/30 text-xs tracking-widest font-semibold">app.config.json</span>
+                <span className="text-muted-foreground text-xs font-medium">app.config.json</span>
               </div>
             </div>
-            
-            {/* Code */}
-            <div className="p-8 md:p-10 overflow-x-auto flex-1 relative flex items-center">
-              <pre className="text-sm md:text-[15px] leading-loose text-[#D4D4D4]">
-{`{
-  "app": "ops_dashboard",
-  "pages": [{
-    "components": [
-      { "type": "Metric", "title": "Active Workflows" },
-      { "type": "DataTable", "entity": "workflows" }
-    ]
-  }]
-}`}
+
+            {/* Syntax-highlighted code matching builder editor theme tokens */}
+            <div className="p-6 md:p-8 overflow-x-auto flex-1 flex items-center">
+              <pre className="text-xs md:text-[13px] leading-relaxed font-mono">
+                <code>
+                  <span className="text-muted-foreground">{"{"}</span>
+                  {"\n  "}<span className="text-accent">&quot;app&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;ops_dashboard&quot;</span><span className="text-muted-foreground">,</span>
+                  {"\n  "}<span className="text-accent">&quot;pages&quot;</span><span className="text-muted-foreground">: [</span>
+                  {"\n    "}<span className="text-muted-foreground">{"{"}</span>
+                  {"\n      "}<span className="text-accent">&quot;components&quot;</span><span className="text-muted-foreground">: [</span>
+                  {"\n        "}<span className="text-muted-foreground">{"{"}</span>
+                  {"\n          "}<span className="text-accent">&quot;type&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;Statistic&quot;</span><span className="text-muted-foreground">,</span>
+                  {"\n          "}<span className="text-accent">&quot;label&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;Active Workflows&quot;</span><span className="text-muted-foreground">,</span>
+                  {"\n          "}<span className="text-accent">&quot;value&quot;</span><span className="text-muted-foreground">: </span><span className="text-warning-text">1244</span><span className="text-muted-foreground">,</span>
+                  {"\n          "}<span className="text-accent">&quot;trend&quot;</span><span className="text-muted-foreground">: {"{"} </span><span className="text-accent">&quot;value&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;+12%&quot;</span><span className="text-muted-foreground">, </span><span className="text-accent">&quot;sentiment&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;positive&quot;</span><span className="text-muted-foreground"> {"}"}</span>
+                  {"\n        "}<span className="text-muted-foreground">{"}"},</span>
+                  {"\n        "}<span className="text-muted-foreground">{"{"}</span>
+                  {"\n          "}<span className="text-accent">&quot;type&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;DataTable&quot;</span><span className="text-muted-foreground">,</span>
+                  {"\n          "}<span className="text-accent">&quot;columns&quot;</span><span className="text-muted-foreground">: [</span>
+                  {"\n            "}<span className="text-muted-foreground">{"{"} </span><span className="text-accent">&quot;key&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;workflow&quot;</span><span className="text-muted-foreground">, </span><span className="text-accent">&quot;type&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;avatar&quot;</span><span className="text-muted-foreground"> {"}"},</span>
+                  {"\n            "}<span className="text-muted-foreground">{"{"} </span><span className="text-accent">&quot;key&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;trigger&quot;</span><span className="text-muted-foreground">, </span><span className="text-accent">&quot;type&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;code&quot;</span><span className="text-muted-foreground"> {"}"},</span>
+                  {"\n            "}<span className="text-muted-foreground">{"{"} </span><span className="text-accent">&quot;key&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;status&quot;</span><span className="text-muted-foreground">, </span><span className="text-accent">&quot;type&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;badge&quot;</span><span className="text-muted-foreground"> {"}"}</span>
+                  {"\n          "}<span className="text-muted-foreground">],</span>
+                  {"\n          "}<span className="text-accent">&quot;data&quot;</span><span className="text-muted-foreground">: [</span>
+                  {"\n            "}<span className="text-muted-foreground">{"{"} </span><span className="text-accent">&quot;workflow&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;User Sync&quot;</span><span className="text-muted-foreground">, </span><span className="text-accent">&quot;status&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;Running&quot;</span><span className="text-muted-foreground"> {"}"},</span>
+                  {"\n            "}<span className="text-muted-foreground">{"{"} </span><span className="text-accent">&quot;workflow&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;Invoice Gen&quot;</span><span className="text-muted-foreground">, </span><span className="text-accent">&quot;status&quot;</span><span className="text-muted-foreground">: </span><span className="text-success-text">&quot;Idle&quot;</span><span className="text-muted-foreground"> {"}"}</span>
+                  {"\n          "}<span className="text-muted-foreground">]</span>
+                  {"\n        "}<span className="text-muted-foreground">{"}"}</span>
+                  {"\n      "}<span className="text-muted-foreground">]</span>
+                  {"\n    "}<span className="text-muted-foreground">{"}"}</span>
+                  {"\n  "}<span className="text-muted-foreground">]</span>
+                  {"\n"}<span className="text-muted-foreground">{"}"}</span>
+                </code>
               </pre>
             </div>
           </div>
-          
-          {/* Rendered Side */}
-          <div className="w-full md:w-1/2 min-w-0 bg-muted/60 p-6 md:p-8 relative flex flex-col justify-center overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-brand/5 via-transparent to-surface-secondary pointer-events-none rounded-r-xl" />
-            
-            <div className="flex items-center gap-3 mb-6 relative z-10">
-              <div className="p-1.5 bg-brand text-white rounded-md shadow-lg shadow-brand/20">
-                <LayoutTemplate size={16} />
-              </div>
-              <h3 className="m-0 text-sm font-bold text-foreground tracking-wider uppercase text-brand">
-                Rendered Application
-              </h3>
+
+          {/* Rendered Side: Real Registry Renderers */}
+          <div className="w-full md:w-1/2 min-w-0 bg-muted/30 p-5 md:p-6 flex flex-col justify-center">
+            <div className="flex items-center gap-2 mb-4">
+              <LayoutTemplate className="w-4 h-4 text-muted-foreground" />
+              <span className="text-xs font-semibold text-foreground">Preview</span>
             </div>
-            
-            <div className="flex flex-col gap-6 relative z-10">
-              {/* Metric Card - Eye Candy */}
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 }}
-                className="bg-card p-6 rounded-xl border border-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_15px_40px_rgba(108,87,164,0.15)] transition-all duration-500 transform hover:-translate-y-1 relative overflow-hidden group"
-              >
-                <div className="absolute top-0 right-0 p-6 opacity-30 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">
-                  <div className="w-12 h-12 rounded-full border-2 border-brand/20 flex items-center justify-center">
-                    <span className="text-brand font-extrabold text-xl">👥</span>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col relative z-10">
-                  <span className="text-slate-400 text-sm font-medium tracking-wide flex items-center gap-2">
-                    Active Workflows
-                  </span>
-                  <div className="flex items-baseline gap-4 mt-2">
-                    <div className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-text-primary to-slate-400 tracking-tighter drop-shadow-sm">
-                      1,244
-                    </div>
-                    <span className="flex items-center gap-1 text-[11px] font-bold text-[#27C93F] bg-[#27C93F]/10 px-2 py-0.5 rounded-full border border-[#27C93F]/20 shadow-[0_0_10px_rgba(39,201,63,0.1)]">
-                      +12% 
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-              
-              {/* Table Card - Eye Candy */}
-              <motion.div 
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1 }}
-                className="bg-card rounded-xl border border-white/5 overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_15px_40px_rgba(108,87,164,0.1)] transition-all duration-500 transform hover:-translate-y-1"
-              >
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-muted/50 border-b border-border/50 backdrop-blur-md">
-                      <tr>
-                        <th className="px-5 py-4 font-semibold text-slate-400 uppercase tracking-wider text-[11px]">Workflow</th>
-                        <th className="px-5 py-4 font-semibold text-slate-400 uppercase tracking-wider text-[11px]">Trigger</th>
-                        <th className="px-5 py-4 font-semibold text-slate-400 uppercase tracking-wider text-[11px]">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-border/50 hover:bg-muted transition-colors group cursor-pointer">
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-white text-xs font-bold shadow-md shadow-brand/20">US</div>
-                            <span className="font-semibold text-foreground group-hover:text-brand transition-colors">User Sync</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-slate-500 text-xs font-mono">cron:hourly</td>
-                        <td className="px-5 py-4">
-                          <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#27C93F]/10 text-[#27C93F] border border-[#27C93F]/20 shadow-[0_0_8px_rgba(39,201,63,0.1)]">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#27C93F] animate-pulse" /> Running
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-muted transition-colors group cursor-pointer">
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-accent border border-border flex items-center justify-center text-foreground text-xs font-bold">IG</div>
-                            <span className="font-semibold text-foreground group-hover:text-brand transition-colors">Invoice Gen</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-slate-500 text-xs font-mono">webhook:rx</td>
-                        <td className="px-5 py-4">
-                          <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-bold bg-accent text-slate-400 border border-white/5">
-                            <div className="w-1 h-1 rounded-full bg-slate-500" /> Idle
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </motion.div>
+
+            <div className="flex flex-col gap-4">
+              {demoConfig.pages[0].components.map((comp, idx) => (
+                <RenderNode key={idx} config={comp} />
+              ))}
             </div>
           </div>
         </motion.div>
@@ -212,4 +179,3 @@ export function Hero() {
     </section>
   );
 }
-

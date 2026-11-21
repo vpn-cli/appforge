@@ -5,16 +5,22 @@ const isPublicRoute = createRouteMatcher([
   "/templates(.*)",
   "/terms(.*)",
   "/privacy(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/not-found(.*)",
   "/builder/template-(.*)",
   "/builder/demo(.*)",
   "/builder/mock-(.*)",
+  "/apps(.*)",
+  "/dashboard(.*)",
+  "/api/proxy/(.*)",
   "/api/copilot(.*)",
   "/api/health",
   "/api/webhooks/clerk(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV !== "production" && process.env.DEV_AUTH_BYPASS === "true") {
     return;
   }
 

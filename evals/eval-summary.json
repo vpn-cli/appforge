@@ -1,0 +1,61 @@
+{
+  "timestamp": "2026-11-18T08:27:21.480Z",
+  "environment": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "arch": "x64",
+    "cpus": "AMD Ryzen 7 6800H with Radeon Graphics         ",
+    "nodeVersion": "v24.15.0"
+  },
+  "models": {
+    "groq_120b_partial": {
+      "model": "Groq (openai/gpt-oss-120b) [Partial]",
+      "sampleSize": 67,
+      "successCount": 57,
+      "nodeValidationPassRate": 92.8,
+      "fullLayoutPassRate": 71.6,
+      "latencyValid": false,
+      "firstRenderP50Ms": "INVALID",
+      "firstRenderP95Ms": "INVALID",
+      "fullLayoutP50Ms": "INVALID",
+      "fullLayoutP95Ms": "INVALID",
+      "avgTokensPerPrompt": 0,
+      "avgThinkingTokens": 0,
+      "totalComponentsEvaluated": 152,
+      "validComponentsEvaluated": 141
+    },
+    "groq_20b": {
+      "model": "Groq (openai/gpt-oss-20b)",
+      "sampleSize": 100,
+      "successCount": 97,
+      "nodeValidationPassRate": 87.7,
+      "fullLayoutPassRate": 68,
+      "latencyValid": true,
+      "firstRenderP50Ms": 1620,
+      "firstRenderP95Ms": 2917,
+      "fullLayoutP50Ms": 1956,
+      "fullLayoutP95Ms": 3341,
+      "avgTokensPerPrompt": 1749,
+      "avgThinkingTokens": 0,
+      "totalComponentsEvaluated": 260,
+      "validComponentsEvaluated": 228
+    },
+    "gemini_2_5_flash": {
+      "model": "Gemini (gemini-2.5-flash)",
+      "sampleSize": 100,
+      "successCount": 1,
+      "nodeValidationPassRate": 100,
+      "fullLayoutPassRate": 1,
+      "latencyValid": false,
+      "firstRenderP50Ms": "INVALID",
+      "firstRenderP95Ms": "INVALID",
+      "fullLayoutP50Ms": "INVALID",
+      "fullLayoutP95Ms": "INVALID",
+      "avgTokensPerPrompt": 0,
+      "avgThinkingTokens": 0,
+      "totalComponentsEvaluated": 3,
+      "validComponentsEvaluated": 3
+    }
+  },
+  "reproductionCommand": "node scripts/run-evals.mjs"
+}

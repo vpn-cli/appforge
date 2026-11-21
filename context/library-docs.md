@@ -37,9 +37,15 @@ import { cookies } from "next/headers";
 
 export const createInsforgeServer = async () => {
   const cookieStore = await cookies();
+  // Anon-key fallback has been permanently removed. SUPABASE_SERVICE_ROLE_KEY is required.
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    throw new Error("FATAL: SUPABASE_SERVICE_ROLE_KEY is required for server database operations.");
+  }
+
   return createServerClient(
     process.env.NEXT_PUBLIC_INSFORGE_URL!,
-    process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
+    serviceRoleKey,
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
