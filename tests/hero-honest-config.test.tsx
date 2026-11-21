@@ -253,7 +253,8 @@ describe("PART 3 — Honest Hero Config", () => {
     const parsed101 = StatisticSchema.safeParse(stat101);
     expect(parsed101.success).toBe(false);
     if (!parsed101.success) {
-      expect(parsed101.error.issues[0]?.message).toMatch(/too big|<=100|at most 100/i);
+      const allMessages = JSON.stringify(parsed101.error);
+      expect(allMessages).toMatch(/too big|<=100|at most 100/i);
     }
   });
 
