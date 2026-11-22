@@ -104,20 +104,21 @@ Esc or outside click collapses back to 52px pill.
 Respects prefers-reduced-motion.
 ```
 
-### Home Landing Redesign (MeshGradient Background, Honest Registry Hero & Below-the-Fold Sections)
+### Home Landing Redesign (NativeMeshShader Background, Honest Registry Hero & Below-the-Fold Sections)
 
-**Hero Animated Mesh-Gradient Background (`components/home/HeroMeshBackground.tsx`, `components/home/HeroMeshShader.tsx`)**
+**Hero Animated Mesh-Gradient Background (`components/home/HeroMeshBackground.tsx`, `components/home/NativeMeshShader.tsx`)**
 ```text
-Library: @paper-design/shaders-react (MeshGradient) — PolyForm Shield License 1.0.0 (Copyright Lost Coast Labs, Inc., http://paper.design) — pinned exact version 0.0.82
+Library: Zero dependencies (custom lightweight WebGL mesh shader; replaced @paper-design/shaders-react)
 Tokens (app/globals.css & lib/shader-tokens.ts):
-  Light: --mesh-c1 (#F2F1F9), --mesh-c2 (#CFCBFE), --mesh-c3 (#ADA6FC), --mesh-c4 (#C9D8FF)
-  Dark:  --mesh-c1 (#0B0B12), --mesh-c2 (#3E2F9A), --mesh-c3 (#6D5BF0), --mesh-c4 (#2A3A8A)
-Parameters: distortion 0.9, swirl 0.5, speed 0.6, minPixelRatio 1, maxPixelCount 1,500,000 (~1.5 DPR cap at 1440×900)
+  Light: canvas (--canvas / --mesh-c1), brand-200 (--brand-200), brand-300 (--brand-300), light indigo/periwinkle (--wash-blue / --mesh-c4)
+  Dark:  ink-950 (--ink-950), brand-800 (--brand-800), brand-500 (--brand-500), indigo (--indigo / --brand-headline-end)
+Compilation: KHR_parallel_shader_compile non-blocking async compilation with rAF polling; idle fallback (load + 1s)
+Geometry: Full-screen triangle buffer [-1, -1, 3, -1, -1, 3]
 Mask: .hero-mesh-mask (bottom soft fade to canvas color)
 Guardrails:
-  - Desktop: requestIdleCallback with setTimeout fallback
+  - Desktop: non-blocking async compile with KHR extension, smooth 400ms fade-in
   - Mobile (pointer: coarse or width < 768px): zero WebGL, static CSS radial-gradient fallback (.hero-mesh-fallback)
-  - prefers-reduced-motion: static frame (speed: 0) on desktop, static CSS on mobile
+  - prefers-reduced-motion: single static frame (t = 0) on desktop, static CSS on mobile
   - Visibility & viewport: pauses on off-screen (IntersectionObserver) and document.hidden (visibilitychange)
 Legibility Scrim & Panels:
   - Soft radial gradient in canvas color behind hero headline/subtext ensuring >= 4.5:1 WCAG contrast (dark 5.81:1, light 4.63:1)
@@ -328,12 +329,12 @@ Copilot Floating Pill (components/builder/CopilotFloatingPill.tsx):
     Dismissal: Esc key, click outside, collapse chevron button, or ⌘K shortcut
 ```
 
-### Shipped Hero Background (`HeroMeshBackground`)
+### Shipped Hero Background (`HeroMeshBackground`, `NativeMeshShader`)
 ```text
 Underlay:
-  Engine: @paper-design/shaders-react MeshGradient (v0.0.82)
-  Parameters: distortion 0.95, swirl 0.85, speed 1.4, scale 1.25, rotation 15, DPR <= 1.5
-  Theme Sync: Synchronized via CSS variables and DOM MutationObserver without canvas remount
-  Performance: Desktop requestIdleCallback compilation; zero WebGL on mobile/coarse pointers (pure CSS radial fallback); auto-pause on hidden tab and off-screen
+  Engine: Custom Native Mesh Shader (0 dependencies, GLSL domain-warped FBM)
+  Geometry: Full-screen triangle [-1, -1, 3, -1, -1, 3] in 1 draw call, DPR cap 1.5
+  Theme Sync: Synchronized via CSS variables and DOM MutationObserver without canvas remount or shader recompile
+  Performance: KHR_parallel_shader_compile async polling; zero WebGL on mobile/coarse pointers (pure CSS radial fallback); auto-pause on hidden tab and off-screen; 400ms fade-in
   Contrast: WCAG 2.2 AA compliant with radial scrim overlay (5.81:1 in dark mode, 4.63:1 in light mode)
 ```
