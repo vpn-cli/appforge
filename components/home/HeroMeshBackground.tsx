@@ -3,16 +3,18 @@
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
-import { warmCompileMeshShader } from "@/lib/shader-warmup";
 
-const DynamicHeroMeshShader = dynamic(
-  () => import("./HeroMeshShader").then((mod) => mod.HeroMeshShader),
+const DynamicNativeMeshShader = dynamic(
+  () => import("./NativeMeshShader").then((mod) => mod.NativeMeshShader),
   { ssr: false }
 );
 
-function hasWebGL2Api(): boolean {
+function hasWebGLApi(): boolean {
   if (typeof window === "undefined") return false;
-  return typeof window.WebGL2RenderingContext !== "undefined";
+  return (
+    typeof window.WebGL2RenderingContext !== "undefined" ||
+    typeof window.WebGLRenderingContext !== "undefined"
+  );
 }
 
 function isMobileEnvironment(): boolean {
@@ -34,6 +36,12 @@ export function HeroMeshBackground() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
 
+  const forceCss =
+    process.env.NEXT_PUBLIC_FORCE_CSS_FALLBACK === "true" ||
+    (typeof window !== "undefined" &&
+      ((window as any).__FORCE_CSS_FALLBACK === true ||
+        window.location.search.includes("fallback=css")));
+
   // Track prefers-reduced-motion live
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
@@ -52,18 +60,18 @@ export function HeroMeshBackground() {
     };
     updateDeviceType();
     // Preload dynamic chunk during idle so module evaluation never blocks input
-    if (!isMobileEnvironment()) {
-      import("./HeroMeshShader").catch(() => {});
+    if (!isMobileEnvironment() && !forceCss) {
+      import("./NativeMeshShader").catch(() => {});
     }
     window.addEventListener("resize", updateDeviceType, { passive: true });
     return () => window.removeEventListener("resize", updateDeviceType);
-  }, []);
+  }, [forceCss]);
 
   // Desktop guardrail: Mount WebGL strictly after first paint via requestIdleCallback
   // Mobile guardrail: Zero WebGL (stays on static CSS fallback)
   useEffect(() => {
-    if (shaderFailed || isMobile) {
-      if (isMobile && shaderEnabled) {
+    if (shaderFailed || isMobile || forceCss) {
+      if ((isMobile || forceCss) && shaderEnabled) {
         setShaderEnabled(false);
       }
       return;
@@ -75,10 +83,8 @@ export function HeroMeshBackground() {
 
     const activate = () => {
       if (cancelled) return;
-      if (isMobileEnvironment()) return;
-      if (hasWebGL2Api()) {
-        // Warm-compile shader during idle before mounting to guarantee ANGLE shader cache hit
-        warmCompileMeshShader();
+      if (isMobileEnvironment() || forceCss) return;
+      if (hasWebGLApi()) {
         startTransition(() => setShaderEnabled(true));
       } else {
         setShaderFailed(true);
@@ -109,7 +115,7 @@ export function HeroMeshBackground() {
         window.clearTimeout(timerId);
       }
     };
-  }, [shaderFailed, isMobile, shaderEnabled]);
+  }, [shaderFailed, isMobile, shaderEnabled, forceCss]);
 
   // Pause when document is hidden (tab switch or minimized)
   useEffect(() => {
@@ -144,7 +150,7 @@ export function HeroMeshBackground() {
 
   // Desktop mounts WebGL; on mobile or failure, stays on CSS fallback.
   // When prefers-reduced-motion is true on desktop, shader runs with speed 0 (static frame).
-  const shouldRenderShader = shaderEnabled && !shaderFailed && !isMobile;
+  const shouldRenderShader = shaderEnabled && !shaderFailed && !isMobile && !forceCss;
   const isPaused = isDocumentHidden || !isVisibleInViewport;
   const shaderState = !shouldRenderShader
     ? "fallback"
@@ -165,10 +171,10 @@ export function HeroMeshBackground() {
       {/* Immediate static CSS radial-gradient version in the same palette (mobile, first paint, fallback) */}
       <div className="absolute inset-0 hero-mesh-fallback" />
 
-      {/* Desktop WebGL MeshGradient mounted in requestIdleCallback without remounting on theme switch */}
+      {/* Desktop WebGL NativeMeshShader mounted asynchronously without remounting on theme switch */}
       {shouldRenderShader && (
         <div className="absolute inset-0 transition-opacity duration-700 opacity-90 dark:opacity-95">
-          <DynamicHeroMeshShader
+          <DynamicNativeMeshShader
             themeKey={resolvedTheme || "dark"}
             isPaused={isPaused}
             prefersReducedMotion={prefersReducedMotion}
