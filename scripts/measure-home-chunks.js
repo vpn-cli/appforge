@@ -21,7 +21,7 @@ for (const s of scripts) {
     totalRaw += buf.length;
     totalGz += gz;
     const str = buf.toString('utf8');
-    const isShader = str.includes('@paper-design/shaders') || str.includes('HeroMeshBackground');
+    const isShader = str.includes('NativeMeshShader') || str.includes('HeroMeshBackground');
     if (isShader) {
       shaderRaw += buf.length;
       shaderGz += gz;

@@ -20,14 +20,6 @@ export function Footer() {
         </div>
 
         <nav aria-label="Footer navigation" className="flex flex-wrap items-center gap-6">
-          <a
-            href="http://paper.design"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-text-secondary text-[14px] hover:text-foreground transition-colors"
-          >
-            Background by Paper Shaders
-          </a>
           <Link
             href="/templates"
             prefetch={false}
