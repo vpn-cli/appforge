@@ -12,9 +12,8 @@ CREATE TABLE apps (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- RLS Enabled to satisfy security checks, but bypassing via wide open policy as security relies on Next.js Server Actions
+-- RLS Enabled with NO public policies: all access restricted to service_role via Server Actions / proxy handlers
 ALTER TABLE apps ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow Nextjs Server Actions on apps" ON apps FOR ALL USING (true);
 
 -- Table: validation_logs
 CREATE TABLE validation_logs (
@@ -39,9 +38,8 @@ CREATE TABLE app_schemas (
   UNIQUE(app_id, table_name)
 );
 
--- RLS Enabled
+-- RLS Enabled with NO public policies: all access restricted to service_role via Server Actions / proxy handlers
 ALTER TABLE app_schemas ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow Nextjs Server Actions on app_schemas" ON app_schemas FOR ALL USING (true);
 -- Set up trigger for updated_at
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$

@@ -11,7 +11,6 @@ AppForge interprets natural language prompts via large language models, compiles
 ![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E)
 ![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF)
 ![Upstash Redis](https://img.shields.io/badge/Upstash_Redis-Cache-FF3E00)
-![Upstash Kafka](https://img.shields.io/badge/Upstash_Kafka-Queue-231F20)
 ![Groq](https://img.shields.io/badge/Groq-LPU_Inference-F36E0B)
 
 ---
@@ -51,7 +50,6 @@ Traditional web applications require developers to hardcode layouts, map databas
 - **Prompt-to-Software Copilot:** The `CopilotPanel` routes raw user requests to an AI LLM, instantly returning a structured JSON DOM.
 - **Serverless Semantic Caching:** Prevents hallucination overhead and massive LLM generation latencies by instantly serving repeated prompts via Upstash Redis.
 - **Dynamic Postgres Sync Engine:** AppForge intercepts the generated UI AST and dynamically executes runtime DDL (`CREATE TABLE/ALTER`) on a Supabase database instance to provision identical backend architecture on the fly.
-- **Background Event Brokerage:** Every publish action instantly fires asynchronous fire-and-forget payloads into Upstash Kafka for decoupled business intelligence analytics.
 - **Production-grade Global Edge Routing:** Clerk auth middleware secures the entire platform across 300+ Edge nodes, dynamically locking out unauthenticated bots from modifying global states.
 - **Smart Quota Sandboxing:** Guests natively experience the system instantly up to a localized maximum ceiling before being seamlessly captured into the Authentication funnel.
 
@@ -67,7 +65,7 @@ Traditional web applications require developers to hardcode layouts, map databas
 
 ## Architecture
 
-At a high level, AppForge operates within a hybrid SSR (Server-Side Rendered) matrix leveraging the Next.js Edge runtime, Supabase Data proxies, and an Event-Driven architecture cluster.
+At a high level, AppForge operates within a hybrid SSR (Server-Side Rendered) matrix leveraging the Next.js Edge runtime, Supabase Data proxies, and an Upstash semantic cache layer.
 
 ```text
                   ┌──────────────────────┐
@@ -81,19 +79,18 @@ At a high level, AppForge operates within a hybrid SSR (Server-Side Rendered) ma
                   │ Next.js App Router   │
                   │ (Server Actions & API)│
                   │ + Clerk Middleware   │
-                  └────┬──────┬──────┬───┘
-          Event Pub    │      │ Cache│      Auth / RPC
-          ┌────────────┘      │      └────────────┐
-          ▼                   ▼                   ▼
-┌──────────────────┐ ┌────────────────┐ ┌───────────────────┐
-│  Upstash Kafka   │ │ Upstash Redis  │ │ Supabase Postgres │
-│  (Topic Streams) │ │ (Semantic Mem) │ │ (Schema + Apps)   │
-└──────────────────┘ └────────┬───────┘ └───────────────────┘
-                              │
-                    ┌─────────┴────────┐
-                    │ LLM Providers    │
-                    │ (Groq / Gemini)  │
-                    └──────────────────┘
+                  └────┬──────────────┬──┘
+                       │ Cache        │ Auth / RPC
+                       ▼              ▼
+              ┌────────────────┐ ┌───────────────────┐
+              │ Upstash Redis  │ │ Supabase Postgres │
+              │ (Semantic Mem) │ │ (Schema + Apps)   │
+              └────────┬───────┘ └───────────────────┘
+                       │
+             ┌─────────┴────────┐
+             │ LLM Providers    │
+             │ (Groq / Gemini)  │
+             └──────────────────┘
 ```
 
 ---
@@ -111,11 +108,6 @@ At a high level, AppForge operates within a hybrid SSR (Server-Side Rendered) ma
 - **Responsibility:** Recursively scrape the nested JSON metadata component tree on save/publish to automatically create respective Postgres `tables` natively reflecting the UI layout fields. 
 - **Dependencies:** `@supabase/ssr`, `lib/insforge-server`.
 - **Important Implementation Details:** Uses `execute_app_ddl` via Supabase RPC to securely execute runtime data-definition languages while shielding the central registry tables from malicious DROPs or mutations.
-
-### Analytics Decoupler (`lib/event-queue.ts`)
-- **Responsibility:** Fire-and-forget payload drops triggered upon structural commits.
-- **Dependencies:** `@upstash/kafka`.
-- **Failure Modes:** Deliberate "Try/Catch with Empty Throw." Downstream Kafka anomalies will never break the primary HTTP transaction loop on the user facing client.
 
 ---
 
@@ -156,7 +148,6 @@ appforge/
 | **Backend**        | Next.js App Router | Edge-capable API runtime. |
 | **Database**       | Supabase (PostgreSQL) | Stores central application JSON configurations and handles Dynamic App instances. |
 | **Authentication** | Clerk B2B | Provides JWT-mediated state control natively wired directly into Next.js middleware. |
-| **Queue**          | Upstash Kafka | Low-latency serverless event brokering for analytical webhooks. |
 | **Cache/RateLimit**| Upstash Redis | Hard prevents API exhaustion and speeds up identical query latencies globally. |
 | **Generative AI**  | AI SDK Core | Standardized multi-model fallback streaming execution (Groq, Gemini). |
 | **Observability**  | Sentry | Full cycle Next.js Error Monitoring locally and globally. |
@@ -248,11 +239,7 @@ Authentication is natively enforced using **Clerk**.
 | `GEMINI_API_KEY_2` | Optional | `AIza...` | Tier 2 failover key ensuring zero-downtime structural capacity. |
 | `UPSTASH_REDIS_REST_URL` | Yes | `https://xx.upstash.io` | Connection URL for REST API Serverless KV fetching. |
 | `UPSTASH_REDIS_REST_TOKEN` | Yes | `AXXX...` | Security token allowing API validation to the DB cache tier. |
-| `UPSTASH_KAFKA_REST_URL` | Yes | `https://xx.upstash.io` | Connection URL serving background telemetry logic. |
-| `UPSTASH_KAFKA_REST_USERNAME` | Yes | `default` | Security cluster identifier verifying event payloads. |
-| `UPSTASH_KAFKA_REST_PASSWORD` | Yes | `XXXX...` | Security hash authorizing push topics. |
 | `NEXT_PUBLIC_SENTRY_DSN` | Optional | `https://xx@sentry.io/xx`| Application telemetry monitoring pipeline sink configurations |
-| `ADMIN_BYPASS_KEY` | Optional | `super_secret_string` | Testing parameter to circumnavigate explicit production server checks. |
 
 *(All secrets are kept secure within `.env.local` locally and mapped securely out into the Vercel variables GUI in prod.)*
 
@@ -363,6 +350,7 @@ The enterprise pipeline heavily restricts branches. It is comprised strictly of 
 ---
 
 ## Known Limitations / TODO
+- **Security & Database Access Model**: Server-only DB access with app-level ownership checks; RLS blocks anonymous key access only. Native Clerk Third-Party Auth (JWKS token validation) is not configured in Supabase PostgREST. All database queries and mutations from authenticated users execute server-side in Next.js Server Actions and Route Handlers using the Supabase Service Role key (`SUPABASE_SERVICE_ROLE_KEY`), with tenant isolation verified by Clerk `auth()` (`eq('user_id', userId)`). Postgres Row-Level Security (RLS) is active strictly to block anonymous key access (`anon`), restricting public reads solely to published applications (`published_config IS NOT NULL`). Direct authenticated PostgREST calls with Clerk JWTs return `PGRST301` without Supabase Dashboard JWKS configuration.
 - **TODO / Verify (React Testing Layer):** There is currently no active e2e testing interface. Adding `Playwright` to strictly verify DOM layout alignment output from generic JSON structures would guarantee a vastly more secure build layer.
 - **TODO / Verify:** AI Provider Failover Logic is extremely simplistic. Migrating to a complex load-balancer tracking API quota exhaustions heavily per key natively rather than sequential cascading fallbacks.
 - **Functional Limitation (Publishing):** Guests cannot natively host simulated domains in full isolation. They require immediate `auth.protect()` transitions.

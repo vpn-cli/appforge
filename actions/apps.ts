@@ -3,46 +3,134 @@
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { cookies } from "next/headers";
-import { EventPublisher } from "@/lib/event-queue";
+import { syncAppSchema } from "@/actions/schema";
+import { normalizeConfigFieldNames } from "@/lib/config-normalizer";
+import { isSandboxAppId } from "@/lib/sandbox";
 
 /**
- * Checks Clerk for a real user session. 
- * If none exists, checks for a secure ADMIN bypass cookie.
+ * Resolves the authenticated user ID.
+ * The development bypass is strictly opt-in via DEV_AUTH_BYPASS=true and is hard-blocked in production.
  */
+function isDevAuthBypassEnabled(): boolean {
+  return process.env.NODE_ENV !== "production" && process.env.DEV_AUTH_BYPASS === "true";
+}
+
 async function getAuthOrBypass() {
+  if (isDevAuthBypassEnabled()) {
+    return { userId: "dev-bypass-user", isBypass: true };
+  }
+
   const { userId } = await auth();
   if (userId) return { userId, isBypass: false };
 
-  const cookieStore = await cookies();
-  const adminCookie = cookieStore.get("APPFORGE_ADMIN_BYPASS")?.value;
-  if (adminCookie && process.env.ADMIN_BYPASS_KEY && adminCookie === process.env.ADMIN_BYPASS_KEY) {
-    return { userId: "admin-bypass-user", isBypass: true };
-  }
-  
-  if (process.env.NODE_ENV === "development") {
-    return { userId: "dev-bypass-user", isBypass: true };
-  }
-  
   return { userId: null, isBypass: false };
 }
 
 export async function getUserApps() {
-  const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
   if (isBypass) {
     return [
-      { id: "mock-1", name: "Internal CRM (Admin Mock)", updated_at: new Date().toISOString(), status: "Published" },
-      { id: "mock-2", name: "Inventory Tracker (Admin Mock)", updated_at: new Date(Date.now() - 3600000).toISOString(), status: "Draft" },
+      {
+        id: "mock-1",
+        name: "Customer Success Portal",
+        updated_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+        status: "Published",
+        config: {
+          app: "Customer Success Portal",
+          pages: [
+            {
+              components: [
+                {
+                  type: "Header",
+                  title: "Customer Success & Operations",
+                  subtitle: "Active enterprise accounts, health scores, and critical churn alerts.",
+                  size: "lg",
+                },
+                {
+                  type: "Grid",
+                  columns: 3,
+                  gap: 4,
+                  items: [
+                    { type: "Statistic", label: "Net Retention", value: "114%", trend: "up", trendValue: "+3.2%" },
+                    { type: "Statistic", label: "Accounts at Risk", value: "2", trend: "down", trendValue: "-1" },
+                    { type: "Statistic", label: "Expansion ARR", value: "$42,800" },
+                  ],
+                },
+                {
+                  type: "DataTable",
+                  entity: "accounts",
+                  columns: [
+                    { key: "company", label: "Account Name", type: "text" },
+                    { key: "mrr", label: "ARR ($)", type: "number" },
+                    { key: "health", label: "Health", type: "badge" },
+                  ],
+                  data: [
+                    { id: "1", company: "Acme Logistics", mrr: 18200, health: "Good" },
+                    { id: "2", company: "Vanguard Tech", mrr: 29500, health: "Review" },
+                    { id: "3", company: "Helix Biotech", mrr: 12400, health: "Good" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        id: "mock-2",
+        name: "Global Fleet Logistics",
+        updated_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+        status: "Draft",
+        config: {
+          app: "Global Fleet Logistics",
+          pages: [
+            {
+              components: [
+                {
+                  type: "Header",
+                  title: "Fleet Operations Telemetry",
+                  subtitle: "Real-time dispatch, route schedules, and equipment alerts.",
+                  size: "lg",
+                },
+                {
+                  type: "Grid",
+                  columns: 3,
+                  gap: 4,
+                  items: [
+                    {
+                      type: "Card",
+                      title: "Western Depot",
+                      subtitle: "24 vehicles online · 0 critical alerts",
+                      footer: [{ type: "ButtonAction", label: "Inspect depot", variant: "outline" }],
+                    },
+                    {
+                      type: "Card",
+                      title: "Eastern Corridor",
+                      subtitle: "18 vehicles online · 1 scheduled repair",
+                      footer: [{ type: "ButtonAction", label: "Inspect corridor", variant: "outline" }],
+                    },
+                    {
+                      type: "Card",
+                      title: "Central Hub",
+                      subtitle: "42 vehicles online · nominal status",
+                      footer: [{ type: "ButtonAction", label: "Inspect hub", variant: "outline" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
     ];
   }
 
   if (!userId) throw new Error("Unauthorized");
 
+  const supabase = await createInsforgeServer();
   const { data, error } = await supabase
     .from("apps")
-    .select("id, name, updated_at, published_config")
+    .select("id, name, updated_at, published_config, config")
     .eq("user_id", userId)
     .order("updated_at", { ascending: false });
 
@@ -57,25 +145,29 @@ export async function getUserApps() {
   }));
 }
 
-export async function createApp() {
+export async function createApp(prompt?: string) {
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
+  const querySuffix = prompt ? `?prompt=${encodeURIComponent(prompt)}` : "";
+
   if (isBypass) {
-    redirect("/builder/mock-new-id");
+    redirect(`/builder/mock-new-id${querySuffix}`);
   }
 
   // Gracefully bounce unauthenticated 'Create New App' clicks to the sandbox
   if (!userId) {
-    redirect("/builder/template-blank");
+    redirect(`/builder/template-blank${querySuffix}`);
   }
+
+  const appName = prompt ? prompt.trim().slice(0, 36) : "Untitled App";
 
   const { data, error } = await supabase
     .from("apps")
     .insert({
       user_id: userId,
-      name: "Untitled App",
-      config: { app: "Untitled App", pages: [] },
+      name: appName,
+      config: { app: appName, pages: [] },
     })
     .select("id")
     .single();
@@ -85,7 +177,7 @@ export async function createApp() {
     throw new Error("Failed to create app");
   }
 
-  redirect(`/builder/${data.id}`);
+  redirect(`/builder/${data.id}${querySuffix}`);
 }
 
 export async function createAppFromTemplate(templateId: string) {
@@ -99,7 +191,7 @@ export async function createAppFromTemplate(templateId: string) {
   // Determine template initial configuration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let initialConfig: any = { "app": `New ${templateId} App`, "pages": [] };
-  
+
   if (templateId === "directory") {
     initialConfig = {
       "app": "Employee Directory",
@@ -107,14 +199,18 @@ export async function createAppFromTemplate(templateId: string) {
       "pages": [{
         "components": [
           { "type": "Header", "title": "Employee Directory", "subtitle": "Search and manage personnel globally.", "size": "lg" },
-          { "type": "Grid", "columns": 3, "gap": 4, "items": [
+          {
+            "type": "Grid", "columns": 3, "gap": 4, "items": [
               { "type": "Statistic", "label": "Total Employees", "value": "142", "trend": "up", "trendValue": "+12%" },
               { "type": "Statistic", "label": "Departments", "value": "8" },
               { "type": "Statistic", "label": "Open Roles", "value": "24", "trend": "up", "trendValue": "+4" }
-          ]},
-          { "type": "Card", "title": "Directory Database", "content": [
+            ]
+          },
+          {
+            "type": "Card", "title": "Directory Database", "content": [
               { "type": "DataTable", "entity": "employees", "columns": ["name", "role", "department", "email"] }
-          ]}
+            ]
+          }
         ]
       }]
     };
@@ -125,12 +221,14 @@ export async function createAppFromTemplate(templateId: string) {
       "pages": [{
         "components": [
           { "type": "Header", "title": "Sales Analytics CRM", "subtitle": "Q3 Performance Metrics and Pipeline", "size": "lg" },
-          { "type": "Grid", "columns": 4, "gap": 4, "items": [
+          {
+            "type": "Grid", "columns": 4, "gap": 4, "items": [
               { "type": "Statistic", "label": "Total Pipeline", "value": "$1.2M", "trend": "up", "trendValue": "+18%" },
               { "type": "Statistic", "label": "Active Leads", "value": "84", "trend": "down", "trendValue": "-5%" },
               { "type": "Statistic", "label": "Conversion Rate", "value": "12.5%", "trend": "up", "trendValue": "+2.1%" },
               { "type": "Statistic", "label": "Closed Won", "value": "42 Deals" }
-          ]},
+            ]
+          },
           { "type": "Header", "title": "Recent Opportunities", "size": "md" },
           { "type": "DataTable", "entity": "leads", "columns": ["company", "contact", "value", "status"] }
         ]
@@ -149,17 +247,31 @@ export async function createAppFromTemplate(templateId: string) {
     .single();
 
   if (error) {
-    console.error("[createTemplate] failed:", error);
+    console.error("[createAppFromTemplate] failed:", error);
     throw new Error("Failed to create app from template");
+  }
+
+  // Trigger schema synchronization for template entities so tables are provisioned immediately
+  if (initialConfig.entities) {
+    const syncRes = await syncAppSchema(data.id, initialConfig.entities, userId);
+    if (!syncRes.success) {
+      console.warn("Schema Sync Warning in createAppFromTemplate:", syncRes.message);
+    }
   }
 
   // Redirecting the user to the builder with a flag so the UI can seed the template
   redirect(`/builder/${data.id}?template=${templateId}`);
 }
 
-import { syncAppSchema } from "@/actions/schema";
-
 export async function saveAppConfig(appId: string, configStr: string) {
+  if (isSandboxAppId(appId)) {
+    return {
+      success: false,
+      error: "Sandbox demo and template applications cannot be modified in the database.",
+      status: 400,
+    };
+  }
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
@@ -181,9 +293,9 @@ export async function saveAppConfig(appId: string, configStr: string) {
 
   if (!userId) throw new Error("Unauthorized");
 
-  let rawConfig = {};
+  let rawConfig: any = {};
   try {
-    rawConfig = JSON.parse(configStr);
+    rawConfig = normalizeConfigFieldNames(JSON.parse(configStr));
   } catch {
     return {
       success: false,
@@ -192,16 +304,25 @@ export async function saveAppConfig(appId: string, configStr: string) {
   }
 
   // Save the configuration to the apps table
-  const { error: saveError } = await supabase
+  const { data: updatedRows, error: saveError } = await supabase
     .from("apps")
     .update({ config: rawConfig, updated_at: new Date().toISOString() })
     .eq("id", appId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id");
 
   if (saveError) {
     return {
       success: false,
       error: `Failed to save config: ${saveError.message}`,
+    };
+  }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    return {
+      success: false,
+      error: "App not found or not owned by user",
+      status: 404,
     };
   }
 
@@ -214,7 +335,10 @@ export async function saveAppConfig(appId: string, configStr: string) {
     );
     if (!syncRes.success) {
       console.warn("Schema Sync Warning:", syncRes.message);
-      // We purposefully do not throw an error here to prevent blocking the UI save success entirely
+      return {
+        success: false,
+        error: syncRes.message,
+      };
     }
   }
 
@@ -222,6 +346,14 @@ export async function saveAppConfig(appId: string, configStr: string) {
 }
 
 export async function publishAppConfig(appId: string, configStr: string) {
+  if (isSandboxAppId(appId)) {
+    return {
+      success: false,
+      error: "Sandbox demo and template applications cannot be published to the database.",
+      status: 400,
+    };
+  }
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
@@ -235,76 +367,118 @@ export async function publishAppConfig(appId: string, configStr: string) {
 
   if (!userId) throw new Error("Unauthorized");
 
-  let rawConfig = {};
+  let rawConfig: any = {};
   try {
-    rawConfig = JSON.parse(configStr);
+    rawConfig = normalizeConfigFieldNames(JSON.parse(configStr));
   } catch {
     return { success: false, error: "Invalid json format." };
   }
 
-  const { error } = await supabase
+  const { data: updatedRows, error } = await supabase
     .from("apps")
     .update({ published_config: rawConfig, config: rawConfig })
     .eq("id", appId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id, config");
 
   if (error) {
     return { success: false, error: `Failed to publish app: ${error.message}` };
   }
 
-  // Asynchronously fire a Kafka event to our decoupled queue tracking 'app_published' events.
-  // This operation handles its own errors silently to prevent failing the UI interaction if analytics goes down.
-  EventPublisher.publish("appforge-events", "app_published", {
-    app_id: appId,
-    user_id: userId,
-    config_size: configStr.length,
-    timestamp: new Date().toISOString(),
-  });
+  if (!updatedRows || updatedRows.length === 0) {
+    return {
+      success: false,
+      error: "App not found or not owned by user",
+      status: 404,
+    };
+  }
+
+  // Trigger schema synchronization if entities exist (ensures tables exist if user publishes without saving first)
+  const targetEntities =
+    (rawConfig as Record<string, unknown>).entities ||
+    (updatedRows[0]?.config as Record<string, unknown>)?.entities;
+
+  if (targetEntities) {
+    const syncRes = await syncAppSchema(appId, targetEntities, userId);
+    if (!syncRes.success) {
+      console.warn("Schema Sync Warning in publishAppConfig:", syncRes.message);
+      return {
+        success: false,
+        error: syncRes.message,
+      };
+    }
+  }
 
   return { success: true };
 }
 
 export async function deleteApp(appId: string) {
+  if (isSandboxAppId(appId)) {
+    const err = new Error("Sandbox demo and template applications cannot be deleted.");
+    (err as unknown as { status: number }).status = 400;
+    throw err;
+  }
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
   if (isBypass) return { success: true };
   if (!userId) throw new Error("Unauthorized");
 
-  const { error } = await supabase
+  const { data: deletedRows, error } = await supabase
     .from("apps")
     .delete()
     .eq("id", appId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id");
 
   if (error) {
-    throw new Error("Failed to delete app.");
+    throw new Error(`Failed to delete app: ${error.message}`);
+  }
+
+  if (!deletedRows || deletedRows.length === 0) {
+    const err = new Error("App not found or not owned by user");
+    (err as unknown as { status: number }).status = 404;
+    throw err;
   }
   return { success: true };
 }
 
 export async function renameApp(appId: string, newName: string) {
+  if (isSandboxAppId(appId)) {
+    const err = new Error("Sandbox demo and template applications cannot be renamed.");
+    (err as unknown as { status: number }).status = 400;
+    throw err;
+  }
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 
   if (isBypass) return { success: true };
   if (!userId) throw new Error("Unauthorized");
 
-  const { error } = await supabase
+  const { data: updatedRows, error } = await supabase
     .from("apps")
     .update({ name: newName })
     .eq("id", appId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id");
 
   if (error) {
-    throw new Error("Failed to rename app.");
+    throw new Error(`Failed to rename app: ${error.message}`);
+  }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    const err = new Error("App not found or not owned by user");
+    (err as unknown as { status: number }).status = 404;
+    throw err;
   }
   return { success: true };
 }
 
 export async function getAppConfig(appId: string) {
-  if (appId.startsWith("template-") || appId.startsWith("mock-")) return null;
-  
+  if (isSandboxAppId(appId)) return null;
+
   const supabase = await createInsforgeServer();
   const { userId, isBypass } = await getAuthOrBypass();
 

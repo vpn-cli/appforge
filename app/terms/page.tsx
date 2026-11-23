@@ -1,11 +1,7 @@
 ﻿import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { createInsforgeServer } from "@/lib/insforge-server";
 
 export default async function TermsPage() {
-  const supabase = await createInsforgeServer();
-  await supabase.auth.getUser();
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />

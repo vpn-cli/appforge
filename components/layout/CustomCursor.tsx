@@ -8,46 +8,58 @@ export function CustomCursor() {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
-    const isTouch = 
-      'ontouchstart' in window || 
+    const isTouch =
+      "ontouchstart" in window ||
       navigator.maxTouchPoints > 0 ||
       window.matchMedia("(max-width: 768px)").matches;
-      
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsTouchDevice(isTouch);
 
+    setIsTouchDevice(isTouch);
     setMounted(true);
+
+    // Hide native cursor while on landing page
+    if (!isTouch) {
+      document.body.style.cursor = "none";
+    }
+
+    return () => {
+      // Restore native cursor completely on unmount
+      document.body.style.cursor = "";
+      document.body.style.removeProperty("cursor");
+      document.documentElement.style.cursor = "";
+      document.documentElement.style.removeProperty("cursor");
+
+      const elementsWithInlineCursor = document.querySelectorAll<HTMLElement>("[style*='cursor']");
+      elementsWithInlineCursor.forEach((el) => {
+        if (el.style.cursor === "none") {
+          el.style.cursor = "";
+          el.style.removeProperty("cursor");
+        }
+      });
+    };
   }, []);
 
   if (!mounted || isTouchDevice) return null;
 
   return (
     <AnimatedCursor
-      innerSize={10}
-      outerSize={40}
-      color="156, 135, 218"
+      innerSize={8}
+      outerSize={36}
+      color="109, 40, 217"
       outerAlpha={0.2}
       innerScale={0.7}
-      outerScale={1.5}
+      outerScale={1.4}
+      showSystemCursor={true}
       innerStyle={{
-        zIndex: 999999
+        zIndex: 999999,
       }}
       outerStyle={{
-        zIndex: 999999
+        zIndex: 999999,
       }}
       clickables={[
-        'a',
-        'input[type="text"]',
-        'input[type="email"]',
-        'input[type="number"]',
-        'input[type="submit"]',
-        'input[type="image"]',
-        'label[for]',
-        'select',
-        'textarea',
-        'button',
-        '.link',
-        '[data-cursor]'
+        "a",
+        "button",
+        ".link",
+        "[data-cursor]",
       ]}
     />
   );

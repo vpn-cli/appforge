@@ -2,6 +2,7 @@
 
 import React, { ErrorInfo, ReactNode } from "react";
 import { RefreshCcw, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   children?: ReactNode;
@@ -41,13 +42,15 @@ export class ErrorBoundary extends React.Component<Props, State> {
           <p className="text-xs text-muted-foreground font-mono break-words bg-background p-2 rounded">
             {this.state.error?.message || "Unknown rendering error occurred"}
           </p>
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-background hover:bg-muted border border-border rounded-lg text-xs font-medium transition-colors mt-2 self-start"
+            className="mt-2 self-start"
           >
             <RefreshCcw className="w-3.5 h-3.5" />
             Retry
-          </button>
+          </Button>
         </div>
       );
     }
