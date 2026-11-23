@@ -56,7 +56,6 @@ export const StatisticSchema = z.object({
   variant: z.enum(["default", "panel", "gradient"]).optional(),
   className: z.string().optional(),
 }).strict();
-
 export const StatusColorToneSchema = z.enum([
   "success",
   "warning",
