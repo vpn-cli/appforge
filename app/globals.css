@@ -939,8 +939,14 @@ body::after {
   [role="button"]:not([aria-disabled="true"]),
   .btn-pill-primary:not(:disabled),
   .btn-pill-secondary:not(:disabled),
-  a[class*="rounded-full"],
+  a[class*="rounded"],
   a[class*="btn"],
+  nav a,
+  [data-slot="button"],
+  [data-slot="icon-button"],
+  [data-slot="card"].cursor-pointer,
+  [data-slot="status-pill"],
+  [role="menuitem"],
   .interactive-press {
     transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1),
       background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
@@ -952,8 +958,14 @@ body::after {
   [role="button"]:active:not([aria-disabled="true"]),
   .btn-pill-primary:active:not(:disabled),
   .btn-pill-secondary:active:not(:disabled),
-  a[class*="rounded-full"]:active,
+  a[class*="rounded"]:active,
   a[class*="btn"]:active,
+  nav a:active,
+  [data-slot="button"]:active,
+  [data-slot="icon-button"]:active,
+  [data-slot="card"].cursor-pointer:active,
+  [data-slot="status-pill"]:active,
+  [role="menuitem"]:active,
   .interactive-press:active {
     transform: scale(0.97) !important;
   }
