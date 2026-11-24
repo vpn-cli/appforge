@@ -640,7 +640,7 @@ function BuilderContent() {
           TOP APPLICATION TOOLBAR (h-14, 56px) - Glass top bar
           Sans breadcrumb with App Name, Copilot ⌘K toggle, Save Draft, Publish
           ========================================================================= */}
-      <header className="h-14 border-b border-border/80 dark:border-white/10 glass-1 shrink-0 flex items-center justify-between px-4 sm:px-6 z-20 transition-all">
+      <header className="h-14 border-b border-border glass-1 shrink-0 flex items-center justify-between px-4 sm:px-6 z-20 transition-all">
         {/* Left: Navigation & Breadcrumb with App Name */}
         <div className="flex items-center gap-3">
           <IconButton
@@ -816,7 +816,7 @@ function BuilderContent() {
         {isEditorCollapsed ? (
           <aside
             style={{ width: `${RAIL_WIDTH}px` }}
-            className="h-full border-r border-border/80 dark:border-white/10 glass-1 flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
+            className="h-full border-r border-border glass-1 flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
             onClick={() => setIsEditorCollapsed(false)}
             title="Expand Config Editor"
             role="region"
@@ -848,7 +848,7 @@ function BuilderContent() {
             role="region"
           >
             {/* Editor Panel Header: 36px (h-9) consistent with Preview header, styled with glass-1 */}
-            <div className="h-9 px-4 border-b border-border/80 dark:border-white/10 glass-1 flex items-center justify-between shrink-0 select-none">
+            <div className="h-9 px-4 border-b border-border glass-1 flex items-center justify-between shrink-0 select-none">
               <div className="flex items-center gap-2">
                 <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="text-[13px] font-medium text-foreground">
@@ -942,7 +942,7 @@ function BuilderContent() {
           role="region"
         >
           {/* Preview Panel Header: 36px (h-9) consistent with Editor header, styled with glass-1 */}
-          <div className="h-9 px-4 border-b border-border/80 dark:border-white/10 glass-1 flex items-center justify-between shrink-0 select-none">
+          <div className="h-9 px-4 border-b border-border glass-1 flex items-center justify-between shrink-0 select-none">
             <div className="flex items-center gap-2">
               <Layout className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-[13px] font-medium text-foreground">
@@ -951,7 +951,7 @@ function BuilderContent() {
             </div>
 
             {/* Viewport Width Controls in preview panel header - styled with glass-2-nested */}
-            <div className="flex items-center gap-1 glass-2-nested p-0.5 rounded-full border border-border/80 dark:border-white/10">
+            <div className="flex items-center gap-1 glass-2-nested p-0.5 rounded-full border border-border">
               <button
                 type="button"
                 onClick={() => setViewport("desktop")}

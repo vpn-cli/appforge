@@ -30,26 +30,33 @@ Responsive Grid class: grid grid-cols-1 md:grid-cols-2 lg:grid-cols-X gap-X
 **Buttons (`components/ui/button.tsx`)**
 ```text
 All buttons are full pills: rounded-full (radius 9999).
+One hairline token for every bordered surface:
+  Light: 1px rgba(23,23,31,0.10) (var(--border)), hover goes to 0.16 over 150ms
+  Dark:  1px rgba(255,255,255,0.10) (var(--border)), hover goes to 0.16 over 150ms
 Sizes:
   lg: h-[44px] px-[22px] text-[15px] font-medium
   md: h-[36px] px-[16px] text-[14px] font-medium
   sm: h-[30px] px-[12px] text-[13px] font-medium
 Primary Light:
-  background: linear-gradient(180deg, #2B2B35 0%, #0D0D12 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 1px 2px rgba(0,0,0,.25), 0 10px 28px -10px rgba(88,70,220,.6);
+  background: linear-gradient(180deg, var(--brand-500) 0%, var(--brand-600) 100%);
+  border: 1px solid transparent (no visible outline ring; edge from gradient fill, inset highlight, and violet glow);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 10px 28px -10px rgba(109,91,240,.55);
   color: #FFFFFF;
-  hover: translateY(-1px) + stronger glow; active: scale(0.98);
+  hover: translateY(-1px) + stronger glow (0 14px 32px -8px rgba(109,91,240,.70)); active: scale(0.97);
 Primary Dark:
-  background: linear-gradient(180deg, #FFFFFF, #E6E6EE);
-  color: #0B0B10;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 10px 28px -10px rgba(88,70,220,.6);
+  background: linear-gradient(180deg, var(--brand-500) 0%, var(--brand-600) 100%);
+  border: 1px solid transparent (no visible outline ring; light-violet/white border removed);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 10px 28px -10px rgba(109,91,240,.55);
+  color: #FFFFFF;
+  hover: translateY(-1px) + stronger glow; active: scale(0.97);
 Secondary Light:
-  background: rgba(255,255,255,.82); backdrop-filter: blur(20px); border: 1px solid var(--ink-500) (#6B6B82 - guaranteed 4.92:1 non-text contrast);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 3px rgba(23,23,31,.08), 0 4px 14px -3px rgba(109,91,240,.10);
+  background: rgba(255,255,255,.72); backdrop-filter: blur(20px); border: 1px solid var(--border) (rgba(23,23,31,0.10));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 3px rgba(23,23,31,.04);
+  hover: fill brightens to rgba(255,255,255,.85), hairline to rgba(23,23,31,0.16); active: scale(0.97);
 Secondary Dark:
-  background: #1F1F2B; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.28) (3.51:1 contrast);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.20), 0 2px 8px -2px rgba(0,0,0,.40);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  background: rgba(255,255,255,.06); backdrop-filter: blur(20px); border: 1px solid var(--border) (rgba(255,255,255,0.10));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 1px 4px rgba(0,0,0,.3);
+  hover: fill brightens to rgba(255,255,255,.10), hairline to rgba(255,255,255,0.16); active: scale(0.97);
 ```
 
 **Icon Button (`components/ui/icon-button.tsx`)**

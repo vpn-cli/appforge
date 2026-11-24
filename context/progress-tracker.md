@@ -9,6 +9,7 @@ Update this file after every completed feature. Any AI agent reading this should
 **Phase:** UX Polish & Design Hardening (branch `feat/ux-polish`)
 **Last completed:**
 1. Part 1 (Theme Switch Ripple): Audited git history and recovered circular reveal ripple; re-implemented View Transitions API with `document.startViewTransition` using button center coordinates and maximum diagonal viewport radius (`450ms`, `ease-out`); added 200ms crossfade fallback for browsers without View Transitions; ensured instant switch for `prefers-reduced-motion`; cleaned up conflicting `0.22s` CSS override in `globals.css`; verified across landing, templates, and builder with 0 hydration flash or console errors; 148 unit tests passing.
+2. Part 6 (Button Borders Match System): Unified all bordered surfaces (cards, nav, chips, inputs, buttons) to single hairline token (`1px rgba(23,23,31,0.10)` light, `1px rgba(255,255,255,0.10)` dark) with card inset top highlight; removed separate light-violet outline ring on primary buttons (edge defined cleanly by gradient fill, inset highlight, and violet glow); secondary buttons match card hairline with subtle background fill (`rgba(255,255,255,0.06)` dark + blur, `rgba(255,255,255,0.72)` light); on hover hairline transitions to 0.16 over 150ms; audited and unified fragmented border classes across /, /apps, /templates, and /builder.
 **Next:** Part 2: Logo Visibility Audit and Contrast Fix.
 
 ---

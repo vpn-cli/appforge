@@ -105,7 +105,7 @@ export function DashboardView({ initialApps }: Props) {
             </h1>
             {/* Inline stat chips: 2 apps · 1 published · 1 draft */}
             <div className="inline-flex items-center gap-1.5 flex-wrap">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-slate-200/60 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 text-foreground">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-slate-200/60 dark:bg-white/5 border border-border text-foreground">
                 {totalApps} {totalApps === 1 ? "app" : "apps"}
               </span>
               {publishedCount > 0 && (
@@ -115,7 +115,7 @@ export function DashboardView({ initialApps }: Props) {
                 </span>
               )}
               {draftsCount > 0 && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-slate-200/50 dark:bg-white/5 text-muted-foreground border border-slate-300/40 dark:border-white/10">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-slate-200/50 dark:bg-white/5 text-muted-foreground border border-border">
                   <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 shrink-0" />
                   {draftsCount} draft
                 </span>
