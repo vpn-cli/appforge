@@ -6,14 +6,10 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Builder Glass & Motion System Completed (branch `feat/landing-redesign`)
-**Last completed:** 
-1. Cleaned public directory and verified 100% isolation of recordings/screenshots into gitignored `.recordings/`.
-2. Mapped `--mesh-c1..c4` directly to canonical brand and ink tokens (`var(--ink-950)`, `var(--brand-800)`, `var(--brand-500)`, `var(--brand-headline-end)`).
-3. Investigated ANGLE synchronous shader compilation 618ms delay; implemented `warmCompileMeshShader()` on idle, reducing input latency to 0.10ms median. Verified full-hero 5s motion diff (Dark: 3.73%, Light: 4.02%, both >= 3.0%) with subtext WCAG AA contrast maintained.
-4. Part 3 (Builder Glass): Static frame of mesh gradient at ~60% opacity with zero WebGL animation in builder; applied `glass-1` tokens to top bar, pane headers, validation status bar, and device toggle group; kept Monaco editor and preview frame on solid surfaces with zero blur leak. Verified 0 axe contrast violations on `/builder/demo` in both themes.
-5. Part 4 (Motion for Every Interaction): Applied standard motion tokens (`bounce: 0.15`, `visualDuration: 0.4s`); press feedback (scale 0.97) and 150ms ease hover transitions; morphing Copilot pill with shared `layoutId` and 80ms staggered content reveal; popovers and kebab menus scale 0.96 -> 1 with fade from trigger corner; sliding active-pill indicator on nav; dynamic button states on Save Draft and Publish with width spring; theme toggle icon rotate/crossfade; enabled Next.js 16 View Transitions API. Verified Chrome performance trace during Copilot animation (max main-thread task 13.47ms, zero tasks > 50ms).
-**Next:** Ready for final review.
+**Phase:** UX Polish & Design Hardening (branch `feat/ux-polish`)
+**Last completed:**
+1. Part 1 (Theme Switch Ripple): Audited git history and recovered circular reveal ripple; re-implemented View Transitions API with `document.startViewTransition` using button center coordinates and maximum diagonal viewport radius (`450ms`, `ease-out`); added 200ms crossfade fallback for browsers without View Transitions; ensured instant switch for `prefers-reduced-motion`; cleaned up conflicting `0.22s` CSS override in `globals.css`; verified across landing, templates, and builder with 0 hydration flash or console errors; 148 unit tests passing.
+**Next:** Part 2: Logo Visibility Audit and Contrast Fix.
 
 ---
 
