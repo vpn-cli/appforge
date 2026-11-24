@@ -68,3 +68,12 @@ AGENTS.md
 # References
 infrasity_ref/
 
+# Temporary Benchmark & Measurement Artifacts
+scripts/*.json
+scripts/*.py
+scripts/capture-*
+scripts/record-*
+scripts/measure-*
+scripts/verify-landing-complete.js
+scripts/fetch-21st-components.mjs
+
