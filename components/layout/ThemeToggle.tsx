@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "next-themes";
 import { flushSync } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 import { IconButton } from "@/components/ui/icon-button";
 
@@ -126,22 +125,16 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
       className="relative cursor-pointer overflow-hidden"
     >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={isDark ? "dark" : "light"}
-          initial={{ rotate: -90, opacity: 0, scale: 0.75 }}
-          animate={{ rotate: 0, opacity: 1, scale: 1 }}
-          exit={{ rotate: 90, opacity: 0, scale: 0.75 }}
-          transition={{ duration: 0.2, ease: [0.15, 0, 0.2, 1] }}
-          className="flex items-center justify-center text-foreground"
-        >
-          {isDark ? (
-            <Moon className="h-4 w-4 fill-none" strokeWidth={1.75} />
-          ) : (
-            <Sun className="h-4 w-4 fill-none" strokeWidth={1.75} />
-          )}
-        </motion.span>
-      </AnimatePresence>
+      <span
+        key={isDark ? "dark" : "light"}
+        className="flex items-center justify-center text-foreground transition-transform duration-200"
+      >
+        {isDark ? (
+          <Moon className="h-4 w-4 fill-none" strokeWidth={1.75} />
+        ) : (
+          <Sun className="h-4 w-4 fill-none" strokeWidth={1.75} />
+        )}
+      </span>
     </IconButton>
   );
 }

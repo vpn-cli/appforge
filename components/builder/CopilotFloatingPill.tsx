@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion, type Transition } from "framer-motion";
 import { Sparkles, ArrowUp, Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
@@ -301,21 +301,29 @@ export function CopilotFloatingPill({
 
   const hasText = prompt.trim().length > 0;
 
-  // Standard spring: bounce 0.15, visualDuration 0.4s (MOTION_TOKENS.springStandard)
-  const springTransition = shouldReduceMotion
-    ? { duration: 0 }
-    : { type: "spring" as const, bounce: 0.15, visualDuration: 0.4 };
+  // Open spring: visualDuration 0.38, bounce 0.2. Close: duration 0.22, ease [0.4, 0, 0.2, 1].
+  // Reduced motion: opacity-only fade of 0.12s.
+  const openTransition: Transition = shouldReduceMotion
+    ? { duration: 0.12, ease: "easeOut" }
+    : {
+        type: "spring",
+        visualDuration: 0.38,
+        bounce: 0.2,
+      };
+
+  const closeTransition: Transition = shouldReduceMotion
+    ? { duration: 0.12, ease: "easeOut" }
+    : {
+        duration: 0.22,
+        ease: [0.4, 0, 0.2, 1],
+      };
 
   return (
     <div
       ref={containerRef}
       className="absolute bottom-4 right-4 z-40 pointer-events-auto select-none"
-      style={{
-        width: isOpen ? "min(520px, calc(100% - 32px))" : "220px",
-        height: isOpen ? "min(560px, calc(100% - 32px))" : "40px",
-      }}
     >
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence initial={false}>
         {!isOpen ? (
           /* =====================================================================
              COLLAPSED STATE: Compact glass pill morphing with shared layoutId
@@ -327,183 +335,209 @@ export function CopilotFloatingPill({
             type="button"
             onClick={() => {
               onOpenChange(true);
-              setTimeout(() => internalInputRef.current?.focus(), 80);
+              setTimeout(() => internalInputRef.current?.focus(), 150);
             }}
-            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
-            transition={springTransition}
-            style={{ originX: 1, originY: 1 }}
-            className="w-full h-10 px-3.5 rounded-full flex items-center justify-between gap-2 border border-border/80 dark:border-white/15 glass-1 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group"
+            initial={shouldReduceMotion ? { opacity: 0 } : false}
+            animate={{ opacity: 1 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : undefined}
+            transition={closeTransition}
+            style={{
+              width: 220,
+              height: 40,
+              borderRadius: 20,
+              originX: 1,
+              originY: 1,
+              transformOrigin: "100% 100%",
+              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.12)",
+            }}
+            className="absolute bottom-0 right-0 border border-border/80 dark:border-white/15 glass-1 cursor-pointer group flex items-center justify-between overflow-hidden outline-none"
             aria-label="Open Copilot chat"
             aria-expanded={isOpen}
           >
-            <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={shouldReduceMotion ? undefined : { opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex items-center justify-between gap-2 w-full"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <Sparkles className="w-3.5 h-3.5 text-brand-link shrink-0 group-hover:rotate-12 transition-transform" />
-                <span className="text-[13px] font-medium text-foreground truncate">
-                  Ask Copilot
-                </span>
-              </div>
-              <Kbd className="text-[11px] px-1.5 py-0.5 bg-black/5 dark:bg-white/10 text-muted-foreground border-transparent">
-                ⌘K
-              </Kbd>
-            </motion.div>
+            <AnimatePresence>
+              {!isOpen && (
+                <motion.div
+                  key="pill-label"
+                  layout="position"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{
+                    opacity: 0,
+                    transition: { duration: 0.08, ease: "easeOut" },
+                  }}
+                  transition={{ duration: 0.12, ease: "easeOut" }}
+                  className="flex items-center justify-between gap-2 w-full px-3.5"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Sparkles className="w-3.5 h-3.5 text-brand-link shrink-0" />
+                    <span className="text-[13px] font-medium text-foreground truncate">
+                      Ask Copilot
+                    </span>
+                  </div>
+                  <Kbd className="text-[11px] px-1.5 py-0.5 bg-black/5 dark:bg-white/10 text-muted-foreground border-transparent">
+                    ⌘K
+                  </Kbd>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.button>
         ) : (
           /* =====================================================================
              EXPANDED STATE: Morphs from bottom-right corner via shared layoutId.
              Surface at least 92% opaque (smoked glass).
-             Inner content fades and rises about 80ms after the container.
+             Inner content fades and rises with crossfade (0.14s delay over 0.16s).
              ===================================================================== */
           <motion.div
             key="expanded-panel"
             layoutId={shouldReduceMotion ? undefined : "copilot-container"}
-            initial={
-              shouldReduceMotion
-                ? false
-                : { opacity: 0, scale: 0.95 }
-            }
-            animate={{ opacity: 1, scale: 1 }}
-            exit={
-              shouldReduceMotion
-                ? undefined
-                : { opacity: 0, scale: 0.95 }
-            }
-            transition={springTransition}
-            style={{ originX: 1, originY: 1 }}
-            className="w-full h-full rounded-[22px] border border-border/80 dark:border-white/15 glass-1 shadow-[0_24px_70px_-20px_rgba(0,0,0,0.45)] dark:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden"
+            initial={shouldReduceMotion ? { opacity: 0 } : false}
+            animate={{ opacity: 1 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : undefined}
+            transition={openTransition}
+            style={{
+              width: "min(520px, calc(100% - 32px))",
+              height: "min(560px, calc(100% - 32px))",
+              borderRadius: 16,
+              originX: 1,
+              originY: 1,
+              transformOrigin: "100% 100%",
+              boxShadow: "0 24px 70px -20px rgba(0, 0, 0, 0.45)",
+            }}
+            className="absolute bottom-0 right-0 border border-border/80 dark:border-white/15 glass-1 flex flex-col overflow-hidden"
           >
-            {/* Morphing content: fades and rises about 80ms after container */}
-            <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={shouldReduceMotion ? undefined : { opacity: 0, y: 8 }}
-              transition={
-                shouldReduceMotion
-                  ? { duration: 0 }
-                  : { duration: 0.25, delay: 0.08, ease: [0.15, 0, 0.2, 1] }
-              }
-              className="flex-1 flex flex-col min-h-0 overflow-hidden"
-            >
-              {/* Header: Title + Esc/Collapse buttons */}
-              <div className="h-11 px-4 border-b border-border/40 dark:border-white/8 flex items-center justify-between shrink-0 bg-transparent">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-brand-500/15 dark:bg-brand-400/20 text-brand-link flex items-center justify-center">
-                    <Sparkles className="w-3.5 h-3.5" />
+            {/* Morphing content: children never scale or stretch, crossfaded with AnimatePresence */}
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  key="panel-content"
+                  layout="position"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{
+                    opacity: 0,
+                    transition: { duration: 0.08, ease: "easeOut" },
+                  }}
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0.12, ease: "easeOut" }
+                      : { delay: 0.14, duration: 0.16, ease: "easeOut" }
+                  }
+                  className="w-full h-full flex flex-col min-h-0 overflow-hidden absolute inset-0"
+                >
+                  {/* Header: Title + Esc/Collapse buttons */}
+                  <div className="h-11 px-4 border-b border-border/40 dark:border-white/8 flex items-center justify-between shrink-0 bg-transparent">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-brand-500/15 dark:bg-brand-400/20 text-brand-link flex items-center justify-center">
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-[13px] font-semibold text-foreground">
+                        AppForge Copilot
+                      </span>
+                      <span className="text-[11px] text-muted-foreground hidden sm:inline">
+                        · AI UI Generator
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <Kbd className="text-[11px]">Esc</Kbd>
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          onOpenChange(false);
+                          setTimeout(() => pillButtonRef.current?.focus(), 50);
+                        }}
+                        aria-label="Collapse Copilot"
+                        className="w-7 h-7 text-muted-foreground hover:text-foreground"
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </IconButton>
+                    </div>
                   </div>
-                  <span className="text-[13px] font-semibold text-foreground">
-                    AppForge Copilot
-                  </span>
-                  <span className="text-[11px] text-muted-foreground hidden sm:inline">
-                    · AI UI Generator
-                  </span>
-                </div>
 
-                <div className="flex items-center gap-1.5">
-                  <Kbd className="text-[11px]">Esc</Kbd>
-                  <IconButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      onOpenChange(false);
-                      setTimeout(() => pillButtonRef.current?.focus(), 50);
-                    }}
-                    aria-label="Collapse Copilot"
-                    className="w-7 h-7 text-muted-foreground hover:text-foreground"
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                  </IconButton>
-                </div>
-              </div>
-
-              {/* Message History */}
-              <div
-                data-lenis-prevent
-                className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 text-[13px] leading-relaxed select-text"
-              >
-                {messages.map((m, i) => (
+                  {/* Message History */}
                   <div
-                    key={i}
-                    className={cn(
-                      "flex w-full",
-                      m.role === "user" ? "justify-end" : "justify-start"
-                    )}
+                    data-lenis-prevent
+                    className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 text-[13px] leading-relaxed select-text"
                   >
-                    <div
+                    {messages.map((m, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "flex w-full",
+                          m.role === "user" ? "justify-end" : "justify-start"
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "p-3 max-w-[85%] rounded-2xl text-[13px]",
+                            m.role === "user"
+                              ? "bg-foreground text-background font-medium shadow-xs"
+                              : "bg-black/5 dark:bg-white/5 text-foreground border border-black/5 dark:border-white/5"
+                          )}
+                        >
+                          <p className="whitespace-pre-wrap">{m.content}</p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {isGenerating && (
+                      <div className="flex w-full justify-start">
+                        <div className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl p-3 inline-flex items-center gap-2 text-[13px]">
+                          <Loader2 className="w-4 h-4 animate-spin text-brand-link" />
+                          <span>Synthesizing components from prompt...</span>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Input Form Docked at Bottom */}
+                  <form
+                    onSubmit={handleGenerate}
+                    className="h-[52px] px-3.5 border-t border-border/40 dark:border-white/8 flex items-center gap-2.5 shrink-0 bg-black/[0.02] dark:bg-white/[0.02]"
+                  >
+                    <div className="text-brand-link shrink-0">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+
+                    <input
+                      ref={(node) => {
+                        internalInputRef.current = node;
+                        if (externalInputRef && "current" in externalInputRef) {
+                          (externalInputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
+                        }
+                      }}
+                      type="text"
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="Ask Copilot to generate or modify components…"
+                      disabled={isGenerating}
+                      className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0"
+                    />
+
+                    {/* Circular send button: visibly enabled (accent) whenever input has text; muted only when empty */}
+                    <button
+                      type="submit"
+                      disabled={isGenerating || !hasText}
+                      aria-label="Send prompt"
                       className={cn(
-                        "p-3 max-w-[85%] rounded-2xl text-[13px]",
-                        m.role === "user"
-                          ? "bg-foreground text-background font-medium shadow-xs"
-                          : "bg-black/5 dark:bg-white/5 text-foreground border border-black/5 dark:border-white/5"
+                        "w-7 h-7 rounded-full flex items-center justify-center transition-all duration-150 outline-none shrink-0",
+                        hasText && !isGenerating
+                          ? "bg-brand-600 hover:bg-brand-500 text-white shadow-[0_2px_8px_rgba(109,91,240,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
+                          : "bg-black/5 dark:bg-white/5 text-muted-foreground/30 cursor-not-allowed pointer-events-none"
                       )}
                     >
-                      <p className="whitespace-pre-wrap">{m.content}</p>
-                    </div>
-                  </div>
-                ))}
-
-                {isGenerating && (
-                  <div className="flex w-full justify-start">
-                    <div className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl p-3 inline-flex items-center gap-2 text-[13px]">
-                      <Loader2 className="w-4 h-4 animate-spin text-brand-link" />
-                      <span>Synthesizing components from prompt...</span>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input Form Docked at Bottom */}
-              <form
-                onSubmit={handleGenerate}
-                className="h-[52px] px-3.5 border-t border-border/40 dark:border-white/8 flex items-center gap-2.5 shrink-0 bg-black/[0.02] dark:bg-white/[0.02]"
-              >
-                <div className="text-brand-link shrink-0">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-
-                <input
-                  ref={(node) => {
-                    internalInputRef.current = node;
-                    if (externalInputRef && "current" in externalInputRef) {
-                      (externalInputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
-                    }
-                  }}
-                  type="text"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Ask Copilot to generate or modify components…"
-                  disabled={isGenerating}
-                  className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0"
-                />
-
-                {/* Circular send button: visibly enabled (accent) whenever input has text; muted only when empty */}
-                <button
-                  type="submit"
-                  disabled={isGenerating || !hasText}
-                  aria-label="Send prompt"
-                  className={cn(
-                    "w-7 h-7 rounded-full flex items-center justify-center transition-all duration-150 outline-none shrink-0",
-                    hasText && !isGenerating
-                      ? "bg-brand-600 hover:bg-brand-500 text-white shadow-[0_2px_8px_rgba(109,91,240,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
-                      : "bg-black/5 dark:bg-white/5 text-muted-foreground/30 cursor-not-allowed pointer-events-none"
-                  )}
-                >
-                  {isGenerating ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-                  ) : (
-                    <ArrowUp className="w-3.5 h-3.5 stroke-[2.25]" />
-                  )}
-                </button>
-              </form>
-            </motion.div>
+                      {isGenerating ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                      ) : (
+                        <ArrowUp className="w-3.5 h-3.5 stroke-[2.25]" />
+                      )}
+                    </button>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>

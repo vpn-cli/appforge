@@ -42,11 +42,10 @@ export function HomeSidebar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`h-[44px] px-3.5 rounded-xl flex items-center gap-3 text-[15px] font-medium transition-all ${
-                  isActive
+                className={`h-[44px] px-3.5 rounded-xl flex items-center gap-3 text-[15px] font-medium transition-all ${isActive
                     ? "bg-brand-100 dark:bg-brand-950/60 text-brand-link shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
+                  }`}
               >
                 <Icon className="w-5 h-5 shrink-0" strokeWidth={1.75} />
                 <span>{item.label}</span>

@@ -88,7 +88,7 @@ function getEditorCollapsedSnapshot(): boolean {
   try {
     const saved = localStorage.getItem(EDITOR_COLLAPSED_KEY);
     if (saved !== null) return saved === "true";
-  } catch {}
+  } catch { }
   return false;
 }
 
@@ -104,7 +104,7 @@ function getEditorWidthSnapshot(): number {
       const parsed = parseInt(saved, 10);
       if (!isNaN(parsed) && parsed >= MIN_EDITOR_WIDTH) return parsed;
     }
-  } catch {}
+  } catch { }
   return DEFAULT_EDITOR_WIDTH;
 }
 
@@ -255,7 +255,7 @@ function BuilderContent() {
       inMemoryEditorCollapsed = next;
       try {
         localStorage.setItem(EDITOR_COLLAPSED_KEY, String(next));
-      } catch {}
+      } catch { }
       emitLayoutChange();
     },
     [],
@@ -268,7 +268,7 @@ function BuilderContent() {
       inMemoryEditorWidth = next;
       try {
         localStorage.setItem(EDITOR_WIDTH_KEY, String(next));
-      } catch {}
+      } catch { }
       emitLayoutChange();
     },
     [],
@@ -296,7 +296,7 @@ function BuilderContent() {
           return parsed;
         }
       }
-    } catch {}
+    } catch { }
     return [DEFAULT_EDITOR_PANEL_SIZE, 100 - DEFAULT_EDITOR_PANEL_SIZE];
   });
 
@@ -304,7 +304,7 @@ function BuilderContent() {
     setPanelSizes(sizes);
     try {
       localStorage.setItem(BUILDER_PANEL_SIZES_KEY, JSON.stringify(sizes));
-    } catch {}
+    } catch { }
   }, []);
 
   const handleDraggingChange = useCallback((dragging: boolean) => {
@@ -328,7 +328,7 @@ function BuilderContent() {
           100 - DEFAULT_EDITOR_PANEL_SIZE,
         ]),
       );
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
@@ -408,7 +408,7 @@ function BuilderContent() {
       if (parsed && typeof parsed.app === "string" && parsed.app.trim()) {
         return parsed.app.trim();
       }
-    } catch {}
+    } catch { }
     return appId;
   }, [configStr, appId]);
 
@@ -898,11 +898,10 @@ function BuilderContent() {
                   <button
                     type="button"
                     onClick={() => setViewport("desktop")}
-                    className={`p-1 rounded-full transition-colors ${
-                      viewport === "desktop"
+                    className={`p-1 rounded-full transition-colors ${viewport === "desktop"
                         ? "bg-card text-foreground shadow-xs font-semibold"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                     title="Desktop"
                     aria-label="Desktop viewport"
                   >
@@ -911,11 +910,10 @@ function BuilderContent() {
                   <button
                     type="button"
                     onClick={() => setViewport("tablet")}
-                    className={`p-1 rounded-full transition-colors ${
-                      viewport === "tablet"
+                    className={`p-1 rounded-full transition-colors ${viewport === "tablet"
                         ? "bg-card text-foreground shadow-xs font-semibold"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                     title="Tablet"
                     aria-label="Tablet viewport"
                   >
@@ -924,11 +922,10 @@ function BuilderContent() {
                   <button
                     type="button"
                     onClick={() => setViewport("mobile")}
-                    className={`p-1 rounded-full transition-colors ${
-                      viewport === "mobile"
+                    className={`p-1 rounded-full transition-colors ${viewport === "mobile"
                         ? "bg-card text-foreground shadow-xs font-semibold"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                     title="Mobile"
                     aria-label="Mobile viewport"
                   >
@@ -1052,11 +1049,10 @@ function BuilderContent() {
                   <button
                     type="button"
                     onClick={() => setViewport("desktop")}
-                    className={`p-1 rounded-full transition-colors ${
-                      viewport === "desktop"
+                    className={`p-1 rounded-full transition-colors ${viewport === "desktop"
                         ? "bg-card text-foreground shadow-xs font-semibold"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                     title="Desktop"
                     aria-label="Desktop viewport"
                   >
@@ -1065,11 +1061,10 @@ function BuilderContent() {
                   <button
                     type="button"
                     onClick={() => setViewport("tablet")}
-                    className={`p-1 rounded-full transition-colors ${
-                      viewport === "tablet"
+                    className={`p-1 rounded-full transition-colors ${viewport === "tablet"
                         ? "bg-card text-foreground shadow-xs font-semibold"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                     title="Tablet"
                     aria-label="Tablet viewport"
                   >
@@ -1078,11 +1073,10 @@ function BuilderContent() {
                   <button
                     type="button"
                     onClick={() => setViewport("mobile")}
-                    className={`p-1 rounded-full transition-colors ${
-                      viewport === "mobile"
+                    className={`p-1 rounded-full transition-colors ${viewport === "mobile"
                         ? "bg-card text-foreground shadow-xs font-semibold"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                     title="Mobile"
                     aria-label="Mobile viewport"
                   >
@@ -1210,11 +1204,10 @@ function BuilderContent() {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in duration-200">
             <h2
-              className={`text-[17px] font-semibold mb-2 ${
-                notificationModal.type === "error"
+              className={`text-[17px] font-semibold mb-2 ${notificationModal.type === "error"
                   ? "text-destructive"
                   : "text-foreground"
-              }`}
+                }`}
             >
               {notificationModal.title}
             </h2>

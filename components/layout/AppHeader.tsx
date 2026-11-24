@@ -92,11 +92,10 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
             <Link
               key={seg.label}
               href={seg.href}
-              className={`relative px-4 py-1.5 rounded-full text-[14px] font-medium transition-colors inline-flex items-center gap-1.5 ${
-                seg.active
+              className={`relative px-4 py-1.5 rounded-full text-[14px] font-medium transition-colors inline-flex items-center gap-1.5 ${seg.active
                   ? "text-brand-link font-semibold"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               {seg.active && (
                 <motion.span
@@ -174,11 +173,10 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
           <Link
             href="/apps"
             onClick={() => setIsMobileMenuOpen(false)}
-            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${
-              isAppsActive
+            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${isAppsActive
                 ? "bg-white text-slate-900 shadow-xs dark:bg-white/15 dark:text-white"
                 : "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
-            }`}
+              }`}
           >
             <LayoutGrid className="w-4 h-4" />
             <span>Apps</span>
@@ -186,11 +184,10 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
           <Link
             href="/templates"
             onClick={() => setIsMobileMenuOpen(false)}
-            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${
-              isTemplatesActive
+            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${isTemplatesActive
                 ? "bg-white text-slate-900 shadow-xs dark:bg-white/15 dark:text-white"
                 : "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
-            }`}
+              }`}
           >
             <FileCode2 className="w-4 h-4" />
             <span>Templates</span>
