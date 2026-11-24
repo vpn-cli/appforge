@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
   Suspense,
 } from "react";
+import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
 import { CopilotFloatingPill } from "@/components/builder/CopilotFloatingPill";
 import { LivePreview } from "@/components/builder/LivePreview";
@@ -653,9 +654,18 @@ function BuilderContent() {
             <ArrowLeft className="h-4 w-4" />
           </IconButton>
 
-          {/* Breadcrumb shows app's name, not UUID */}
+          {/* Breadcrumb shows AppForge logo mark tile + app's name */}
           <div className="flex items-center gap-2 font-sans text-[13px]">
-            <span className="font-medium text-foreground">AppForge</span>
+            <Link
+              href="/"
+              aria-label="AppForge Home"
+              className="flex items-center gap-2 outline-none group select-none shrink-0"
+            >
+              <div className="w-7 h-7 rounded-lg bg-foreground text-background flex items-center justify-center shadow-xs shrink-0 transition-colors">
+                <AppForgeLogo size={15} className="text-background" />
+              </div>
+              <span className="font-medium text-foreground">AppForge</span>
+            </Link>
             <span className="text-muted-foreground/40 font-normal">/</span>
             <span
               className="text-muted-foreground font-normal truncate max-w-[180px] sm:max-w-[280px]"

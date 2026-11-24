@@ -24,8 +24,8 @@ export function HomeSidebar() {
           href="/"
           className="flex items-center gap-3 px-2 py-1.5 rounded-lg outline-none group"
         >
-          <div className="w-9 h-9 rounded-lg bg-brand-500/10 dark:bg-brand-400/20 flex items-center justify-center text-brand-link">
-            <AppForgeLogo size={22} className="text-brand-link" />
+          <div className="w-8 h-8 rounded-[10px] bg-foreground text-background flex items-center justify-center shadow-xs transition-colors shrink-0">
+            <AppForgeLogo size={18} className="text-background" />
           </div>
           <span className="font-semibold text-lg tracking-tight text-foreground">
             AppForge

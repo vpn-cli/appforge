@@ -163,15 +163,18 @@
     font-size: 15px;
     line-height: 1.55;
   }
+
   * {
     @apply border-border outline-ring;
     scrollbar-width: thin;
     scrollbar-color: var(--muted) transparent;
   }
+
   :focus:not(:focus-visible) {
     outline: none !important;
     box-shadow: none !important;
   }
+
   button:focus:not(:focus-visible),
   [role="button"]:focus:not(:focus-visible),
   a:focus:not(:focus-visible),
@@ -179,6 +182,7 @@
     outline: none !important;
     box-shadow: none !important;
   }
+
   html {
     @apply font-sans;
   }
@@ -188,13 +192,16 @@
     width: 6px;
     height: 6px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 9999px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background: var(--muted-foreground);
   }
@@ -388,7 +395,9 @@
   --radius: 0.5rem;
 }
 
-.dark, :root.dark, [data-theme="dark"] {
+.dark,
+:root.dark,
+[data-theme="dark"] {
   --canvas: var(--ink-950);
   --background: var(--ink-950);
   /* Hero Mesh Gradient Palette (Dark: deep brand & ink tokens) */
@@ -510,13 +519,13 @@ body::after {
 /* Grid Mesh Backgrounds */
 .bg-grid-pattern {
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
   background-size: 3rem 3rem;
 }
 
 .dark .bg-grid-pattern {
   background-image: linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
 }
 
 .mask-vignette {
@@ -530,9 +539,11 @@ body::after {
   animation: none;
   mix-blend-mode: normal;
 }
+
 ::view-transition-old(root) {
   z-index: 1;
 }
+
 ::view-transition-new(root) {
   z-index: 9999;
 }
@@ -542,15 +553,24 @@ body::after {
   display: none !important;
   box-shadow: none !important;
 }
+
 .monaco-editor .overview-ruler {
   border-left: none !important;
 }
 
 /* Monochrome Clerk Live Modal Gradient */
 @keyframes clerk-gradient-flow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .live-clerk-gradient {
@@ -792,8 +812,8 @@ body::after {
     0 10px 28px -10px rgba(109, 91, 240, 0.55);
   border-radius: 9999px;
   transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1),
-              background 0.15s cubic-bezier(0.15, 0, 0.2, 1),
-              box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
+    background 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+    box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
 }
 
 .btn-pill-primary:hover {
@@ -842,9 +862,9 @@ body::after {
     0 1px 3px rgba(23, 23, 31, 0.04);
   border-radius: 9999px;
   transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1),
-              background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
-              border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
-              box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
+    background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+    border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+    box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
 }
 
 .btn-pill-secondary:hover {
@@ -914,6 +934,7 @@ body::after {
    150ms ease transitions on hover; scale 0.97 on press
    ======================================================== */
 @media (prefers-reduced-motion: no-preference) {
+
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   .btn-pill-primary:not(:disabled),
@@ -922,9 +943,9 @@ body::after {
   a[class*="btn"],
   .interactive-press {
     transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1),
-                background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
-                border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
-                box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
+      background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+      border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+      box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
   }
 
   button:active:not(:disabled),
@@ -939,6 +960,7 @@ body::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   button,
   [role="button"],
   .btn-pill-primary,
@@ -947,6 +969,7 @@ body::after {
     transition: opacity 0.15s ease !important;
     transform: none !important;
   }
+
   button:active,
   [role="button"]:active,
   .btn-pill-primary:active,
@@ -955,6 +978,7 @@ body::after {
     opacity: 0.8 !important;
     transform: none !important;
   }
+
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none !important;
@@ -984,28 +1008,30 @@ body::after {
 .token-key {
   color: var(--code-key);
 }
+
 .token-string {
   color: var(--code-string);
 }
+
 .token-punct {
   color: var(--code-punctuation);
 }
+
 .token-bracket {
   color: var(--code-bracket);
 }
+
 .token-bool {
   color: var(--code-bool);
 }
 
 /* Landing Alternate Section Band with Soft Gradient Transitions */
 .landing-features-band {
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    var(--surface-sunken) 96px,
-    var(--surface-sunken) calc(100% - 96px),
-    transparent 100%
-  );
+  background: linear-gradient(180deg,
+      transparent 0%,
+      var(--surface-sunken) 96px,
+      var(--surface-sunken) calc(100% - 96px),
+      transparent 100%);
 }
 
 /* Static CSS mesh-gradient fallback (prefers-reduced-motion, no-WebGL, and first paint) */
@@ -1073,10 +1099,9 @@ body::after {
     opacity: 0;
     transform: scale(0.96);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
   }
 }
-
-

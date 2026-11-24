@@ -48,8 +48,8 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <div className="w-8 h-8 rounded-[10px] bg-slate-900 text-white dark:bg-white/10 dark:text-white flex items-center justify-center shadow-xs transition-colors">
-              <AppForgeLogo size={18} isHovered={isHovered} className="text-white" />
+            <div className="w-8 h-8 rounded-[10px] bg-foreground text-background flex items-center justify-center shadow-xs transition-colors">
+              <AppForgeLogo size={18} isHovered={isHovered} className="text-background" />
             </div>
             <span className="font-semibold text-[15px] sm:text-[16px] tracking-tight text-slate-900 dark:text-slate-100 hidden xs:inline-block">
               AppForge

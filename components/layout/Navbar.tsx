@@ -42,8 +42,8 @@ export function Navbar() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center text-foreground relative overflow-hidden">
-          <AppForgeLogo size={18} isHovered={isHovered} className="text-foreground relative z-10" />
+        <div className="w-8 h-8 rounded-[10px] bg-foreground text-background flex items-center justify-center shadow-xs transition-colors relative overflow-hidden">
+          <AppForgeLogo size={18} isHovered={isHovered} className="text-background relative z-10" />
         </div>
         <div className="font-bold text-lg tracking-tight text-foreground transition-colors">
           AppForge
