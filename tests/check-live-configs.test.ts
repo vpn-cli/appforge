@@ -66,11 +66,12 @@ describe("check-live-configs auditor suite", () => {
                 type: "Statistic",
                 label: "Active Workflows",
                 value: "1,244",
-                variant: "panel",
+                variant: "gradient",
                 trend: {
                   value: "+12%",
                   sentiment: "positive",
                   direction: "up",
+                  series: [50, 52, 51, 54, 53, 55, 56],
                 },
               },
               {

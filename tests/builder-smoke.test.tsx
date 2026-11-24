@@ -4,6 +4,7 @@ import { renderToString } from "react-dom/server";
 
 vi.mock("next/font/google", () => ({
   Inter: () => ({ variable: "--font-inter", style: { fontFamily: "Inter" } }),
+  Geist: () => ({ variable: "--font-geist-sans", style: { fontFamily: "Geist" } }),
   Geist_Mono: () => ({ variable: "--font-geist-mono", style: { fontFamily: "Geist Mono" } }),
 }));
 

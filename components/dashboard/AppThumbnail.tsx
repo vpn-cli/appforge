@@ -120,6 +120,7 @@ export function AppThumbnail({ config }: Props) {
     <div
       className="relative aspect-[16/10] w-full overflow-hidden bg-card/60 dark:bg-white/[0.02] border-b border-border/60 dark:border-white/5 select-none pointer-events-none group-hover:border-foreground/30 transition-colors"
       aria-hidden="true"
+      inert
     >
       {/* Scaled desktop viewport container with bottom fade mask */}
       <div

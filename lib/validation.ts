@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
+import { preprocessStatusColorsMap } from "./status-colors";
 
 /**
  * Cache Key Normalization:
@@ -36,6 +37,7 @@ export const StatisticTrendSchema = z.union([
     label: z.string().optional(),
     direction: z.enum(["up", "down", "neutral"]).optional(),
     sentiment: z.enum(["positive", "negative", "neutral"]).optional(),
+    series: z.array(z.number()).max(100).optional(),
   }).strict(),
 ]);
 
@@ -44,21 +46,58 @@ export const StatisticSchema = z.object({
   label: z.string().optional(),
   title: z.string().optional(),
   value: z.union([z.string(), z.number()]).optional().default("0"),
+  valueSuffix: z.string().optional(),
+  suffix: z.string().optional(),
   format: z.enum(["compact", "full", "auto"]).optional(),
   trend: StatisticTrendSchema.optional(),
   trendValue: z.string().optional(),
   chartWave: z.boolean().optional(),
   icon: z.string().optional(),
-  variant: z.enum(["default", "panel"]).optional(),
+  variant: z.enum(["default", "panel", "gradient"]).optional(),
   className: z.string().optional(),
 }).strict();
+export const StatusColorToneSchema = z.enum([
+  "success",
+  "warning",
+  "danger",
+  "info",
+  "neutral",
+  "violet",
+]);
+
+export const WHITELISTED_ROW_ICONS = [
+  "users",
+  "user",
+  "file-text",
+  "filetext",
+  "bell",
+  "sparkles",
+  "activity",
+  "layers",
+  "check-circle",
+  "checkcircle",
+  "alert-triangle",
+  "alerttriangle",
+  "shield",
+  "database",
+  "workflow",
+  "clock",
+] as const;
+
+export const WhitelistedRowIconSchema = z.enum(WHITELISTED_ROW_ICONS);
 
 export const DataTableColumnSchema = z.union([
   z.string(),
   z.object({
     key: z.string(),
     label: z.string().optional(),
-    type: z.enum(["text", "number", "currency", "id", "code", "badge", "avatar"]).optional(),
+    type: z
+      .enum(["text", "number", "currency", "id", "code", "badge", "status", "avatar", "icon"])
+      .optional(),
+    colors: z.preprocess(
+      preprocessStatusColorsMap,
+      z.record(z.string(), StatusColorToneSchema).optional()
+    ),
     align: z.enum(["left", "right", "center"]).optional(),
   }).strict(),
 ]);

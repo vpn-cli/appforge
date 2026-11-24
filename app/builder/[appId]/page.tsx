@@ -19,10 +19,13 @@ import { IconButton } from "@/components/ui/icon-button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Kbd } from "@/components/ui/kbd";
+import { motion, AnimatePresence } from "framer-motion";
+import { MOTION_TOKENS } from "@/lib/motion-tokens";
 import {
   ArrowLeft,
   Save,
   Play,
+  Check,
   Loader2,
   FileCode,
   Layout,
@@ -38,6 +41,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth, SignInButton } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import { getAppConfig, saveAppConfig, publishAppConfig } from "@/actions/apps";
+import { TEMPLATES_DATA } from "@/lib/templates-data";
 
 const DEFAULT_EDITOR_WIDTH = 460;
 const MIN_EDITOR_WIDTH = 340;
@@ -271,6 +275,13 @@ function BuilderContent() {
     appId === "demo" || appId.startsWith("template-") || appId === "mock-new-id";
 
   const [configStr, setConfigStr] = useState(() => {
+    const templateParam = searchParams.get("template");
+    const matchedTemplate = TEMPLATES_DATA.find(
+      (t) => t.id === templateParam || appId === `template-${t.id}` || appId === t.id
+    );
+    if (matchedTemplate) {
+      return JSON.stringify(matchedTemplate.config, null, 2);
+    }
     if (appId.includes("template-blank")) {
       return JSON.stringify({ app: "Untitled Template", pages: [] }, null, 2);
     }
@@ -338,7 +349,9 @@ function BuilderContent() {
     [configStr],
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const [isPublishing, setIsPublishing] = useState(false);
+  const [publishState, setPublishState] = useState<"idle" | "publishing" | "published">("idle");
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [authRequireMessage, setAuthRequireMessage] = useState<string | null>(
@@ -446,9 +459,11 @@ function BuilderContent() {
 
   const handleSave = async () => {
     setIsSaving(true);
+    setSaveState("saving");
     try {
       const res = await saveAppConfig(appId, configStr);
       if (!res.success) {
+        setSaveState("idle");
         if (res.error?.toLowerCase().includes("unauthorized")) {
           setAuthRequireMessage(
             "Please sign in to save your application to your personal account.",
@@ -461,6 +476,8 @@ function BuilderContent() {
           });
         }
       } else {
+        setSaveState("saved");
+        setTimeout(() => setSaveState("idle"), 2000);
         setNotificationModal({
           type: "success",
           title: "Draft Saved",
@@ -468,6 +485,7 @@ function BuilderContent() {
         });
       }
     } catch (e: unknown) {
+      setSaveState("idle");
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
         setAuthRequireMessage(
@@ -487,9 +505,11 @@ function BuilderContent() {
 
   const handlePublish = async () => {
     setIsPublishing(true);
+    setPublishState("publishing");
     try {
       const res = await publishAppConfig(appId, configStr);
       if (!res.success) {
+        setPublishState("idle");
         if (res.error?.toLowerCase().includes("unauthorized")) {
           setAuthRequireMessage(
             "Please sign in to deploy and publish your dynamic application.",
@@ -502,6 +522,8 @@ function BuilderContent() {
           });
         }
       } else {
+        setPublishState("published");
+        setTimeout(() => setPublishState("idle"), 2000);
         setNotificationModal({
           type: "success",
           title: "App Published!",
@@ -510,6 +532,7 @@ function BuilderContent() {
         });
       }
     } catch (e: unknown) {
+      setPublishState("idle");
       const msg = (e as Error).message || "";
       if (msg.toLowerCase().includes("unauthorized")) {
         setAuthRequireMessage(
@@ -608,29 +631,11 @@ function BuilderContent() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-background overflow-hidden text-foreground antialiased select-none relative">
-      {/* Background treatment: same canvas and washes at half strength */}
+      {/* Background treatment: STATIC frame of the mesh gradient at ~60% intensity. No WebGL animation in builder */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden z-0 select-none"
-      >
-        <div className="dark:hidden absolute -top-32 -left-20 w-[580px] h-[580px] rounded-full bg-[radial-gradient(circle_at_center,var(--brand-100)_0%,rgba(242,241,249,0)_70%)] blur-[70px] opacity-40" />
-        <div className="dark:hidden absolute top-[200px] -right-20 w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle_at_center,var(--wash-blue)_0%,rgba(242,241,249,0)_70%)] blur-[80px] opacity-40" />
-        <div
-          className="dark:hidden absolute inset-0 bg-[radial-gradient(rgba(23,23,31,0.02)_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none"
-          style={{
-            maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
-            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
-          }}
-        />
-        <div className="hidden dark:block absolute -top-[120px] left-1/2 -translate-x-1/2 w-[55vw] h-[35vh] max-w-[900px] rounded-full bg-[radial-gradient(ellipse_60%_35%_at_50%_25%,rgba(109,91,240,0.09)_0%,rgba(91,69,224,0.02)_50%,transparent_70%)] blur-[100px] pointer-events-none" />
-        <div
-          className="hidden dark:block absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.02)_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none"
-          style={{
-            maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
-            WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%)",
-          }}
-        />
-      </div>
+        className="pointer-events-none absolute inset-0 overflow-hidden z-0 select-none hero-mesh-fallback opacity-60"
+      />
       {/* =========================================================================
           TOP APPLICATION TOOLBAR (h-14, 56px) - Glass top bar
           Sans breadcrumb with App Name, Copilot ⌘K toggle, Save Draft, Publish
@@ -690,35 +695,109 @@ function BuilderContent() {
             <Kbd>⌘K</Kbd>
           </Button>
 
-          {/* Save Draft Button (secondary frosted pill) */}
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
-            {isSaving ? (
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-            ) : (
-              <Save className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-            )}
-            Save Draft
-          </Button>
+          {/* Save Draft Button: dynamic state (idle → "Saving…" → "Saved", with a width spring) */}
+          <motion.div layout transition={MOTION_TOKENS.springStandard}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleSave}
+              disabled={saveState === "saving"}
+              className="overflow-hidden"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {saveState === "saving" ? (
+                  <motion.span
+                    key="saving"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center"
+                  >
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    <span>Saving…</span>
+                  </motion.span>
+                ) : saveState === "saved" ? (
+                  <motion.span
+                    key="saved"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-semibold"
+                  >
+                    <Check className="w-3.5 h-3.5 mr-1.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Saved</span>
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center"
+                  >
+                    <Save className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                    <span>Save Draft</span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Button>
+          </motion.div>
 
-          {/* Publish CTA: Primary pill button */}
-          <Button
-            onClick={() => setShowPublishDialog(true)}
-            disabled={isPublishing}
-            variant="primary"
-            size="sm"
-          >
-            {isPublishing ? (
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-            ) : (
-              <Play className="w-3.5 h-3.5 mr-1.5 fill-current" />
-            )}
-            Publish
-          </Button>
+          {/* Publish CTA: dynamic state (idle → "Publishing…" → "Published", with a width spring) */}
+          <motion.div layout transition={MOTION_TOKENS.springStandard}>
+            <Button
+              onClick={() => {
+                if (publishState === "idle") setShowPublishDialog(true);
+              }}
+              disabled={publishState === "publishing"}
+              variant="primary"
+              size="sm"
+              className="overflow-hidden"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {publishState === "publishing" ? (
+                  <motion.span
+                    key="publishing"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center"
+                  >
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    <span>Publishing…</span>
+                  </motion.span>
+                ) : publishState === "published" ? (
+                  <motion.span
+                    key="published"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center font-semibold"
+                  >
+                    <Check className="w-3.5 h-3.5 mr-1.5 text-white" />
+                    <span>Published</span>
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center"
+                  >
+                    <Play className="w-3.5 h-3.5 mr-1.5 fill-current" />
+                    <span>Publish</span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Button>
+          </motion.div>
         </div>
       </header>
 
@@ -728,14 +807,16 @@ function BuilderContent() {
           Copilot floating chat pill anchored at bottom-right corner of Monaco pane
           ========================================================================= */}
       <main
+        id="main-content"
+        tabIndex={-1}
         ref={containerRef}
-        className="flex-1 flex flex-col md:flex-row overflow-hidden relative"
+        className="flex-1 flex flex-col md:flex-row overflow-hidden relative outline-none"
       >
         {/* PANE 1: CONFIG EDITOR (LEFT) */}
         {isEditorCollapsed ? (
           <aside
             style={{ width: `${RAIL_WIDTH}px` }}
-            className="h-full border-r border-border bg-card flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
+            className="h-full border-r border-border/80 dark:border-white/10 glass-1 flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
             onClick={() => setIsEditorCollapsed(false)}
             title="Expand Config Editor"
             role="region"
@@ -766,8 +847,8 @@ function BuilderContent() {
             className="h-full flex flex-col border-r border-border bg-card shrink-0 min-w-[320px] overflow-hidden"
             role="region"
           >
-            {/* Editor Panel Header: 36px (h-9) consistent with Preview header */}
-            <div className="h-9 px-4 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
+            {/* Editor Panel Header: 36px (h-9) consistent with Preview header, styled with glass-1 */}
+            <div className="h-9 px-4 border-b border-border/80 dark:border-white/10 glass-1 flex items-center justify-between shrink-0 select-none">
               <div className="flex items-center gap-2">
                 <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="text-[13px] font-medium text-foreground">
@@ -860,8 +941,8 @@ function BuilderContent() {
           className="flex-1 min-w-[400px] flex flex-col h-full bg-background overflow-hidden"
           role="region"
         >
-          {/* Preview Panel Header: 36px (h-9) consistent with Editor header */}
-          <div className="h-9 px-4 border-b border-border bg-card flex items-center justify-between shrink-0 select-none">
+          {/* Preview Panel Header: 36px (h-9) consistent with Editor header, styled with glass-1 */}
+          <div className="h-9 px-4 border-b border-border/80 dark:border-white/10 glass-1 flex items-center justify-between shrink-0 select-none">
             <div className="flex items-center gap-2">
               <Layout className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-[13px] font-medium text-foreground">
@@ -869,8 +950,8 @@ function BuilderContent() {
               </span>
             </div>
 
-            {/* Viewport Width Controls in preview panel header */}
-            <div className="flex items-center gap-1 bg-muted/50 p-0.5 rounded-full border border-border">
+            {/* Viewport Width Controls in preview panel header - styled with glass-2-nested */}
+            <div className="flex items-center gap-1 glass-2-nested p-0.5 rounded-full border border-border/80 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setViewport("desktop")}

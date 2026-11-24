@@ -5,7 +5,7 @@ import {
   getComponentAllowedKeys,
   buildSchemaDocumentation,
 } from "@/lib/copilot-prompt";
-import { ComponentSchemas } from "@/lib/validation";
+import { ComponentSchemas, StatusColorToneSchema } from "@/lib/validation";
 
 describe("Copilot System Prompt — Schema Reflection & Drift Defense", () => {
   it("generates component specifications covering every registered schema in ComponentSchemas", () => {
@@ -49,13 +49,18 @@ describe("Copilot System Prompt — Schema Reflection & Drift Defense", () => {
     expect(specs.Statistic.enums.format).toEqual(["compact", "full", "auto"]);
     expect(COPILOT_SYSTEM_PROMPT).toContain('"compact" | "full" | "auto"');
 
-    // Statistic variant enum: default, panel (interview-hardening schema)
-    expect(specs.Statistic.enums.variant).toEqual(["default", "panel"]);
-    expect(COPILOT_SYSTEM_PROMPT).toContain('"default" | "panel"');
+    // Statistic variant enum: default, panel, gradient
+    expect(specs.Statistic.enums.variant).toEqual(["default", "panel", "gradient"]);
+    expect(COPILOT_SYSTEM_PROMPT).toContain('"default" | "panel" | "gradient"');
 
     // ButtonAction variant enum: default, outline, secondary, ghost
     expect(specs.ButtonAction.enums.variant).toEqual(["default", "outline", "secondary", "ghost"]);
     expect(COPILOT_SYSTEM_PROMPT).toContain('"default" | "outline" | "secondary" | "ghost"');
+
+    // Status column color tones
+    for (const tone of StatusColorToneSchema.options) {
+      expect(COPILOT_SYSTEM_PROMPT).toContain(`"${tone}"`);
+    }
   });
 
   it("strictly prohibits arbitrary / unrecognized keys in prompt documentation", () => {

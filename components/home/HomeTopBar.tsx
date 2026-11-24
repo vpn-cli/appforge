@@ -1,156 +1,173 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { MOTION_TOKENS } from "@/lib/motion-tokens";
+import { Menu, X } from "lucide-react";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { IconButton } from "@/components/ui/icon-button";
-import { useOrganization, useUser, UserButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@clerk/nextjs";
+
+const DynamicSignedInControls = dynamic(
+  () => import("./HomeTopBarSignedIn").then((mod) => mod.HomeTopBarSignedIn),
+  { ssr: false }
+);
+
+const NAV_SEGMENTS = [
+  { label: "Apps", href: "/apps" },
+  { label: "Builder", href: "/builder/demo" },
+  { label: "Templates", href: "/templates" },
+] as const;
 
 export function HomeTopBar() {
   const pathname = usePathname();
-  const { organization } = useOrganization();
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const isUserSignedIn = isLoaded && isSignedIn;
 
-  const orgName =
-    organization?.name ||
-    (user?.fullName ? `${user.fullName}'s Organization` : "Vipin's Organization");
-  const orgInitial = (orgName?.[0] || "V").toUpperCase();
-
-  const navSegments = [
-    { label: "Apps", href: "/apps" },
-    { label: "Builder", href: "/builder/demo" },
-    { label: "Templates", href: "/templates" },
-  ];
+  const isUserSignedIn = Boolean(isLoaded && isSignedIn);
 
   return (
     <header className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 relative z-30 shrink-0">
-      {/* Hidden SVG displacement map filter for Chromium progressive enhancement refraction */}
-      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
-        <defs>
-          <filter id="glass-edge-refract" x="-10%" y="-10%" width="120%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="1" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Floating Frosted Pill: 64px tall, 16px inset from viewport, glass-1 material */}
-      <div className="h-16 px-4 sm:px-5 w-full flex items-center justify-between rounded-full glass-1 transition-all">
-        {/* Left: Logo mark sits on a dark squircle tile (light mode) for an anchor */}
+      <div className="h-16 px-4 sm:px-6 w-full flex items-center justify-between rounded-full glass-1 transition-colors">
+        {/* Brand */}
         <Link
           href="/"
           className="flex items-center gap-2.5 outline-none group select-none shrink-0"
         >
-          <div className="w-8 h-8 rounded-[10px] bg-slate-900 text-white dark:bg-white/10 dark:text-white flex items-center justify-center shadow-xs transition-colors">
-            <AppForgeLogo size={18} className="text-white" />
+          <div className="w-8 h-8 rounded-[10px] bg-foreground text-background flex items-center justify-center shadow-xs transition-colors">
+            <AppForgeLogo size={18} className="text-background" />
           </div>
-          <span className="font-semibold text-[15px] sm:text-[16px] tracking-tight text-slate-900 dark:text-slate-100">
+          <span className="font-semibold text-[15px] sm:text-[16px] tracking-tight text-foreground">
             AppForge
           </span>
         </Link>
 
-        {/* Center: Segmented control (Dashboard / Builder / Templates) - desktop */}
-        {/* All nav text is 15px, weight 500 */}
+        {/* Desktop Nav with Sliding Active Pill */}
         <nav
-          aria-label="Navigation"
-          className="hidden sm:flex items-center p-1 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-300/40 dark:border-white/10"
+          aria-label="Primary navigation"
+          className="hidden sm:flex items-center p-1 rounded-full bg-surface-sunken border border-border relative"
         >
-          {navSegments.map((seg) => {
-            const isActive = pathname === seg.href || (pathname === "/" && seg.label === "Dashboard");
+          {NAV_SEGMENTS.map((seg) => {
+            const isActive = pathname === seg.href || (seg.href === "/apps" && pathname.startsWith("/apps"));
             return (
               <Link
                 key={seg.label}
                 href={seg.href}
-                className={`px-4 py-1.5 rounded-full text-[15px] font-medium transition-all inline-flex items-center gap-1.5 ${
+                prefetch={false}
+                className={`relative px-4 py-1.5 rounded-full text-[14px] font-medium transition-colors inline-flex items-center gap-1.5 ${
                   isActive
-                    ? "bg-surface text-brand-link shadow-[0_2px_8px_rgba(23,23,31,0.08)] dark:bg-white/[0.12] dark:shadow-none font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-brand-link font-semibold"
+                    : "text-text-secondary hover:text-foreground"
                 }`}
               >
                 {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-link shrink-0" />
+                  <motion.span
+                    layoutId="nav-sliding-pill"
+                    className="absolute inset-0 rounded-full bg-surface shadow-xs z-0"
+                    transition={MOTION_TOKENS.springStandard}
+                  />
                 )}
-                <span>{seg.label}</span>
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-link shrink-0 relative z-10" />
+                )}
+                <span className="relative z-10">{seg.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Right: Theme toggle (36px), Org switcher (15px, weight 500), User avatar (36px) - all vertically centered */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Theme toggle (36px) */}
+        {/* Right Controls */}
+        <div className="flex items-center gap-2">
           <ThemeToggle />
 
-          {/* Org Switcher pill (avatar + name + chevron) - 15px weight 500 */}
-          <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 h-9 rounded-full glass-2-nested text-foreground select-none">
-            <span className="w-6 h-6 rounded-full bg-brand-600 text-white font-semibold text-[12px] flex items-center justify-center shrink-0">
-              {orgInitial}
-            </span>
-            <span className="truncate max-w-[160px] font-medium text-[15px] text-foreground">
-              {orgName}
-            </span>
-            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" strokeWidth={1.75} />
-          </div>
-
-          {/* User Avatar (36px) */}
-          <div className="flex items-center justify-center shrink-0">
-            {isUserSignedIn ? (
-              <UserButton
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-9 h-9 rounded-full border border-slate-200 dark:border-white/10",
-                  },
-                }}
-              />
-            ) : (
-              <Link
-                href="/login"
-                className="w-9 h-9 rounded-full bg-slate-200/80 dark:bg-white/10 flex items-center justify-center text-[12px] font-semibold text-slate-800 dark:text-slate-100 hover:opacity-90 transition-opacity border border-slate-300/60 dark:border-white/10"
-                aria-label="User profile"
+          {isUserSignedIn ? (
+            <DynamicSignedInControls />
+          ) : (
+            <div className="hidden sm:flex items-center gap-2">
+              <Button
+                render={<Link href="/sign-in" prefetch={false} />}
+                variant="ghost"
+                size="md"
+                className="text-foreground hover:text-foreground"
               >
-                VK
-              </Link>
-            )}
-          </div>
+                Log in
+              </Button>
+              <Button
+                render={<Link href="/sign-up" prefetch={false} />}
+                variant="primary"
+                size="md"
+              >
+                Start for free
+              </Button>
+            </div>
+          )}
 
-          {/* Mobile menu button */}
+          {/* Mobile menu toggle */}
           <IconButton
             variant="glass"
             size="md"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
             className="sm:hidden"
             aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            {mobileMenuOpen ? (
+              <X className="w-4 h-4" />
+            ) : (
+              <Menu className="w-4 h-4" />
+            )}
           </IconButton>
         </div>
       </div>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile Dropdown */}
       {mobileMenuOpen && (
-        <div className="sm:hidden mt-2 p-3 rounded-2xl glass-1 border border-white/80 dark:border-white/10 flex flex-col gap-1 shadow-lg">
-          {navSegments.map((seg) => {
-            const isActive = pathname === seg.href || (pathname === "/" && seg.label === "Apps");
+        <div className="sm:hidden mt-2 p-4 rounded-2xl glass-1 flex flex-col gap-2 shadow-lg">
+          {NAV_SEGMENTS.map((seg) => {
+            const isActive = pathname === seg.href;
             return (
               <Link
                 key={seg.label}
                 href={seg.href}
+                prefetch={false}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-2 rounded-xl text-[15px] font-medium transition-colors inline-flex items-center gap-2 ${
+                className={`px-3 py-2 rounded-xl text-[15px] font-medium transition-colors ${
                   isActive
-                    ? "bg-surface text-brand-link shadow-xs dark:bg-white/10 font-semibold"
-                    : "text-muted-foreground hover:bg-white/50 dark:hover:bg-white/5 hover:text-foreground"
+                    ? "bg-surface text-brand-link font-semibold"
+                    : "text-text-secondary hover:text-foreground"
                 }`}
               >
                 {seg.label}
               </Link>
             );
           })}
+          {!isUserSignedIn && (
+            <div className="pt-2 mt-1 border-t border-border flex flex-col gap-2">
+              <Button
+                render={<Link href="/sign-in" prefetch={false} />}
+                variant="secondary"
+                size="md"
+                className="w-full justify-center"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Log in
+              </Button>
+              <Button
+                render={<Link href="/sign-up" prefetch={false} />}
+                variant="primary"
+                size="md"
+                className="w-full justify-center"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Start for free
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </header>

@@ -1,13 +1,107 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import {
+  AlertCircle,
+  RefreshCw,
+  Users,
+  User,
+  FileText,
+  Bell,
+  Sparkles,
+  Activity,
+  Layers,
+  CheckCircle2,
+  AlertTriangle,
+  Shield,
+  Database,
+  Workflow,
+  Clock,
+} from "lucide-react";
 import { useAppRuntimeContext } from "../context";
+import {
+  resolveStatusColor,
+  STATUS_PILL_CLASSES,
+  type StatusColorTone,
+} from "@/lib/status-colors";
+
+export { resolveStatusColor, type StatusColorTone };
+
+export const WHITELISTED_ROW_ICONS = [
+  "users",
+  "user",
+  "file-text",
+  "filetext",
+  "bell",
+  "sparkles",
+  "activity",
+  "layers",
+  "check-circle",
+  "checkcircle",
+  "alert-triangle",
+  "alerttriangle",
+  "shield",
+  "database",
+  "workflow",
+  "clock",
+] as const;
+
+export type WhitelistedRowIcon = (typeof WHITELISTED_ROW_ICONS)[number];
+
+export function resolveRowIcon(iconName: unknown): React.ReactNode | null {
+  if (typeof iconName !== "string") return null;
+  const normalized = iconName.trim().toLowerCase().replace(/[\s_-]+/g, "-");
+  switch (normalized) {
+    case "users":
+    case "user-group":
+      return <Users className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "user":
+      return <User className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "file-text":
+    case "filetext":
+    case "file":
+    case "document":
+      return <FileText className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "bell":
+    case "alert":
+    case "notification":
+      return <Bell className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "sparkles":
+    case "sparkle":
+    case "ai":
+      return <Sparkles className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "activity":
+      return <Activity className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "layers":
+      return <Layers className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "check-circle":
+    case "checkcircle":
+    case "check":
+      return <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "alert-triangle":
+    case "alerttriangle":
+    case "warning":
+      return <AlertTriangle className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "shield":
+      return <Shield className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "database":
+      return <Database className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "workflow":
+    case "git-branch":
+      return <Workflow className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    case "clock":
+    case "time":
+      return <Clock className="w-3.5 h-3.5" strokeWidth={1.8} />;
+    default:
+      return null;
+  }
+}
 
 export interface ColumnSchema {
   key: string;
   label?: string;
-  type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "avatar";
+  type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "status" | "avatar" | "icon";
+  colors?: Record<string, string>;
   align?: "left" | "right" | "center";
 }
 
@@ -97,33 +191,33 @@ export function DataTable({
 
   const activeRemote = fetchKey && remoteResult?.key === fetchKey ? remoteResult : null;
 
-  const resolvedCols = columns.length > 0 
-    ? columns 
+  const resolvedCols = columns.length > 0
+    ? columns
     : entity === "workflows"
-    ? [
+      ? [
         { key: "workflow", label: "WORKFLOW", type: "avatar" as const },
         { key: "trigger", label: "TRIGGER", type: "code" as const },
-        { key: "status", label: "STATUS", type: "badge" as const },
+        { key: "status", label: "STATUS", type: "status" as const },
       ]
-    : [];
+      : [];
 
   const resolvedData = initialData
     ? initialData
     : fetchKey
-    ? activeRemote?.rows ?? []
-    : entity === "workflows"
-    ? [
-        { workflow: "User Sync", trigger: "cron:hourly", status: "Running" },
-        { workflow: "Invoice Gen", trigger: "webhook:rx", status: "Idle" },
-      ]
-    : [];
+      ? activeRemote?.rows ?? []
+      : entity === "workflows"
+        ? [
+          { workflow: "User Sync", trigger: "cron:hourly", status: "Running" },
+          { workflow: "Invoice Gen", trigger: "webhook:rx", status: "Idle" },
+        ]
+        : [];
 
   // Normalize column definitions
   const normalizedCols: ColumnSchema[] = (resolvedCols.length > 0
     ? resolvedCols
     : resolvedData.length > 0
-    ? Object.keys(resolvedData[0])
-    : ["id", "name", "value", "status"]
+      ? Object.keys(resolvedData[0])
+      : ["id", "name", "value", "status"]
   ).map((col) => {
     if (typeof col === "string") {
       const lower = col.toLowerCase();
@@ -142,7 +236,7 @@ export function DataTable({
       ) {
         type = "number";
       } else if (lower.includes("status") || lower.includes("badge") || lower.includes("state")) {
-        type = "badge";
+        type = "status";
       } else if (lower === "workflow" || lower.includes("avatar") || lower.includes("user")) {
         type = "avatar";
       }
@@ -157,6 +251,7 @@ export function DataTable({
       key: col.key,
       label: col.label || col.key.charAt(0).toUpperCase() + col.key.slice(1).replace(/_/g, " "),
       type: col.type || "text",
+      colors: col.colors,
       align: col.align || (col.type === "number" || col.type === "currency" ? "right" : "left"),
     };
   });
@@ -166,12 +261,12 @@ export function DataTable({
     state !== "loaded"
       ? state
       : fetchKey && !activeRemote
-      ? "loading"
-      : activeRemote?.status === "error"
-      ? "error"
-      : !resolvedData || resolvedData.length === 0
-      ? "empty"
-      : "loaded";
+        ? "loading"
+        : activeRemote?.status === "error"
+          ? "error"
+          : !resolvedData || resolvedData.length === 0
+            ? "empty"
+            : "loaded";
 
   const effectiveErrorMessage = activeRemote?.error || errorMessage;
 
@@ -203,7 +298,12 @@ export function DataTable({
     return undefined;
   };
 
-  const renderCellContent = (col: ColumnSchema, value: unknown, rowIdx: number) => {
+  const renderCellContent = (
+    col: ColumnSchema,
+    value: unknown,
+    rowIdx: number,
+    row?: Record<string, unknown>
+  ) => {
     if (value === null || value === undefined || value === "") {
       return <span className="text-muted-foreground/50 select-none">-</span>;
     }
@@ -224,8 +324,26 @@ export function DataTable({
       );
     }
 
+    if (col.type === "icon") {
+      const rawIcon = value ?? (row ? (row as Record<string, unknown>).icon : undefined);
+      const icon = resolveRowIcon(rawIcon);
+      return (
+        <div
+          className={`w-6 h-6 rounded-full flex items-center justify-center select-none shrink-0 ${
+            variant === "dark-panel"
+              ? "bg-white/10 text-slate-100"
+              : "bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300 border border-border"
+          }`}
+        >
+          {icon ?? <FileText className="w-3.5 h-3.5" strokeWidth={1.8} />}
+        </div>
+      );
+    }
+
     if (col.type === "avatar") {
       const name = String(value);
+      const rowIcon = row ? (row as Record<string, unknown>).icon : undefined;
+      const icon = resolveRowIcon(rowIcon);
       const initials =
         name
           .split(" ")
@@ -234,82 +352,42 @@ export function DataTable({
           .slice(0, 2)
           .toUpperCase() || name.slice(0, 2).toUpperCase();
 
-      const avatarStyle = variant === "dark-panel"
-        ? rowIdx === 0
-          ? "bg-slate-200 text-slate-800 font-bold"
-          : "bg-indigo-600 text-white font-bold"
-        : "bg-muted text-foreground border border-border";
+      const avatarStyle =
+        variant === "dark-panel"
+          ? rowIdx === 0
+            ? "bg-slate-200 text-slate-800 font-bold"
+            : "bg-indigo-600 text-white font-bold"
+          : "bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300 border border-border";
 
       return (
         <div className="flex items-center gap-2.5">
-          <div className={`${variant === "dark-panel" ? "w-6 h-6 text-[10px]" : "w-5 h-5 text-[9px]"} rounded-full flex items-center justify-center select-none shrink-0 ${avatarStyle}`}>
-            {initials}
+          <div
+            className={`${variant === "dark-panel" ? "w-6 h-6 text-[10px]" : "w-6 h-6 text-[10px]"} rounded-full flex items-center justify-center select-none shrink-0 ${avatarStyle}`}
+          >
+            {icon ?? initials}
           </div>
-          <span className={`font-sans truncate max-w-[200px] ${variant === "dark-panel" ? "text-[15px] font-medium text-slate-100" : "text-xs font-medium text-foreground"}`} title={name}>
+          <span
+            className={`font-sans truncate max-w-[200px] ${variant === "dark-panel" ? "text-[15px] font-medium text-slate-100" : "text-xs font-medium text-foreground"}`}
+            title={name}
+          >
             {name}
           </span>
         </div>
       );
     }
 
-    if (col.type === "badge") {
-      const valStr = String(value).toLowerCase();
-      const isRunning = valStr.includes("running");
-      const isIdle = valStr.includes("idle");
-
-      if (isRunning) {
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            {String(value)}
-          </span>
-        );
-      }
-
-      if (isIdle) {
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
-            {String(value)}
-          </span>
-        );
-      }
-
-      let colorClass = "bg-muted text-muted-foreground border-border";
-      if (
-        valStr.includes("active") ||
-        valStr.includes("success") ||
-        valStr.includes("published") ||
-        valStr.includes("paid") ||
-        valStr.includes("operational") ||
-        valStr.includes("nominal") ||
-        valStr.includes("resolved")
-      ) {
-        colorClass = "bg-success-light text-success-text border-success-border";
-      } else if (
-        valStr.includes("pending") ||
-        valStr.includes("warning") ||
-        valStr.includes("draft") ||
-        valStr.includes("investigating") ||
-        valStr.includes("degraded") ||
-        valStr.includes("in progress")
-      ) {
-        colorClass = "bg-warning-light text-warning-text border-warning-border";
-      } else if (
-        valStr.includes("error") ||
-        valStr.includes("failed") ||
-        valStr.includes("inactive") ||
-        valStr.includes("critical") ||
-        valStr.includes("major") ||
-        valStr.includes("down") ||
-        valStr.includes("breached")
-      ) {
-        colorClass = "bg-error-light text-error-text border-error-border";
-      }
+    if (col.type === "status" || col.type === "badge") {
+      const tone = resolveStatusColor(value, col.colors);
+      const classes = STATUS_PILL_CLASSES[tone];
       return (
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${colorClass}`}
+          data-status-tone={tone}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border select-none whitespace-nowrap ${classes.pill}`}
         >
+          <span
+            className={`w-1.5 h-1.5 rounded-full shrink-0 ${classes.dot}`}
+            aria-hidden="true"
+          />
           {String(value)}
         </span>
       );
@@ -346,15 +424,13 @@ export function DataTable({
         onBlur={() => setIsTableFocused(false)}
         onKeyDown={handleKeyDown}
         aria-label="Data Table"
-        className={`w-full overflow-x-auto ${
-          variant === "dark-panel"
-            ? "border border-border bg-card/90 rounded-xl shadow-inner text-foreground"
-            : `border border-border bg-card ${effectiveState === "degraded" ? "rounded-b-lg" : "rounded-lg"}`
-        } ${
-          isInteractive
+        className={`w-full overflow-x-auto ${variant === "dark-panel"
+          ? "border border-border bg-card/90 rounded-xl shadow-inner text-foreground"
+          : `border border-border bg-card ${effectiveState === "degraded" ? "rounded-b-lg" : "rounded-lg"}`
+          } ${isInteractive
             ? "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             : ""
-        }`}
+          }`}
       >
         <table className="w-full text-xs text-left border-collapse">
           {/* Header Row */}
@@ -364,17 +440,15 @@ export function DataTable({
                 <th
                   key={idx}
                   scope="col"
-                  className={`px-4 py-2.5 select-none whitespace-nowrap ${
-                    variant === "dark-panel"
-                      ? "text-[10px] font-mono tracking-wider uppercase text-slate-400 font-semibold"
-                      : "text-xs text-muted-foreground font-medium"
-                  } ${
-                    col.align === "right"
+                  className={`px-4 py-2.5 select-none whitespace-nowrap ${variant === "dark-panel"
+                    ? "text-[10px] font-mono tracking-wider uppercase text-slate-400 font-semibold"
+                    : "text-xs text-muted-foreground font-medium"
+                    } ${col.align === "right"
                       ? "text-right"
                       : col.align === "center"
-                      ? "text-center"
-                      : "text-left"
-                  }`}
+                        ? "text-center"
+                        : "text-left"
+                    }`}
                 >
                   {col.label}
                 </th>
@@ -391,9 +465,8 @@ export function DataTable({
                     {normalizedCols.map((col, colIdx) => (
                       <td key={colIdx} className="px-3 py-2">
                         <div
-                          className={`h-3.5 rounded bg-muted animate-pulse ${
-                            col.align === "right" ? "ml-auto" : ""
-                          }`}
+                          className={`h-3.5 rounded bg-muted animate-pulse ${col.align === "right" ? "ml-auto" : ""
+                            }`}
                           style={{
                             width: `${Math.max(35, Math.min(85, (colIdx + rowIdx * 3) * 17 % 50 + 40))}%`,
                           }}
@@ -441,26 +514,23 @@ export function DataTable({
                   <tr
                     key={rowIdx}
                     onClick={() => onRowClick && onRowClick(row, rowIdx)}
-                    className={`${rowBorderClass} transition-colors ${
-                      isInteractive ? "cursor-pointer" : ""
-                    } ${
-                      isRowFocused
+                    className={`${rowBorderClass} transition-colors ${isInteractive ? "cursor-pointer" : ""
+                      } ${isRowFocused
                         ? "bg-muted/70 ring-1 ring-inset ring-ring"
                         : ""
-                    }`}
+                      }`}
                   >
                     {normalizedCols.map((col, colIdx) => (
                       <td
                         key={colIdx}
-                        className={`px-4 ${variant === "dark-panel" ? "py-3" : "py-2"} whitespace-nowrap text-xs ${
-                          col.align === "right"
-                            ? "text-right"
-                            : col.align === "center"
+                        className={`px-4 ${variant === "dark-panel" ? "py-3" : "py-2"} whitespace-nowrap text-xs ${col.align === "right"
+                          ? "text-right"
+                          : col.align === "center"
                             ? "text-center"
                             : "text-left"
-                        }`}
+                          }`}
                       >
-                        {renderCellContent(col, getCellValue(row, col.key), rowIdx)}
+                        {renderCellContent(col, getCellValue(row, col.key), rowIdx, row)}
                       </td>
                     ))}
                   </tr>

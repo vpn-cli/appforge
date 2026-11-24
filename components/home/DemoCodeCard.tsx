@@ -1,218 +1,167 @@
 "use client";
 
 import { useState } from "react";
-import { FileCode, ChevronDown, Copy, Check } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { Check, Copy, FileCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useHeroScriptedEdit } from "./HeroScriptedEditContext";
+import {
+  buildHeroJsonLines,
+  HERO_DEMO_RAW_JSON,
+  type JsonToken,
+} from "./heroDemoConfig";
 
-const CODE_RAW_BASE = `{
-  "app": "ops_dashboard",
-  "pages": [{
-    "components": [
-      { "type": "Metric", "title": "Active Workflows" },
-      { "type": "DataTable", "entity": "workflows" }
-    ]
-  }]
-}`;
+const TOKEN_CLASSES: Record<JsonToken["kind"], string> = {
+  key: "token-key font-medium",
+  string: "token-string",
+  punct: "token-punct",
+  bracket: "token-bracket font-medium",
+  bool: "token-bool font-medium",
+  number: "token-num font-medium",
+  plain: "",
+  fold: "token-fold font-medium cursor-pointer select-none",
+};
 
-const keyStyle = "token-key font-medium";
-const strStyle = "token-string";
-const punctStyle = "token-punct";
-const bracketStyle = "token-bracket font-medium";
-const boolStyle = "token-bool font-medium";
+type DemoCodeCardProps = {
+  metricDisplayValue?: string;
+  variantDisplay?: string;
+  validationStatus?: "validating" | "valid";
+  activeLineHighlighted?: boolean;
+  showCursor?: boolean;
+};
 
-function renderTypedTokens(text: string) {
-  if (!text) return null;
-
-  // Expected full string: ', "live": true'
-  const comma = text.slice(0, 2); // ', '
-  const key = text.slice(2, 8); // '"live"'
-  const colon = text.slice(8, 10); // ': '
-  const val = text.slice(10); // 'true'
-
-  return (
-    <>
-      {comma && <span className={punctStyle}>{comma}</span>}
-      {key && <span className={keyStyle}>{key}</span>}
-      {colon && <span className={punctStyle}>{colon}</span>}
-      {val && <span className={boolStyle}>{val}</span>}
-    </>
-  );
-}
-
-export function DemoCodeCard() {
+export function DemoCodeCard({
+  metricDisplayValue = "1,244",
+  variantDisplay = '"gradient"',
+  validationStatus = "valid",
+  activeLineHighlighted = false,
+  showCursor = false,
+}: DemoCodeCardProps = {}) {
   const [copied, setCopied] = useState(false);
-  const shouldReduceMotion = useReducedMotion();
-  const { typedText, showCursor, isLineHighlighted } = useHeroScriptedEdit();
+  const [seriesExpanded, setSeriesExpanded] = useState(false);
 
-  // Pointer tracking for subtle 8% specular glass highlight
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isCardHovered, setIsCardHovered] = useState(false);
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
+  const lines = buildHeroJsonLines(metricDisplayValue, variantDisplay, { seriesExpanded });
 
   const handleCopy = async () => {
     try {
-      const codeToCopy = typedText
-        ? CODE_RAW_BASE.replace('"workflows" }', `"workflows"${typedText} }`)
-        : CODE_RAW_BASE;
-      await navigator.clipboard.writeText(codeToCopy);
+      await navigator.clipboard.writeText(HERO_DEMO_RAW_JSON);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch {}
+    } catch {
+      // Ignore clipboard permission errors in restricted contexts
+    }
   };
 
   return (
     <div
-      onPointerMove={handlePointerMove}
-      onPointerEnter={() => setIsCardHovered(true)}
-      onPointerLeave={() => setIsCardHovered(false)}
-      className="glass-1 rounded-[24px] p-5 flex flex-col justify-between h-[370px] max-h-[380px] transition-all overflow-hidden relative"
+      data-testid="hero-code-card"
+      className="glass-1 rounded-2xl p-4 sm:p-5 flex flex-col justify-between h-auto lg:h-full transition-colors relative"
     >
-      {/* Specular highlight on glass panels follows cursor (radial gradient, 8% opacity) */}
-      <div
-        className="pointer-events-none absolute inset-0 rounded-[24px] transition-opacity duration-300 z-20"
-        style={{
-          opacity: isCardHovered ? 1 : 0,
-          background: `radial-gradient(350px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.08), transparent 70%)`,
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Top Header Row */}
-      <div className="flex items-center justify-between pb-3.5 border-b border-white/60 dark:border-white/10 shrink-0 relative z-10">
-        <div className="flex items-center gap-3">
-          {/* Traffic lights */}
-          <div className="flex items-center gap-1.5" aria-hidden="true">
-            <span className="w-3 h-3 rounded-full bg-rose-500/90 shadow-xs" />
-            <span className="w-3 h-3 rounded-full bg-amber-500/90 shadow-xs" />
-            <span className="w-3 h-3 rounded-full bg-emerald-500/90 shadow-xs" />
-          </div>
-
-          {/* File tab: app.config.json with a chevron */}
-          <div className="flex items-center gap-2 px-3 py-1 rounded-lg glass-2-nested text-[14px] font-medium text-slate-800 dark:text-slate-200 select-none ml-1">
-            <FileCode className="w-4 h-4 text-slate-500 dark:text-slate-400" strokeWidth={1.75} />
-            <span>app.config.json</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5" strokeWidth={2} />
-          </div>
+      {/* Top Header Row — matching 44px (h-11) height with preview card */}
+      <div className="h-11 flex items-center justify-between gap-2 pb-3 border-b border-border shrink-0">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-lg glass-2-nested text-[13px] font-medium text-foreground select-none h-8">
+          <FileCode className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
+          <span className="font-mono">app.config.json</span>
         </div>
 
-        {/* Copy button */}
         <Button
           type="button"
           onClick={handleCopy}
           variant="secondary"
           size="sm"
-          className="gap-1.5 h-8 px-2.5 text-[13px]"
-          aria-label="Copy JSON code"
+          className="gap-1.5 h-8 px-3 text-[13px]"
+          aria-label="Copy JSON configuration"
         >
           {copied ? (
             <>
-              <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" strokeWidth={2} />
-              <span className="text-emerald-700 dark:text-emerald-400 font-medium">Copied</span>
+              <Check className="w-3.5 h-3.5 text-success-text" strokeWidth={2} />
+              <span className="text-success-text font-medium">Copied</span>
             </>
           ) : (
             <>
-              <Copy className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" strokeWidth={1.75} />
+              <Copy className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.75} />
               <span>Copy</span>
             </>
           )}
         </Button>
       </div>
 
-      {/* Code Editor Body: Compact 9-line version, vertically balanced */}
-      <div className="my-auto font-mono text-[14px] leading-[28px] select-text flex gap-3.5 flex-1 overflow-x-auto items-center relative z-10">
-        {/* Line numbers at 35% opacity */}
-        <div
-          className="flex flex-col text-right text-slate-900/35 dark:text-slate-100/35 select-none font-mono pr-3 border-r border-slate-300/40 dark:border-white/10 shrink-0 font-normal"
-          aria-hidden="true"
-        >
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-            <span key={num} className="leading-[28px]">
-              {num}
-            </span>
-          ))}
+      {/* Code Body — scrollable honest JSON showing complete AST matching right-hand preview */}
+      <div
+        data-testid="code-panel-body"
+        className="py-3 font-mono text-[13px] leading-[19px] select-text flex flex-col code-panel-scroll max-h-[340px] pr-1"
+      >
+        <div className="w-full flex flex-col min-w-0">
+          {lines.map((tokens, lineIdx) => {
+            const isVariantLine = tokens.some((t) => t.text === '"variant"');
+            const isHighlighted = isVariantLine && activeLineHighlighted;
+
+            return (
+              <div
+                key={lineIdx}
+                className={`flex items-baseline gap-3 min-w-0 rounded px-1 transition-colors duration-200 ${
+                  isHighlighted ? "bg-brand-light" : ""
+                }`}
+              >
+                <span
+                  aria-hidden="true"
+                  className="w-5 text-right text-text-muted/60 select-none shrink-0 tabular-nums"
+                >
+                  {lineIdx + 1}
+                </span>
+                <code className="whitespace-pre-wrap break-words min-w-0 flex-1 [overflow-wrap:anywhere]">
+                  {tokens.map((tok, tokIdx) => {
+                    if (tok.kind === "fold") {
+                      return (
+                        <button
+                          key={tokIdx}
+                          type="button"
+                          onClick={() => setSeriesExpanded((prev) => !prev)}
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/70 transition-colors cursor-pointer select-none"
+                          title={seriesExpanded ? "Collapse series array" : "Expand series array"}
+                          aria-expanded={seriesExpanded}
+                        >
+                          {tok.text}
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <span key={tokIdx} className={TOKEN_CLASSES[tok.kind]}>
+                        {tok.text}
+                      </span>
+                    );
+                  })}
+                  {isVariantLine && showCursor && (
+                    <span
+                      aria-hidden="true"
+                      className="inline-block w-[2px] h-[14px] bg-brand-link align-middle ml-0.5 animate-pulse"
+                    />
+                  )}
+                </code>
+              </div>
+            );
+          })}
         </div>
+      </div>
 
-        {/* Code lines */}
-        <div className="font-mono leading-[28px] whitespace-pre flex-1">
-          {/* Line 1 */}
-          <div className={bracketStyle}>{"{"}</div>
-
-          {/* Line 2 */}
-          <div>
-            <span className={keyStyle}>{'  "app"'}</span>
-            <span className={punctStyle}>{": "}</span>
-            <span className={strStyle}>{'"ops_dashboard"'}</span>
-            <span className={punctStyle}>{","}</span>
-          </div>
-
-          {/* Line 3 */}
-          <div>
-            <span className={keyStyle}>{'  "pages"'}</span>
-            <span className={punctStyle}>{": "}</span>
-            <span className={bracketStyle}>{"[{"}</span>
-          </div>
-
-          {/* Line 4 */}
-          <div>
-            <span className={keyStyle}>{'    "components"'}</span>
-            <span className={punctStyle}>{": "}</span>
-            <span className={bracketStyle}>{"["}</span>
-          </div>
-
-          {/* Line 5 */}
-          <div>
-            <span className={bracketStyle}>{"      { "}</span>
-            <span className={keyStyle}>{'"type"'}</span>
-            <span className={punctStyle}>{": "}</span>
-            <span className={strStyle}>{'"Metric"'}</span>
-            <span className={punctStyle}>{", "}</span>
-            <span className={keyStyle}>{'"title"'}</span>
-            <span className={punctStyle}>{": "}</span>
-            <span className={strStyle}>{'"Active Workflows"'}</span>
-            <span className={bracketStyle}>{" },"}</span>
-          </div>
-
-          {/* Line 6: Scripted live edit target with soft highlight */}
-          <div
-            className={`transition-colors duration-300 rounded-md px-1 -mx-1 inline-flex items-center ${
-              isLineHighlighted
-                ? "bg-indigo-500/12 dark:bg-indigo-400/18 shadow-[inset_0_0_0_1px_rgba(99,102,241,0.22)]"
-                : "bg-transparent"
-            }`}
+      {/* Quiet Footer Caption — aligned to exact same baseline */}
+      <div className="h-9 pt-2.5 border-t border-border text-[13px] text-muted-foreground flex items-center justify-between gap-2 shrink-0">
+        <span className="truncate">Registry: Statistic, DataTable</span>
+        {validationStatus === "validating" ? (
+          <span
+            data-testid="code-footer-validating"
+            className="font-mono whitespace-nowrap shrink-0 text-warning-text inline-flex items-center gap-1.5"
           >
-            <span className={bracketStyle}>{"      { "}</span>
-            <span className={keyStyle}>{'"type"'}</span>
-            <span className={punctStyle}>{": "}</span>
-            <span className={strStyle}>{'"DataTable"'}</span>
-            <span className={punctStyle}>{", "}</span>
-            <span className={keyStyle}>{'"entity"'}</span>
-            <span className={punctStyle}>{": "}</span>
-            <span className={strStyle}>{'"workflows"'}</span>
-            {renderTypedTokens(typedText)}
-            {showCursor && (
-              <span
-                className="inline-block w-1.5 h-3.5 ml-0.5 bg-indigo-600 dark:bg-indigo-400 animate-pulse align-middle"
-                aria-hidden="true"
-              />
-            )}
-            <span className={bracketStyle}>{" }"}</span>
-          </div>
-
-          {/* Line 7 */}
-          <div className={bracketStyle}>{"    ]"}</div>
-
-          {/* Line 8 */}
-          <div className={bracketStyle}>{"  }]"}</div>
-
-          {/* Line 9 */}
-          <div className={bracketStyle}>{"}"}</div>
-        </div>
+            <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
+            validating…
+          </span>
+        ) : (
+          <span
+            data-testid="code-footer-valid"
+            className="font-mono whitespace-nowrap shrink-0 text-success-text inline-flex items-center gap-1.5"
+          >
+            ✓ valid
+          </span>
+        )}
       </div>
     </div>
   );

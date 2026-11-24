@@ -1,9 +1,12 @@
 import {
   ComponentSchemas,
+  StatusColorToneSchema,
+  DataTableColumnSchema,
+  WHITELISTED_ROW_ICONS,
 } from "./validation";
 import { z } from "zod";
 
-export const PROMPT_VERSION = "v1.2.1-backend";
+export const PROMPT_VERSION = "v1.4.0";
 
 /**
  * Introspects a Zod schema to extract its shape, handling lazy schemas.
@@ -79,6 +82,7 @@ export function generateComponentSchemaSpecs(): Record<
  */
 export function buildSchemaDocumentation(): string {
   const specs = generateComponentSchemaSpecs();
+  const statusTones = StatusColorToneSchema.options.map((t) => `"${t}"`).join(" | ");
 
   const lines: string[] = [
     "Allowed Component Types (STRICT SCHEMA — every node is validated with .strict(); unrecognized keys are rejected):",
@@ -94,7 +98,7 @@ export function buildSchemaDocumentation(): string {
         return `trend?: "up" | "down" | "neutral" | { value?: string, label?: string, direction?: "up" | "down" | "neutral", sentiment?: "positive" | "negative" | "neutral" }`;
       }
       if (key === "columns") {
-        return `columns: (string | { key: string, label?: string, type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "avatar", align?: "left" | "right" | "center" })[]`;
+        return `columns: (string | { key: string, label?: string, type?: "text" | "number" | "currency" | "id" | "code" | "badge" | "status" | "avatar" | "icon", colors?: Record<string, ${statusTones}>, align?: "left" | "right" | "center" })[]`;
       }
       if (key === "data" || key === "rows") {
         return `${key}?: Record<string, unknown>[]`;
@@ -113,14 +117,15 @@ export function buildSchemaDocumentation(): string {
 
 export function buildCopilotSystemPrompt(): string {
   const schemaDoc = buildSchemaDocumentation();
+  const statusTonesList = StatusColorToneSchema.options.map((t) => `"${t}"`).join(" | ");
 
   return `Return ONLY a valid JSON array of UI component AST nodes. No markdown wrappers, no conversational commentary.
 
 ${schemaDoc}
 
 CRITICAL COMPONENT CONSTRAINTS:
-1. Statistic: STRICTLY for numeric KPIs and aggregated metrics (e.g. "$42.8K", "99.98%", "14"). At most 4 statistics in a Grid row. NEVER use Statistic for names, labels, individual records, or text descriptions. Allowed variant: "default" | "panel".
-2. DataTable: Any collection or list of records (incidents, users, orders, tickets, servers, fleet units) MUST be rendered as a DataTable with structured columns, NEVER as Cards of Statistics. Use column type "badge" for status columns (e.g. "Active", "Pending", "Critical", "Investigating", "Resolved", "Degraded").
+1. Statistic: STRICTLY for numeric KPIs and aggregated metrics (e.g. "$42.8K", "99.98%", "14"). At most 4 statistics in a Grid row. NEVER use Statistic for names, labels, individual records, or text descriptions. Allowed variant: "default" | "panel" | "gradient".
+2. DataTable: Any collection or list of records (incidents, users, orders, tickets, servers, fleet units) MUST be rendered as a DataTable with structured columns, NEVER as Cards of Statistics. For status columns, ALWAYS use type: "status" with an explicit \`colors\` map assigning each status value to one of ${statusTonesList} (e.g. { key: "status", label: "Status", type: "status", colors: { Running: "success", Pending: "warning", Critical: "danger", Idle: "info" } }).
 3. Card: Card title is primary (semibold, larger); subtitle is secondary description.
 4. Grid: Responsive grid layout. Allowed columns and gap. Never exceed 4 columns for KPI rows.
 5. Strict Keys: NEVER emit unrecognized or custom attributes (such as onClick, dangerouslySetInnerHTML, style, or arbitrary properties). Component schemas are strictly checked.
@@ -128,8 +133,8 @@ CRITICAL COMPONENT CONSTRAINTS:
 Architectural Rules:
 1. Top-level layout typically starts with a Header.
 2. Below the Header, use a Grid (columns: 3 or 4) containing at most 3-4 numeric Statistic KPIs.
-3. For lists of records (e.g. incidents, orders, users, tickets), always render a DataTable with a "status" column typed as "badge".
-4. Mock data dates: If including date/timestamp values in mock data (e.g. DataTable rows, timestamps), always use recent dates relative to today (e.g. current year/month 2026), NEVER outdated dates.
+3. For lists of records (e.g. incidents, orders, users, tickets), always render a DataTable with a status column using type: "status" and a \`colors\` map mapping every status value to ${statusTonesList}.
+4. Mock data dates: If including date/timestamp values in mock data (e.g. DataTable rows, timestamps), always use recent dates relative to today (current year 2026), NEVER outdated dates.
 5. Entity and Database Names: When generating, naming, or referencing schema entities or database tables, entity names MUST be snake_case (e.g. "incident_reports", "user_tasks") and at most 22 characters in length. Never exceed 22 characters.
 6. Output must be a direct JSON array, e.g. [{ type: "Header", ... }, { type: "Grid", ... }, { type: "DataTable", ... }]`;
 }

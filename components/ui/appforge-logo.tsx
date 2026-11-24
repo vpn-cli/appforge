@@ -1,70 +1,62 @@
-"use client";
-
-import { motion } from "framer-motion";
-
-export function AppForgeLogo({ className = "", size = 24, isHovered }: { className?: string; size?: number; isHovered?: boolean }) {
+export function AppForgeLogo({
+  className = "",
+  size = 24,
+  isHovered = false,
+}: {
+  className?: string;
+  size?: number;
+  isHovered?: boolean;
+}) {
   return (
-    <motion.svg
+    <svg
       width={size}
       height={size}
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      initial="rest"
-      whileHover="hover"
-      animate={isHovered ? "hover" : "rest"}
+      className={`group/logo ${className}`}
+      aria-hidden="true"
     >
       {/* Top Diamond */}
-      <motion.path
+      <path
         d="M50 15 L80 30 L50 45 L20 30 Z"
         fill="currentColor"
-        variants={{
-          rest: { y: 0, opacity: 1 },
-          hover: { y: -8, opacity: 0.9 }
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className={`transition-transform duration-200 ease-out ${
+          isHovered ? "-translate-y-2 opacity-90" : "group-hover/logo:-translate-y-2"
+        }`}
       />
       {/* Left Diamond (Shadow Side) */}
-      <motion.path
+      <path
         d="M20 35 L50 50 L50 85 L20 70 Z"
         fill="currentColor"
-        className="opacity-70"
-        variants={{
-          rest: { x: 0, y: 0 },
-          hover: { x: -5, y: 5 }
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className={`opacity-70 transition-transform duration-200 ease-out ${
+          isHovered
+            ? "-translate-x-1 translate-y-1"
+            : "group-hover/logo:-translate-x-1 group-hover/logo:translate-y-1"
+        }`}
       />
       {/* Right Diamond (Lit Side) */}
-      <motion.path
+      <path
         d="M80 35 L50 50 L50 85 L80 70 Z"
         fill="currentColor"
-        className="opacity-50"
-        variants={{
-          rest: { x: 0, y: 0 },
-          hover: { x: 5, y: 5 }
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className={`opacity-50 transition-transform duration-200 ease-out ${
+          isHovered
+            ? "translate-x-1 translate-y-1"
+            : "group-hover/logo:translate-x-1 group-hover/logo:translate-y-1"
+        }`}
       />
-      {/* Central Spark / Energy */}
-      <motion.circle
+      {/* Central Spark */}
+      <circle
         cx="50"
         cy="40"
         r="4"
         fill="currentColor"
-        variants={{
-          rest: { scale: 0, opacity: 0 },
-          hover: { scale: 1.5, opacity: 1, y: -10 }
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 400,
-          damping: 10,
-          mass: 0.5,
-          delay: 0.1
-        }}
+        className={`origin-center transition-all duration-200 ease-out ${
+          isHovered
+            ? "opacity-100 -translate-y-2 scale-125"
+            : "opacity-0 scale-0 group-hover/logo:opacity-100 group-hover/logo:-translate-y-2 group-hover/logo:scale-125"
+        }`}
       />
-    </motion.svg>
+    </svg>
   );
 }

@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -75,6 +74,12 @@
   --color-status-danger-bg: var(--status-danger-bg);
   --color-status-danger-text: var(--status-danger-text);
   --color-status-danger-border: var(--status-danger-border);
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-neutral-text: var(--status-neutral-text);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-status-violet-bg: var(--status-violet-bg);
+  --color-status-violet-text: var(--status-violet-text);
+  --color-status-violet-border: var(--status-violet-border);
 
   /* Validation & State Aliases */
   --color-error: var(--theme-error);
@@ -115,6 +120,12 @@
   --height-control-md: 32px;
   --height-control-lg: 36px;
   --height-toolbar: 44px;
+
+  /* Motion tokens */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.15, 0, 0.2, 1);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -222,15 +233,28 @@
   --warning: #D97706;
   --danger: #DC2626;
 
-  /* Ambient washes */
+  /* Motion Tokens */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.15, 0, 0.2, 1);
+  --spring-bounce: 0.15;
+  --spring-visual-duration: 0.4s;
+
+  /* Ambient washes & Hero Mesh Gradient Palette (Light: soft lavender/white) */
   --wash-blue: #E3EAFF;
   --brand-headline-end: #4F6BFF;
+  --indigo: var(--brand-headline-end);
+  --mesh-c1: var(--ink-50);
+  --mesh-c2: var(--brand-200);
+  --mesh-c3: var(--brand-300);
+  --mesh-c4: var(--wash-blue);
 
   /* Editor Theme Tokens (Light) */
   --editor-bg-light: #FFFFFF;
   --editor-fg-light: #17171F;
   --editor-key-light: #5B45E0;
-  --editor-val-light: #D97706;
+  --editor-val-light: #92400E;
   --editor-num-light: #2563EB;
   --editor-kw-light: #16A34A;
   --editor-delim-light: #55556B;
@@ -238,7 +262,7 @@
   --editor-selection-light: #6D5BF040;
   --editor-selection-inactive-light: #6D5BF020;
   --editor-selection-highlight-light: #6D5BF028;
-  --editor-line-number-light: #9A9AB0;
+  --editor-line-number-light: #606078;
   --editor-line-number-active-light: #17171F;
   --editor-line-highlight-light: #0000000A;
   --editor-indent-guide-light: #0000000D;
@@ -259,7 +283,7 @@
   --editor-selection-dark: #8B7FF840;
   --editor-selection-inactive-dark: #8B7FF820;
   --editor-selection-highlight-dark: #8B7FF828;
-  --editor-line-number-dark: #6B6B82;
+  --editor-line-number-dark: #8E8EA8;
   --editor-line-number-active-dark: #F2F2F7;
   --editor-line-highlight-dark: #FFFFFF08;
   --editor-indent-guide-dark: #FFFFFF0D;
@@ -328,6 +352,11 @@
   --status-neutral-border: var(--border);
   --status-neutral-dot: var(--ink-400);
 
+  --status-violet-bg: var(--brand-100);
+  --status-violet-text: var(--brand-700);
+  --status-violet-border: rgba(75, 55, 191, 0.20);
+  --status-violet-dot: var(--brand-500);
+
   --theme-brand: var(--brand-600);
   --theme-brand-dark: var(--brand-700);
   --theme-brand-light: var(--brand-50);
@@ -351,7 +380,7 @@
 
   /* Code Syntax Tokens (Light) */
   --code-key: var(--brand-600);
-  --code-string: var(--warning);
+  --code-string: #92400E;
   --code-punctuation: var(--ink-500);
   --code-bracket: var(--brand-700);
   --code-bool: var(--success);
@@ -362,6 +391,11 @@
 .dark, :root.dark, [data-theme="dark"] {
   --canvas: var(--ink-950);
   --background: var(--ink-950);
+  /* Hero Mesh Gradient Palette (Dark: deep brand & ink tokens) */
+  --mesh-c1: var(--ink-950);
+  --mesh-c2: var(--brand-800);
+  --mesh-c3: var(--brand-500);
+  --mesh-c4: var(--brand-headline-end);
   --surface: #16161F;
   --surface-glass: rgba(22, 22, 31, 0.78);
   --card: #16161F;
@@ -418,6 +452,11 @@
   --status-neutral-text: #A9A9BD;
   --status-neutral-border: rgba(255, 255, 255, 0.08);
   --status-neutral-dot: #8A8AA0;
+
+  --status-violet-bg: rgba(173, 166, 252, 0.15);
+  --status-violet-text: var(--brand-300);
+  --status-violet-border: rgba(173, 166, 252, 0.25);
+  --status-violet-dot: var(--brand-300);
 
   --theme-brand: var(--brand-300);
   --theme-brand-dark: var(--brand-400);
@@ -560,7 +599,7 @@ body::after {
 /* Level 1: Primary floating glass surfaces (Nav bar pill, Demo panels) */
 .glass-1 {
   position: relative;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.84));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.92));
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.95);
@@ -581,7 +620,7 @@ body::after {
 }
 
 .dark .glass-1 {
-  background: rgba(22, 22, 31, 0.78);
+  background: rgba(18, 18, 25, 0.92);
   backdrop-filter: blur(28px) saturate(140%);
   -webkit-backdrop-filter: blur(28px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -745,7 +784,7 @@ body::after {
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
     0 10px 28px -10px rgba(109, 91, 240, 0.55);
   border-radius: 9999px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1), background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1), border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
 }
 
 .btn-pill-primary:hover {
@@ -757,70 +796,131 @@ body::after {
 }
 
 .btn-pill-primary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .dark .btn-pill-primary {
   background: linear-gradient(180deg, var(--brand-500) 0%, var(--brand-600) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.32);
   color: #FFFFFF;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
     0 10px 28px -10px rgba(109, 91, 240, 0.55);
 }
 
 .dark .btn-pill-primary:hover {
   background: linear-gradient(180deg, var(--brand-400) 0%, var(--brand-500) 100%);
+  border-color: rgba(255, 255, 255, 0.45);
   transform: translateY(-1px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
     0 14px 32px -8px rgba(109, 91, 240, 0.70);
 }
 
 .dark .btn-pill-primary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .btn-pill-secondary {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--ink-200);
+  border: 1px solid var(--ink-500);
   color: var(--ink-900);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 6px 20px -8px rgba(109, 91, 240, 0.12);
+    0 1px 3px rgba(23, 23, 31, 0.08),
+    0 4px 14px -3px rgba(109, 91, 240, 0.10);
   border-radius: 9999px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1), background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1), border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
 }
 
 .btn-pill-secondary:hover {
-  background: rgba(255, 255, 255, 0.88);
-  border-color: var(--ink-300);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--ink-700);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 6px rgba(23, 23, 31, 0.12),
+    0 6px 18px -4px rgba(109, 91, 240, 0.14);
   transform: translateY(-1px);
 }
 
 .btn-pill-secondary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .dark .btn-pill-secondary {
   background: #1F1F2B;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   color: var(--text-primary);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    0 2px 8px -2px rgba(0, 0, 0, 0.40);
 }
 
 .dark .btn-pill-secondary:hover {
   background: #252535;
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.42);
   transform: translateY(-1px);
 }
 
 .dark .btn-pill-secondary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+}
+
+/* ========================================================
+   Interactive Clickable Motion System
+   150ms ease transitions on hover; scale 0.97 on press
+   ======================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  .btn-pill-primary:not(:disabled),
+  .btn-pill-secondary:not(:disabled),
+  a[class*="rounded-full"],
+  a[class*="btn"],
+  .interactive-press {
+    transition: transform 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+                background-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+                border-color 0.15s cubic-bezier(0.15, 0, 0.2, 1),
+                box-shadow 0.15s cubic-bezier(0.15, 0, 0.2, 1);
+  }
+
+  button:active:not(:disabled),
+  [role="button"]:active:not([aria-disabled="true"]),
+  .btn-pill-primary:active:not(:disabled),
+  .btn-pill-secondary:active:not(:disabled),
+  a[class*="rounded-full"]:active,
+  a[class*="btn"]:active,
+  .interactive-press:active {
+    transform: scale(0.97) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  [role="button"],
+  .btn-pill-primary,
+  .btn-pill-secondary,
+  .interactive-press {
+    transition: opacity 0.15s ease !important;
+    transform: none !important;
+  }
+  button:active,
+  [role="button"]:active,
+  .btn-pill-primary:active,
+  .btn-pill-secondary:active,
+  .interactive-press:active {
+    opacity: 0.8 !important;
+    transform: none !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+    animation-duration: 0s !important;
+  }
 }
 
 /* ========================================================
@@ -834,7 +934,12 @@ body::after {
 }
 
 .metric-card-gradient {
-  background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-400) 100%);
+  background: linear-gradient(135deg, var(--brand-700) 0%, var(--brand-600) 55%, var(--brand-500) 100%);
+}
+
+.dark .metric-card-gradient,
+:root.dark .metric-card-gradient {
+  background: linear-gradient(135deg, var(--brand-800) 0%, var(--brand-700) 55%, var(--brand-600) 100%);
 }
 
 .token-key {
@@ -862,4 +967,82 @@ body::after {
     var(--surface-sunken) calc(100% - 96px),
     transparent 100%
   );
+}
+
+/* Static CSS mesh-gradient fallback (prefers-reduced-motion, no-WebGL, and first paint) */
+.hero-mesh-fallback {
+  background-color: var(--mesh-c1);
+  background-image:
+    radial-gradient(ellipse 65% 55% at 18% 22%, var(--mesh-c2) 0%, transparent 72%),
+    radial-gradient(ellipse 60% 55% at 82% 28%, var(--mesh-c3) 0%, transparent 72%),
+    radial-gradient(ellipse 75% 60% at 50% 50%, var(--mesh-c3) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 78%, var(--mesh-c4) 0%, transparent 70%);
+}
+
+.hero-mesh-mask {
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 72%, transparent 100%);
+}
+
+/* Code panel scrollbar: hidden until hover, thin 5px styled, zero horizontal scrollbar */
+.code-panel-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.15s ease;
+}
+
+.code-panel-scroll:hover {
+  scrollbar-color: var(--border) transparent;
+}
+
+.code-panel-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 0px;
+}
+
+.code-panel-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-panel-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  transition: background-color 0.15s ease;
+}
+
+.code-panel-scroll:hover::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+.code-panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* ========================================================
+   Popovers & Dropdowns (150-200ms scale 0.96 -> 1 + fade)
+   ======================================================== */
+.cl-userButtonPopoverCard,
+.cl-organizationSwitcherPopoverCard {
+  transform-origin: top right;
+  animation: popover-entrance 0.18s cubic-bezier(0.15, 0, 0.2, 1) forwards;
+}
+
+@keyframes popover-entrance {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Smooth Theme Crossfade */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.15, 0, 0.2, 1);
 }

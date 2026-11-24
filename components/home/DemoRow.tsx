@@ -2,38 +2,23 @@
 
 import { DemoCodeCard } from "./DemoCodeCard";
 import { DemoPreviewCard } from "./DemoPreviewCard";
-import {
-  HeroScriptedEditProvider,
-  useHeroScriptedEdit,
-} from "./HeroScriptedEditContext";
 
 export function DemoRow() {
   return (
-    <HeroScriptedEditProvider>
-      <DemoRowContent />
-    </HeroScriptedEditProvider>
-  );
-}
-
-function DemoRowContent() {
-  const { containerRef, onMouseEnter, onMouseLeave } = useHeroScriptedEdit();
-
-  return (
-    <section
-      ref={containerRef}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      className="w-full max-w-[1200px] mx-auto pb-8 relative z-10 px-4 sm:px-6"
-    >
-      {/* Equal width (1fr 1fr), equal height, max about 380px panels */}
+    <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 relative z-10">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        <div className="h-full">
-          <DemoCodeCard />
+        <div className="min-w-0 flex flex-col h-full">
+          <DemoCodeCard
+            variantDisplay='"gradient"'
+            validationStatus="valid"
+            activeLineHighlighted={false}
+            showCursor={false}
+          />
         </div>
-        <div className="h-full">
-          <DemoPreviewCard />
+        <div className="min-w-0 flex flex-col h-full">
+          <DemoPreviewCard variant="gradient" />
         </div>
       </div>
-    </section>
+    </div>
   );
 }

@@ -109,6 +109,10 @@ const lightWarningText = resolveToken('--status-warning-text', 'root');
 const lightWarningBg = resolveToken('--status-warning-bg', 'root');
 const lightDangerText = resolveToken('--status-danger-text', 'root');
 const lightDangerBg = resolveToken('--status-danger-bg', 'root');
+const lightNeutralText = resolveToken('--status-neutral-text', 'root');
+const lightNeutralBg = resolveToken('--status-neutral-bg', 'root');
+const lightVioletText = resolveToken('--status-violet-text', 'root');
+const lightVioletBg = resolveToken('--status-violet-bg', 'root');
 
 // Key tokens dark
 const darkCanvas = resolveToken('--canvas', 'dark');
@@ -127,6 +131,10 @@ const darkWarningText = resolveToken('--status-warning-text', 'dark');
 const darkWarningBg = blend(resolveToken('--status-warning-bg', 'dark'), darkSurface);
 const darkDangerText = resolveToken('--status-danger-text', 'dark');
 const darkDangerBg = blend(resolveToken('--status-danger-bg', 'dark'), darkSurface);
+const darkNeutralText = resolveToken('--status-neutral-text', 'dark');
+const darkNeutralBg = blend(resolveToken('--status-neutral-bg', 'dark'), darkSurface);
+const darkVioletText = resolveToken('--status-violet-text', 'dark');
+const darkVioletBg = blend(resolveToken('--status-violet-bg', 'dark'), darkSurface);
 
 const lightTests = [
   // Typography
@@ -144,11 +152,13 @@ const lightTests = [
   { category: 'Links', name: 'Ghost / Brand Link (brand-600) on canvas (#F2F1F9)', fg: lightBrandLink, bg: lightCanvas, min: 4.5 },
   { category: 'Links', name: 'Ghost / Brand Link (brand-600) on surface (#FFFFFF)', fg: lightBrandLink, bg: lightSurface, min: 4.5 },
 
-  // Status Pills
+  // Status Pills (all 6 tones)
   { category: 'Status Pills', name: 'Success Text (#0F6B3A) on Success Bg (#E3F6EA)', fg: lightSuccessText, bg: lightSuccessBg, min: 4.5 },
   { category: 'Status Pills', name: 'Info Text (#1D4ED8) on Info Bg (#E6EEFF)', fg: lightInfoText, bg: lightInfoBg, min: 4.5 },
   { category: 'Status Pills', name: 'Warning Text (#92560A) on Warning Bg (#FDF1DC)', fg: lightWarningText, bg: lightWarningBg, min: 4.5 },
   { category: 'Status Pills', name: 'Danger Text (#A61B1B) on Danger Bg (#FDE7E7)', fg: lightDangerText, bg: lightDangerBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Neutral Text (ink-600) on Neutral Bg (ink-100)', fg: lightNeutralText, bg: lightNeutralBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Violet Text (brand-700) on Violet Bg (brand-100)', fg: lightVioletText, bg: lightVioletBg, min: 4.5 },
 
   // Non-Text UI Elements (3:1 minimum)
   { category: 'UI Non-Text', name: 'Focus Ring (brand-500) vs canvas (#F2F1F9)', fg: lightBrand500, bg: lightCanvas, min: 3.0 },
@@ -171,11 +181,13 @@ const darkTests = [
   { category: 'Links', name: 'Ghost / Brand Link (brand-300) on canvas (ink-950)', fg: darkBrandLink, bg: darkCanvas, min: 4.5 },
   { category: 'Links', name: 'Ghost / Brand Link (brand-300) on surface (#16161F)', fg: darkBrandLink, bg: darkSurface, min: 4.5 },
 
-  // Status Pills
+  // Status Pills (all 6 tones)
   { category: 'Status Pills', name: 'Success Text (#4ADE80) on 15% tint over surface', fg: darkSuccessText, bg: darkSuccessBg, min: 4.5 },
   { category: 'Status Pills', name: 'Info Text (#60A5FA) on 15% tint over surface', fg: darkInfoText, bg: darkInfoBg, min: 4.5 },
   { category: 'Status Pills', name: 'Warning Text (#FBBF24) on 15% tint over surface', fg: darkWarningText, bg: darkWarningBg, min: 4.5 },
   { category: 'Status Pills', name: 'Danger Text (#F87171) on 15% tint over surface', fg: darkDangerText, bg: darkDangerBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Neutral Text (#A9A9BD) on 6% tint over surface', fg: darkNeutralText, bg: darkNeutralBg, min: 4.5 },
+  { category: 'Status Pills', name: 'Violet Text (brand-300) on 15% tint over surface', fg: darkVioletText, bg: darkVioletBg, min: 4.5 },
 
   // Non-Text UI Elements (3:1 minimum)
   { category: 'UI Non-Text', name: 'Focus Ring (brand-500) vs canvas (ink-950)', fg: lightBrand500, bg: darkCanvas, min: 3.0 },

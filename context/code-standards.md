@@ -132,3 +132,12 @@ Approved dependencies for AppForge framework:
 - `lucide-react`
 - `tailwindcss`
 - `shadcn/ui` components
+
+---
+
+## Known Security Limitations & Concerns
+
+### AST `className` on Public Apps (UI Redress & Defacement Concern)
+- **Current State:** Component schemas in `lib/validation.ts` accept an optional `className?: string` property validated as a generic string without whitelist constraints.
+- **Concern:** On publicly accessible published apps (`/apps/[appId]`), untrusted authors or manipulated AST configs could inject utility classes that break layout constraints, overlay the viewport (`fixed inset-0 z-50 bg-background`), spoof modal dialogs/phishing prompts, or obscure critical UI chrome.
+- **Action (Post-Freeze):** Do not remove `className` yet; planned future mitigation will introduce a strict class whitelist / sanitizer inside `RenderNode` on public routes to strip layout-breaking positioning (`fixed`, `absolute`, `z-[...]`) and arbitrary bracket values (`[...]`).

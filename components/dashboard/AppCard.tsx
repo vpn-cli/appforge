@@ -100,9 +100,9 @@ export function AppCard({ app, onRename, onDelete }: Props) {
         <div className="flex flex-col gap-1 min-w-0">
           <div className="flex items-center justify-between gap-2.5">
             <div className="flex items-center gap-2 min-w-0">
-              <h3 className="text-[16px] sm:text-[17px] font-semibold text-foreground truncate tracking-tight transition-colors">
+              <h2 className="text-[16px] sm:text-[17px] font-semibold text-foreground truncate tracking-tight transition-colors">
                 {app.name}
-              </h3>
+              </h2>
               <StatusPill variant={isPublished ? "published" : "draft"}>
                 {app.status}
               </StatusPill>
@@ -142,7 +142,7 @@ export function AppCard({ app, onRename, onDelete }: Props) {
                     }}
                   />
                   <div
-                    className="absolute right-0 bottom-full mb-1 w-44 rounded-2xl glass-1 border border-border dark:border-white/10 shadow-xl py-1.5 z-50 text-[13px] animate-in fade-in zoom-in-95 duration-100"
+                    className="absolute right-0 bottom-full mb-1 w-44 rounded-2xl glass-1 border border-border dark:border-white/10 shadow-xl py-1.5 z-50 text-[13px] origin-bottom-right animate-in fade-in zoom-in-[0.96] duration-150 ease-out"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Link

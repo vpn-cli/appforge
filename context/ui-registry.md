@@ -44,10 +44,11 @@ Primary Dark:
   color: #0B0B10;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 10px 28px -10px rgba(88,70,220,.6);
 Secondary Light:
-  background: rgba(255,255,255,.72); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.9);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 6px 20px -8px rgba(60,50,150,.22);
+  background: rgba(255,255,255,.82); backdrop-filter: blur(20px); border: 1px solid var(--ink-500) (#6B6B82 - guaranteed 4.92:1 non-text contrast);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 3px rgba(23,23,31,.08), 0 4px 14px -3px rgba(109,91,240,.10);
 Secondary Dark:
-  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+  background: #1F1F2B; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.28) (3.51:1 contrast);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.20), 0 2px 8px -2px rgba(0,0,0,.40);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
 ```
 
@@ -75,12 +76,18 @@ Light: bg-card (#FFFFFF) border border-border shadow-xs rounded-2xl
 Dark: bg-[#121217] border border-white/10 rounded-2xl
 ```
 
-**Status Pills (`components/ui/status-pill.tsx`)**
+**Status Pills (`components/ui/status-pill.tsx` & `registry/components/DataTable.tsx`)**
 ```text
-Full pill: rounded-full text-[13px] font-medium with status dot.
-Published / Running / Active: success-light / success-text
-Draft / Idle / Inactive: muted / muted-foreground
-Failed / Error: error-light / error-text
+Full pill: rounded-full text-xs/text-[13px] font-medium with 6px (w-1.5 h-1.5) status dot, palette token tinted background, dark text of same hue, and matching subtle border.
+Six semantic tones (`lib/status-colors.ts`):
+  success: bg-status-success-bg / text-status-success-text / border-status-success-border / --status-success-dot
+  warning: bg-status-warning-bg / text-status-warning-text / border-status-warning-border / --status-warning-dot
+  danger:  bg-status-danger-bg  / text-status-danger-text  / border-status-danger-border  / --status-danger-dot
+  info:    bg-status-info-bg    / text-status-info-text    / border-status-info-border    / --status-info-dot
+  neutral: bg-status-neutral-bg / text-status-neutral-text / border-status-neutral-border / --status-neutral-dot
+  violet:  bg-status-violet-bg  / text-status-violet-text  / border-status-violet-border  / --status-violet-dot
+DataTable status columns (`type: "status"`, optional `colors?: Record<string, StatusColorTone>`):
+  Resolution order: 1) explicit `colors` map -> 2) case-insensitive built-in keyword map -> 3) deterministic FNV-1a hash into neutral or violet.
 ```
 
 **Input & Hero Glass Input (`components/ui/input.tsx`)**
@@ -95,6 +102,48 @@ Docked bottom-center: w-[94vw] max-w-[560px] h-[52px] rounded-full glass-1
 Expands smoothly upward on focus or ⌘K to ~560×520px chat panel with message history.
 Esc or outside click collapses back to 52px pill.
 Respects prefers-reduced-motion.
+```
+
+### Home Landing Redesign (NativeMeshShader Background, Honest Registry Hero & Below-the-Fold Sections)
+
+**Hero Animated Mesh-Gradient Background (`components/home/HeroMeshBackground.tsx`, `components/home/NativeMeshShader.tsx`)**
+```text
+Library: Zero dependencies (custom lightweight WebGL mesh shader; replaced @paper-design/shaders-react)
+Tokens (app/globals.css & lib/shader-tokens.ts):
+  Light: canvas (--canvas / --mesh-c1), brand-200 (--brand-200), brand-300 (--brand-300), light indigo/periwinkle (--wash-blue / --mesh-c4)
+  Dark:  ink-950 (--ink-950), brand-800 (--brand-800), brand-500 (--brand-500), indigo (--indigo / --brand-headline-end)
+Compilation: KHR_parallel_shader_compile non-blocking async compilation with rAF polling; idle fallback (load + 1s)
+Geometry: Full-screen triangle buffer [-1, -1, 3, -1, -1, 3]
+Mask: .hero-mesh-mask (bottom soft fade to canvas color)
+Guardrails:
+  - Desktop: non-blocking async compile with KHR extension, smooth 400ms fade-in
+  - Mobile (pointer: coarse or width < 768px): zero WebGL, static CSS radial-gradient fallback (.hero-mesh-fallback)
+  - prefers-reduced-motion: single static frame (t = 0) on desktop, static CSS on mobile
+  - Visibility & viewport: pauses on off-screen (IntersectionObserver) and document.hidden (visibilitychange)
+Legibility Scrim & Panels:
+  - Soft radial gradient in canvas color behind hero headline/subtext ensuring >= 4.5:1 WCAG contrast (dark 5.81:1, light 4.63:1)
+  - Smoked glass panels with >= 0.92 opacity preventing background bleed-through
+```
+
+**Honest Registry-Rendered Hero (`components/home/HomeHero.tsx`, `DemoCodeCard.tsx`, `DemoPreviewCard.tsx`)**
+```text
+Hero Wrapper: relative w-full min-h-[90vh] pt-20 flex flex-col overflow-hidden (vertically centered content)
+Container: max-w-[1200px] mx-auto px-4 sm:px-6, consistent 8px spacing scale
+Single Source of Truth: components/home/heroDemoConfig.ts (HERO_DEMO_CONFIG uses real registry types: Statistic, DataTable)
+Left Card (DemoCodeCard): glass-1 rounded-2xl p-4 sm:p-5, 14-line JSON (<=32 chars/line), whitespace-pre-wrap break-words (zero horizontal scroll), Copy button, Zod-validated caption
+Right Card (DemoPreviewCard): glass-1 rounded-2xl p-4 sm:p-5, <h2> Rendered Application + StatusPill "Rendered from config" (no fake Live badge), renders HERO_DEMO_CONFIG through real <RenderNode /> components, explicit "Demo data · ComponentRegistry" footer
+Viewport Fit: At 1440×900 both cards fully visible with >=96px clearance below and zero clipped rows
+```
+
+**Below-the-Fold Sections & Footer (`HowItWorks.tsx`, `WhatsInside.tsx`, `TemplatesStrip.tsx`, `Footer.tsx`)**
+```text
+Spacing: py-16 sm:py-20, max-w-[1200px] mx-auto px-4 sm:px-6, grid-cols-1 md:grid-cols-3 gap-6
+Cards: rounded-2xl bg-card border border-border p-6 (WhatsInside sits on bg-surface-sunken border-y border-border)
+Sections:
+  1. HowItWorks: 3 steps (01 Describe -> 02 Config -> 03 Running app with database)
+  2. WhatsInside: Schema-to-Postgres tables, Zod-validated AI with Groq->Gemini failover, Tenant isolation
+  3. TemplatesStrip: 3 real starter templates linking to /templates + "Browse all templates" CTA
+Footer: border-t border-border bg-background, token-aligned AppForge mark + tagline, links to /templates, /terms, /privacy
 ```
 
 ### Home Landing Overhaul Layout (Apple Liquid Glass Material System & Component Details)
@@ -227,9 +276,16 @@ Empty State: Authentic "No recently updated apps" state with clock icon and zero
 ### Container-Aware Core Renderers (Tailwind v4 Container Queries)
 *Responsive renderers query container width, preventing overflow in narrow preview frames.*
 ```text
-Preview Frame Root: @container flex-1 overflow-y-auto p-4 @sm:p-6 bg-card min-w-0
+Preview Frame Root: @container w-full max-w-full flex flex-col bg-card rounded-xl border border-border shadow-xs max-h-full overflow-hidden (hugs content height)
 Grid Wrapper: @container w-full min-w-0
-Adaptive Columns: grid-cols-1 @[420px]:grid-cols-2 @[720px]:grid-cols-3 @[960px]:grid-cols-4
+Adaptive Columns (resolveGridColsClass):
+  4 items: grid-cols-1 @[420px]:grid-cols-2 @[860px]:grid-cols-4 (avoids 3+1 orphan cards; 4x1 when room, else 2x2)
+  2 items: grid-cols-1 @[420px]:grid-cols-2
+  3 items: grid-cols-1 @[600px]:grid-cols-3
+  5 items: grid-cols-1 @[420px]:grid-cols-2 @[640px]:grid-cols-3 @[960px]:grid-cols-5 (5x1 wide, 3+2 medium avoiding 4+1 orphan, 2x3 compact)
+  6 items: grid-cols-1 @[420px]:grid-cols-2 @[640px]:grid-cols-3 @[960px]:grid-cols-6
+  7 items: grid-cols-1 @[420px]:grid-cols-2 @[640px]:grid-cols-3 @[860px]:grid-cols-4 (4+3 balanced split on wide with 0 lonely cards; @[1100px]:grid-cols-7 if configured 7)
+Preview Spacing: Header -> Grid 24px (mb-6), Grid -> DataTable 20px (mb-5).
 Card: @container h-full bg-card border border-border rounded-lg p-4 min-w-0
 Card Hierarchy: Title is primary (text-[16px] font-semibold text-foreground), Subtitle is secondary (text-[13px] text-muted-foreground)
 Card Divider Rule: Inside Card, content children use divide-y divide-border/60 with at most ONE bordered surface
@@ -271,4 +327,14 @@ Copilot Floating Pill (components/builder/CopilotFloatingPill.tsx):
   Expanded State: width: min(520px, pane width - 32px), height: min(560px, pane height - 32px), scales from bottom-right (originX: 1, originY: 1)
     Surface: bg-white/96 dark:bg-[#121218]/96 backdrop-blur-2xl (>=92% opaque smoked glass)
     Dismissal: Esc key, click outside, collapse chevron button, or ⌘K shortcut
+```
+
+### Shipped Hero Background (`HeroMeshBackground`, `NativeMeshShader`)
+```text
+Underlay:
+  Engine: Custom Native Mesh Shader (0 dependencies, GLSL domain-warped FBM)
+  Geometry: Full-screen triangle [-1, -1, 3, -1, -1, 3] in 1 draw call, DPR cap 1.5
+  Theme Sync: Synchronized via CSS variables and DOM MutationObserver without canvas remount or shader recompile
+  Performance: KHR_parallel_shader_compile async polling; zero WebGL on mobile/coarse pointers (pure CSS radial fallback); auto-pause on hidden tab and off-screen; 400ms fade-in
+  Contrast: WCAG 2.2 AA compliant with radial scrim overlay (5.81:1 in dark mode, 4.63:1 in light mode)
 ```

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, Variants, AnimatePresence } from "framer-motion";
+import { MOTION_TOKENS } from "@/lib/motion-tokens";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
@@ -10,6 +12,7 @@ import { SignedIn, SignedOut, UserButton, SignInButton, SignUpButton, Organizati
 import { Menu, X } from "lucide-react";
 
 export function Navbar() {
+  const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -47,24 +50,39 @@ export function Navbar() {
         </div>
       </Link>
 
-      {/* Desktop Links */}
+      {/* Desktop Links with Sliding Active Pill */}
       <motion.nav 
         variants={container}
         initial="hidden"
         animate="show"
-        className="hidden md:flex items-center gap-6"
+        className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-surface-sunken/60 border border-border/80 relative"
       >
-        {["Apps", "Builder", "Templates"].map((text) => (
-          <motion.div key={text} variants={item}>
-            <Link 
-              href={text === "Apps" ? "/apps" : text === "Builder" ? "/builder/demo" : `/${text.toLowerCase()}`} 
-              className="relative text-muted-foreground text-sm font-medium hover:text-foreground transition-colors group px-1 py-2"
-            >
-              {text}
-              <span className="absolute left-0 bottom-0 w-full h-[2px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out" />
-            </Link>
-          </motion.div>
-        ))}
+        {[
+          { label: "Apps", href: "/apps" },
+          { label: "Builder", href: "/builder/demo" },
+          { label: "Templates", href: "/templates" },
+        ].map((itemSeg) => {
+          const isActive = pathname === itemSeg.href || (itemSeg.href === "/apps" && pathname.startsWith("/apps"));
+          return (
+            <motion.div key={itemSeg.label} variants={item}>
+              <Link 
+                href={itemSeg.href} 
+                className={`relative px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors inline-flex items-center ${
+                  isActive ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="navbar-sliding-pill"
+                    className="absolute inset-0 rounded-full bg-surface shadow-xs border border-border/60 z-0"
+                    transition={MOTION_TOKENS.springStandard}
+                  />
+                )}
+                <span className="relative z-10">{itemSeg.label}</span>
+              </Link>
+            </motion.div>
+          );
+        })}
       </motion.nav>
 
       {/* Desktop Actions & Mobile Trigger */}

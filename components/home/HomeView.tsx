@@ -1,36 +1,42 @@
-"use client";
-
+import { HeroMeshBackground } from "./HeroMeshBackground";
 import { HomeTopBar } from "./HomeTopBar";
 import { HomeHero } from "./HomeHero";
 import { DemoRow } from "./DemoRow";
-import { BackgroundRibbons } from "./BackgroundRibbons";
-import { Features } from "@/components/homepage/Features";
+import { StorySection } from "./StorySection";
+import { TemplatesStrip } from "./TemplatesStrip";
 import { Footer } from "@/components/layout/Footer";
 
 export function HomeView() {
   return (
     <div className="min-h-screen w-full flex flex-col bg-background text-foreground transition-colors relative overflow-x-hidden selection:bg-brand-500/20 selection:text-foreground">
-      {/* Background glass ribbon & atmospheric wash */}
-      <BackgroundRibbons />
+      {/* Top-level banner landmark overlaid cleanly over the hero mesh */}
+      <div className="absolute top-0 inset-x-0 z-30">
+        <HomeTopBar />
+      </div>
 
-      {/* Floating frosted top bar */}
-      <HomeTopBar />
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 flex flex-col w-full outline-none"
+      >
+        {/* Hero section (min-h-[100dvh], vertically centred) with scoped animated mesh-gradient background */}
+        <section
+          data-testid="hero-section"
+          className="relative w-full min-h-[100dvh] pt-20 flex flex-col overflow-hidden"
+        >
+          <HeroMeshBackground />
 
-      {/* Main full-width centered content */}
-      <main className="flex-1 flex flex-col items-center relative z-10 w-full">
-        {/* Hero on canvas */}
-        <div className="w-full max-w-[1200px] mx-auto flex flex-col items-center">
-          <HomeHero />
-          <DemoRow />
-        </div>
+          <div className="flex-1 flex flex-col justify-center py-4 pb-8 relative z-10 w-full">
+            <HomeHero />
+            <DemoRow />
+          </div>
+        </section>
 
-        {/* Features on surface-sunken with soft gradient transitions */}
-        <div className="w-full landing-features-band mt-16 sm:mt-24">
-          <Features />
-        </div>
+        {/* Below-the-fold sections */}
+        <StorySection />
+        <TemplatesStrip />
       </main>
 
-      {/* Footer on canvas */}
       <Footer />
     </div>
   );
