@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useReducedMotion, type Transition } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion, type Transition } from "motion/react";
 import { Sparkles, ArrowUp, Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";

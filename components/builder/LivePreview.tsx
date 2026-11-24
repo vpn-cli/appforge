@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { RenderNode } from "@/registry";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Monitor, Tablet, Smartphone, Lock, RotateCcw } from "lucide-react";
 
 function PreviewSkeleton() {

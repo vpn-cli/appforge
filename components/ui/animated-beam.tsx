@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useId, useState, type RefObject } from "react"
-import { m, useReducedMotion } from "framer-motion"
+import { m, useReducedMotion } from "motion/react"
 
 import { cn } from "@/lib/utils"
 

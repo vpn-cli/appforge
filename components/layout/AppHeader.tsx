@@ -9,7 +9,7 @@ import { UserButton, useOrganization, useUser } from "@clerk/nextjs";
 import { Search, ChevronDown, Menu, X, LayoutGrid, FileCode2 } from "lucide-react";
 import { IconButton } from "@/components/ui/icon-button";
 import { Kbd } from "@/components/ui/kbd";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { MOTION_TOKENS } from "@/lib/motion-tokens";
 
 type Props = {

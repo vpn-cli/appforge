@@ -26,7 +26,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Kbd } from "@/components/ui/kbd";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { MOTION_TOKENS } from "@/lib/motion-tokens";
 import {
   ArrowLeft,
