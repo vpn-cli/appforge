@@ -34,9 +34,28 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const monacoRef = useRef<Monaco | null>(null);
+  const editorInstanceRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Smooth throttled re-layout of Monaco editor during container / panel resize
+  useEffect(() => {
+    if (!containerRef.current) return;
+    let rafId: number;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        editorInstanceRef.current?.layout();
+      });
+    });
+    ro.observe(containerRef.current);
+    return () => {
+      cancelAnimationFrame(rafId);
+      ro.disconnect();
+    };
   }, []);
 
   const getCssColor = (varName: string, fallbackWithoutHash: string = "000000"): string => {
@@ -138,7 +157,8 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
     defineThemes(monaco);
   };
 
-  const handleEditorDidMount: OnMount = (_editor, monaco) => {
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+    editorInstanceRef.current = editor;
     monacoRef.current = monaco;
     defineThemes(monaco);
     const themeName = resolvedTheme === 'light' ? 'appforge-light' : 'appforge-dark';
@@ -163,7 +183,7 @@ export function ConfigEditor({ value, onChange }: ConfigEditorProps) {
   const activeTheme = mounted && resolvedTheme === 'light' ? 'appforge-light' : 'appforge-dark';
 
   return (
-    <div className="w-full h-full shrink-0 relative overflow-hidden" data-lenis-prevent>
+    <div ref={containerRef} className="w-full h-full shrink-0 relative overflow-hidden" data-lenis-prevent>
       <Editor
         height="100%"
         defaultLanguage="json"

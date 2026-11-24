@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RenderNode } from "@/registry";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
@@ -72,6 +72,13 @@ export function LivePreview({
   const [localViewport, setLocalViewport] = useState<ViewportMode>("desktop");
   const currentViewport = viewport ?? localViewport;
   const handleViewport = onViewportChange ?? setLocalViewport;
+  const [realOrigin, setRealOrigin] = useState("localhost:3000");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.host) {
+      setRealOrigin(window.location.host);
+    }
+  }, []);
 
   let config;
   let parseError = false;
@@ -115,7 +122,7 @@ export function LivePreview({
             {/* Address Bar Pill */}
             <div className="flex items-center gap-1.5 px-3 py-1 bg-background border border-border rounded-md text-[13px] text-muted-foreground font-mono max-w-[280px] w-full justify-center">
               <Lock className="w-3 h-3 text-muted-foreground/70" />
-              <span className="truncate">localhost:3000/apps/{appId}</span>
+              <span className="truncate">{realOrigin}/apps/{appId}</span>
             </div>
 
             {/* End spacer balancing traffic lights */}
