@@ -530,6 +530,12 @@ body::after {
   animation: none;
   mix-blend-mode: normal;
 }
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 9999;
+}
 
 /* Monaco Editor Clean Chrome */
 .monaco-editor .scroll-decoration {
@@ -1040,9 +1046,4 @@ body::after {
   }
 }
 
-/* Smooth Theme Crossfade */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.22s;
-  animation-timing-function: cubic-bezier(0.15, 0, 0.2, 1);
-}
+
