@@ -301,21 +301,23 @@ export function CopilotFloatingPill({
 
   const hasText = prompt.trim().length > 0;
 
-  // Open spring: visualDuration 0.38, bounce 0.2. Close: duration 0.22, ease [0.4, 0, 0.2, 1].
-  // Reduced motion: opacity-only fade of 0.12s.
+  // Refined critically damped spring physics for buttery smooth morphing without rubber-band wobble.
+  // Open spring: visualDuration 0.32, bounce 0.04. Close spring: visualDuration 0.24, bounce 0.02.
+  // Reduced motion: instant opacity fade of 0.12s.
   const openTransition: Transition = shouldReduceMotion
     ? { duration: 0.12, ease: "easeOut" }
     : {
         type: "spring",
-        visualDuration: 0.38,
-        bounce: 0.2,
+        visualDuration: 0.32,
+        bounce: 0.04,
       };
 
   const closeTransition: Transition = shouldReduceMotion
     ? { duration: 0.12, ease: "easeOut" }
     : {
-        duration: 0.22,
-        ease: [0.4, 0, 0.2, 1],
+        type: "spring",
+        visualDuration: 0.24,
+        bounce: 0.02,
       };
 
   return (
@@ -336,7 +338,7 @@ export function CopilotFloatingPill({
             type="button"
             onClick={() => {
               onOpenChange(true);
-              setTimeout(() => internalInputRef.current?.focus(), 150);
+              setTimeout(() => internalInputRef.current?.focus(), 280);
             }}
             initial={shouldReduceMotion ? { opacity: 0 } : false}
             animate={{ opacity: 1 }}
@@ -359,14 +361,13 @@ export function CopilotFloatingPill({
               {!isOpen && (
                 <motion.div
                   key="pill-label"
-                  layout="position"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{
                     opacity: 0,
-                    transition: { duration: 0.08, ease: "easeOut" },
+                    transition: { duration: 0.06, ease: "easeOut" },
                   }}
-                  transition={{ duration: 0.12, ease: "easeOut" }}
+                  transition={{ delay: 0.22, duration: 0.10, ease: "easeOut" }}
                   className="flex items-center justify-between gap-2 w-full px-3.5"
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -415,8 +416,8 @@ export function CopilotFloatingPill({
                 <motion.div
                   key="panel-content"
                   layout="position"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{
                     opacity: 0,
                     transition: { duration: 0.08, ease: "easeOut" },
@@ -424,7 +425,7 @@ export function CopilotFloatingPill({
                   transition={
                     shouldReduceMotion
                       ? { duration: 0.12, ease: "easeOut" }
-                      : { delay: 0.14, duration: 0.16, ease: "easeOut" }
+                      : { delay: 0.04, duration: 0.22, ease: [0.16, 1, 0.3, 1] }
                   }
                   className="w-full h-full flex flex-col min-h-0 overflow-hidden absolute inset-0"
                 >

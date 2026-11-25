@@ -453,7 +453,7 @@ function BuilderContent() {
         setIsCopilotOpen((prev) => {
           const next = !prev;
           if (next) {
-            setTimeout(() => copilotInputRef.current?.focus(), 80);
+            setTimeout(() => copilotInputRef.current?.focus(), 280);
           }
           return next;
         });
@@ -480,7 +480,7 @@ function BuilderContent() {
       const next = !prev;
       if (next) {
         setIsEditorCollapsed(false);
-        setTimeout(() => copilotInputRef.current?.focus(), 80);
+        setTimeout(() => copilotInputRef.current?.focus(), 280);
       }
       return next;
     });

@@ -49,6 +49,9 @@ next-env.d.ts
 # Private Context Docs
 resume.md
 
+# Scratch and debug scripts
+scratch/
+
 # Agent Config 
 agent-skills
 agent_skills
