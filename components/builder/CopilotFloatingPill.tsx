@@ -395,8 +395,8 @@ export function CopilotFloatingPill({
             exit={shouldReduceMotion ? { opacity: 0 } : undefined}
             transition={openTransition}
             style={{
-              width: "min(520px, calc(100% - 32px))",
-              height: "min(560px, calc(100% - 32px))",
+              width: "min(480px, calc(100vw - 32px))",
+              height: "min(540px, calc(100vh - 120px))",
               borderRadius: 16,
               originX: 1,
               originY: 1,
