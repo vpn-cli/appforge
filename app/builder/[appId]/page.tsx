@@ -989,6 +989,16 @@ function BuilderContent() {
                   value={configStr}
                   onChange={(val) => setConfigStr(val || "")}
                 />
+                {/* Floating Copilot Chat Pill anchored at bottom-right corner of Monaco editor pane */}
+                <CopilotFloatingPill
+                  isOpen={isCopilotOpen}
+                  onOpenChange={setIsCopilotOpen}
+                  onApply={handleApplyCopilotComponents}
+                  onStreamStart={handleStreamStart}
+                  onStreamEnd={handleStreamEnd}
+                  initialPrompt={initialPrompt}
+                  externalInputRef={copilotInputRef}
+                />
               </div>
 
               {/* Validation Log */}
@@ -1096,17 +1106,6 @@ function BuilderContent() {
             aria-hidden="true"
           />
         )}
-
-        {/* Floating Copilot Chat Pill anchored at bottom-right corner of builder workspace */}
-        <CopilotFloatingPill
-          isOpen={isCopilotOpen}
-          onOpenChange={setIsCopilotOpen}
-          onApply={handleApplyCopilotComponents}
-          onStreamStart={handleStreamStart}
-          onStreamEnd={handleStreamEnd}
-          initialPrompt={initialPrompt}
-          externalInputRef={copilotInputRef}
-        />
       </main>
 
       {/* Publish Confirmation Dialog */}

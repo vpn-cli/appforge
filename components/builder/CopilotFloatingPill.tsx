@@ -29,7 +29,7 @@ export function CopilotFloatingPill({
 }: CopilotFloatingPillProps) {
   const [prompt, setPrompt] = useState(initialPrompt || "");
   const [isGenerating, setIsGenerating] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const internalInputRef = useRef<HTMLInputElement>(null);
   const pillButtonRef = useRef<HTMLButtonElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -327,6 +327,7 @@ export function CopilotFloatingPill({
         {!isOpen ? (
           /* =====================================================================
              COLLAPSED STATE: Compact glass pill morphing with shared layoutId
+             Anchored directly at bottom-right corner of Monaco editor container
              ===================================================================== */
           <motion.button
             key="collapsed-pill"
@@ -350,7 +351,7 @@ export function CopilotFloatingPill({
               transformOrigin: "100% 100%",
               boxShadow: "0 4px 16px rgba(0, 0, 0, 0.12)",
             }}
-            className="absolute bottom-0 right-0 border border-border/80 dark:border-white/15 glass-1 cursor-pointer group flex items-center justify-between overflow-hidden outline-none"
+            className="absolute bottom-0 right-0 border border-black/10 dark:border-white/15 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl cursor-pointer group flex items-center justify-between overflow-hidden outline-none shadow-md hover:shadow-lg transition-shadow"
             aria-label="Open Copilot chat"
             aria-expanded={isOpen}
           >
@@ -384,6 +385,7 @@ export function CopilotFloatingPill({
         ) : (
           /* =====================================================================
              EXPANDED STATE: Morphs from bottom-right corner via shared layoutId.
+             Anchored directly at bottom-right corner of Monaco editor container.
              Surface at least 92% opaque (smoked glass).
              Inner content fades and rises with crossfade (0.14s delay over 0.16s).
              ===================================================================== */
@@ -395,15 +397,17 @@ export function CopilotFloatingPill({
             exit={shouldReduceMotion ? { opacity: 0 } : undefined}
             transition={openTransition}
             style={{
-              width: "min(480px, calc(100vw - 32px))",
-              height: "min(540px, calc(100vh - 120px))",
+              width: 420,
+              maxWidth: "calc(100vw - 32px)",
+              height: 500,
+              maxHeight: "calc(100vh - 120px)",
               borderRadius: 16,
               originX: 1,
               originY: 1,
               transformOrigin: "100% 100%",
               boxShadow: "0 24px 70px -20px rgba(0, 0, 0, 0.45)",
             }}
-            className="absolute bottom-0 right-0 border border-border/80 dark:border-white/15 glass-1 flex flex-col overflow-hidden"
+            className="absolute bottom-0 right-0 border border-black/10 dark:border-white/15 bg-white/98 dark:bg-[#121218]/98 backdrop-blur-2xl flex flex-col overflow-hidden shadow-2xl"
           >
             {/* Morphing content: children never scale or stretch, crossfaded with AnimatePresence */}
             <AnimatePresence>
