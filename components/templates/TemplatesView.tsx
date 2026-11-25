@@ -39,7 +39,7 @@ export function TemplatesView() {
         <div
           role="tablist"
           aria-label="Filter templates by category"
-          className="inline-flex items-center p-1 rounded-full bg-slate-200/60 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 self-start sm:self-auto"
+          className="inline-flex items-center p-1 rounded-full bg-slate-200/60 dark:bg-white/5 border border-border self-start sm:self-auto"
         >
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat;
@@ -67,7 +67,7 @@ export function TemplatesView() {
         {filteredTemplates.map((tpl) => (
           <div
             key={tpl.id}
-            className="group rounded-2xl bg-card border border-border/80 dark:border-white/10 hover:border-slate-400/50 dark:hover:border-white/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col justify-between"
+            className="group rounded-2xl bg-card border border-border hover:border-border-strong hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 overflow-hidden flex flex-col justify-between"
           >
             {/* Live cropped thumbnail at top with bottom fade */}
             <AppThumbnail config={tpl.config} />
@@ -99,7 +99,7 @@ export function TemplatesView() {
               </div>
 
               {/* Actions row: Preview (secondary sm) + Use template (primary sm) on ONE row */}
-              <div className="flex items-center gap-2.5 pt-4 border-t border-border/60 dark:border-white/5 mt-auto">
+              <div className="flex items-center gap-2.5 pt-4 border-t border-border mt-auto">
                 <Button
                   variant="secondary"
                   size="sm"

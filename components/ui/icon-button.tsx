@@ -9,7 +9,7 @@ const iconButtonVariants = cva(
     variants: {
       variant: {
         glass:
-          "bg-slate-200/60 hover:bg-slate-300/60 text-slate-700 border border-slate-300/40 shadow-xs dark:bg-white/5 dark:hover:bg-white/10 dark:text-slate-200 dark:border-white/10 dark:shadow-none",
+          "bg-slate-200/60 hover:bg-slate-300/60 text-slate-700 border border-border shadow-xs dark:bg-white/5 dark:hover:bg-white/10 dark:text-slate-200 dark:border-border dark:shadow-none",
         ghost:
           "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10",
         solid:

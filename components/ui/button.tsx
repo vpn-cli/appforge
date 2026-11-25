@@ -1,28 +1,28 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-medium whitespace-nowrap transition-all duration-150 outline-none select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(109,91,240,0.45)] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none cursor-pointer [&_svg]:pointer-events-none [&_svg]:shrink-0 active:scale-[0.97]",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-full font-medium whitespace-nowrap transition-all duration-150 outline-none select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(109,91,240,0.45)] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none cursor-pointer [&_svg]:pointer-events-none [&_svg]:shrink-0 active:scale-[0.97]",
   {
     variants: {
       variant: {
         primary:
-          "btn-pill-primary",
+          "btn-pill-primary border border-transparent",
         secondary:
           "btn-pill-secondary",
         default:
-          "btn-pill-primary",
+          "btn-pill-primary border border-transparent",
         outline:
           "btn-pill-secondary",
         ghost:
-          "rounded-full text-brand-link hover:text-brand-link hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.97]",
+          "border border-transparent rounded-full text-brand-link hover:text-brand-link hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.97]",
         destructive:
-          "rounded-full bg-destructive text-white hover:opacity-90 shadow-xs active:scale-[0.97]",
+          "border border-transparent rounded-full bg-destructive text-white hover:opacity-90 shadow-xs active:scale-[0.97]",
         link:
-          "text-brand-link underline-offset-4 hover:underline rounded-none active:scale-100",
+          "border-0 text-brand-link underline-offset-4 hover:underline rounded-none active:scale-100",
       },
       size: {
         lg: "h-11 px-[22px] text-[15px] gap-2 [&_svg:not([class*='size-'])]:size-4",

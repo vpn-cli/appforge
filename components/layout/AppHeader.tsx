@@ -9,6 +9,8 @@ import { UserButton, useOrganization, useUser } from "@clerk/nextjs";
 import { Search, ChevronDown, Menu, X, LayoutGrid, FileCode2 } from "lucide-react";
 import { IconButton } from "@/components/ui/icon-button";
 import { Kbd } from "@/components/ui/kbd";
+import { motion } from "motion/react";
+import { MOTION_TOKENS } from "@/lib/motion-tokens";
 
 type Props = {
   activeSearchQuery?: string;
@@ -27,11 +29,13 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
     (user?.fullName ? `${user.fullName}'s Workspace` : "Vipin's Workspace");
   const orgInitial = (orgName?.[0] || "V").toUpperCase();
 
-  const isAppsActive = pathname === "/apps" || pathname.startsWith("/apps") || pathname === "/dashboard";
+  const isAppsActive = pathname === "/apps" || (pathname.startsWith("/apps") && !pathname.startsWith("/apps/template")) || pathname === "/dashboard";
+  const isBuilderActive = pathname.startsWith("/builder");
   const isTemplatesActive = pathname === "/templates";
 
   const navSegments = [
     { label: "Apps", href: "/apps", active: isAppsActive },
+    { label: "Builder", href: "/builder/demo", active: isBuilderActive },
     { label: "Templates", href: "/templates", active: isTemplatesActive },
   ];
 
@@ -48,8 +52,8 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <div className="w-8 h-8 rounded-[10px] bg-slate-900 text-white dark:bg-white/10 dark:text-white flex items-center justify-center shadow-xs transition-colors">
-              <AppForgeLogo size={18} isHovered={isHovered} className="text-white" />
+            <div className="w-8 h-8 rounded-[10px] bg-foreground text-background flex items-center justify-center shadow-xs transition-colors">
+              <AppForgeLogo size={18} isHovered={isHovered} className="text-background" />
             </div>
             <span className="font-semibold text-[15px] sm:text-[16px] tracking-tight text-slate-900 dark:text-slate-100 hidden xs:inline-block">
               AppForge
@@ -79,22 +83,31 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
           </div>
         </div>
 
-        {/* Center: Segmented control (Apps / Templates) - desktop */}
+        {/* Center: Segmented control (Apps / Builder / Templates) with sliding active pill */}
         <nav
           aria-label="Application Navigation"
-          className="hidden md:flex items-center p-1 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 select-none"
+          className="hidden md:flex items-center p-1 rounded-full bg-surface-sunken border border-border relative select-none"
         >
           {navSegments.map((seg) => (
             <Link
               key={seg.label}
               href={seg.href}
-              className={`px-4 py-1.5 rounded-full text-[15px] font-medium transition-all ${
-                seg.active
-                  ? "bg-white text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.08)] dark:bg-white/[0.12] dark:text-white dark:shadow-none"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
+              className={`relative px-4 py-1.5 rounded-full text-[14px] font-medium transition-colors inline-flex items-center gap-1.5 ${seg.active
+                  ? "text-brand-link font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+                }`}
             >
-              {seg.label}
+              {seg.active && (
+                <motion.span
+                  layoutId="app-header-sliding-pill"
+                  className="absolute inset-0 rounded-full bg-card shadow-xs border border-border z-0"
+                  transition={MOTION_TOKENS.springStandard}
+                />
+              )}
+              {seg.active && (
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-link shrink-0 relative z-10" />
+              )}
+              <span className="relative z-10">{seg.label}</span>
             </Link>
           ))}
         </nav>
@@ -160,11 +173,10 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
           <Link
             href="/apps"
             onClick={() => setIsMobileMenuOpen(false)}
-            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${
-              isAppsActive
+            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${isAppsActive
                 ? "bg-white text-slate-900 shadow-xs dark:bg-white/15 dark:text-white"
                 : "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
-            }`}
+              }`}
           >
             <LayoutGrid className="w-4 h-4" />
             <span>Apps</span>
@@ -172,11 +184,10 @@ export function AppHeader({ activeSearchQuery, onSearchChange }: Props) {
           <Link
             href="/templates"
             onClick={() => setIsMobileMenuOpen(false)}
-            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${
-              isTemplatesActive
+            className={`flex items-center gap-2 text-[14px] font-medium px-3.5 py-2 rounded-full transition-colors ${isTemplatesActive
                 ? "bg-white text-slate-900 shadow-xs dark:bg-white/15 dark:text-white"
                 : "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
-            }`}
+              }`}
           >
             <FileCode2 className="w-4 h-4" />
             <span>Templates</span>

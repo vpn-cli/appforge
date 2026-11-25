@@ -10,8 +10,8 @@ export function PublicHeader() {
   return (
     <header className="h-[72px] max-w-[1240px] mx-auto px-6 w-full flex items-center justify-between border-b border-border relative z-30 transition-colors">
       <Link href="/" className="flex items-center gap-2.5 outline-none group">
-        <div className="w-8 h-8 rounded-lg bg-brand-500/10 dark:bg-brand-400/20 flex items-center justify-center text-brand-link">
-          <AppForgeLogo size={20} className="text-brand-link" />
+        <div className="w-8 h-8 rounded-[10px] bg-foreground text-background flex items-center justify-center shadow-xs transition-colors shrink-0">
+          <AppForgeLogo size={18} className="text-background" />
         </div>
         <span className="font-semibold text-lg tracking-tight text-foreground">
           AppForge

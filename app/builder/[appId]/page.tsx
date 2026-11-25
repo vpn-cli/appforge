@@ -9,6 +9,13 @@ import {
   useSyncExternalStore,
   Suspense,
 } from "react";
+import { AppForgeLogo } from "@/components/ui/appforge-logo";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
+import type { ImperativePanelHandle } from "react-resizable-panels";
 import { ConfigEditor } from "@/components/builder/ConfigEditor";
 import { CopilotFloatingPill } from "@/components/builder/CopilotFloatingPill";
 import { LivePreview } from "@/components/builder/LivePreview";
@@ -19,7 +26,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Kbd } from "@/components/ui/kbd";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { MOTION_TOKENS } from "@/lib/motion-tokens";
 import {
   ArrowLeft,
@@ -81,7 +88,7 @@ function getEditorCollapsedSnapshot(): boolean {
   try {
     const saved = localStorage.getItem(EDITOR_COLLAPSED_KEY);
     if (saved !== null) return saved === "true";
-  } catch {}
+  } catch { }
   return false;
 }
 
@@ -97,7 +104,7 @@ function getEditorWidthSnapshot(): number {
       const parsed = parseInt(saved, 10);
       if (!isNaN(parsed) && parsed >= MIN_EDITOR_WIDTH) return parsed;
     }
-  } catch {}
+  } catch { }
   return DEFAULT_EDITOR_WIDTH;
 }
 
@@ -248,7 +255,7 @@ function BuilderContent() {
       inMemoryEditorCollapsed = next;
       try {
         localStorage.setItem(EDITOR_COLLAPSED_KEY, String(next));
-      } catch {}
+      } catch { }
       emitLayoutChange();
     },
     [],
@@ -261,14 +268,75 @@ function BuilderContent() {
       inMemoryEditorWidth = next;
       try {
         localStorage.setItem(EDITOR_WIDTH_KEY, String(next));
-      } catch {}
+      } catch { }
       emitLayoutChange();
     },
     [],
   );
 
-  // Dragging active state for editor/preview divider
-  const [activeDrag, setActiveDrag] = useState<"editor" | null>(null);
+  // Dragging active state for editor/preview divider & panel sizes
+  const BUILDER_PANEL_SIZES_KEY = "appforge_builder_panel_sizes";
+  const DEFAULT_EDITOR_PANEL_SIZE = 42;
+
+  const editorPanelRef = useRef<ImperativePanelHandle>(null);
+  const [isHandleDragging, setIsHandleDragging] = useState(false);
+  const [panelSizes, setPanelSizes] = useState<number[]>(() => {
+    try {
+      const saved =
+        typeof window !== "undefined"
+          ? localStorage.getItem(BUILDER_PANEL_SIZES_KEY)
+          : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (
+          Array.isArray(parsed) &&
+          parsed.length >= 2 &&
+          typeof parsed[0] === "number"
+        ) {
+          return parsed;
+        }
+      }
+    } catch { }
+    return [DEFAULT_EDITOR_PANEL_SIZE, 100 - DEFAULT_EDITOR_PANEL_SIZE];
+  });
+
+  const handlePanelLayout = useCallback((sizes: number[]) => {
+    setPanelSizes(sizes);
+    try {
+      localStorage.setItem(BUILDER_PANEL_SIZES_KEY, JSON.stringify(sizes));
+    } catch { }
+  }, []);
+
+  const handleDraggingChange = useCallback((dragging: boolean) => {
+    setIsHandleDragging(dragging);
+    if (dragging) {
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    } else {
+      document.body.style.removeProperty("cursor");
+      document.body.style.removeProperty("user-select");
+    }
+  }, []);
+
+  const handleResetPanels = useCallback(() => {
+    editorPanelRef.current?.resize(DEFAULT_EDITOR_PANEL_SIZE);
+    try {
+      localStorage.setItem(
+        BUILDER_PANEL_SIZES_KEY,
+        JSON.stringify([
+          DEFAULT_EDITOR_PANEL_SIZE,
+          100 - DEFAULT_EDITOR_PANEL_SIZE,
+        ]),
+      );
+    } catch { }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      document.body.style.removeProperty("cursor");
+      document.body.style.removeProperty("user-select");
+    };
+  }, []);
 
   const { isSignedIn } = useAuth();
   const isGuestRoute =
@@ -340,7 +408,7 @@ function BuilderContent() {
       if (parsed && typeof parsed.app === "string" && parsed.app.trim()) {
         return parsed.app.trim();
       }
-    } catch {}
+    } catch { }
     return appId;
   }, [configStr, appId]);
 
@@ -417,45 +485,6 @@ function BuilderContent() {
       return next;
     });
   }, [setIsEditorCollapsed]);
-
-  // Window mousemove / mouseup handlers for divider dragging (Editor vs Preview)
-  useEffect(() => {
-    if (!activeDrag) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const containerWidth = rect.width;
-
-      if (activeDrag === "editor") {
-        const relativeX = e.clientX - rect.left;
-        const maxEditor = containerWidth - MIN_PREVIEW_WIDTH - 12;
-        const boundedWidth = Math.max(
-          MIN_EDITOR_WIDTH,
-          Math.min(maxEditor, relativeX),
-        );
-        setEditorWidth(Math.round(boundedWidth));
-      }
-    };
-
-    const handleMouseUp = () => {
-      setActiveDrag(null);
-      document.body.style.removeProperty("cursor");
-      document.body.style.removeProperty("user-select");
-    };
-
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.removeProperty("cursor");
-      document.body.style.removeProperty("user-select");
-    };
-  }, [activeDrag, setEditorWidth]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -640,7 +669,7 @@ function BuilderContent() {
           TOP APPLICATION TOOLBAR (h-14, 56px) - Glass top bar
           Sans breadcrumb with App Name, Copilot ⌘K toggle, Save Draft, Publish
           ========================================================================= */}
-      <header className="h-14 border-b border-border/80 dark:border-white/10 glass-1 shrink-0 flex items-center justify-between px-4 sm:px-6 z-20 transition-all">
+      <header className="h-14 border-b border-border glass-1 shrink-0 flex items-center justify-between px-4 sm:px-6 z-20 transition-all">
         {/* Left: Navigation & Breadcrumb with App Name */}
         <div className="flex items-center gap-3">
           <IconButton
@@ -653,9 +682,18 @@ function BuilderContent() {
             <ArrowLeft className="h-4 w-4" />
           </IconButton>
 
-          {/* Breadcrumb shows app's name, not UUID */}
+          {/* Breadcrumb shows AppForge logo mark tile + app's name */}
           <div className="flex items-center gap-2 font-sans text-[13px]">
-            <span className="font-medium text-foreground">AppForge</span>
+            <Link
+              href="/"
+              aria-label="AppForge Home"
+              className="flex items-center gap-2 outline-none group select-none shrink-0"
+            >
+              <div className="w-7 h-7 rounded-lg bg-foreground text-background flex items-center justify-center shadow-xs shrink-0 transition-colors">
+                <AppForgeLogo size={15} className="text-background" />
+              </div>
+              <span className="font-medium text-foreground">AppForge</span>
+            </Link>
             <span className="text-muted-foreground/40 font-normal">/</span>
             <span
               className="text-muted-foreground font-normal truncate max-w-[180px] sm:max-w-[280px]"
@@ -814,197 +852,260 @@ function BuilderContent() {
       >
         {/* PANE 1: CONFIG EDITOR (LEFT) */}
         {isEditorCollapsed ? (
-          <aside
-            style={{ width: `${RAIL_WIDTH}px` }}
-            className="h-full border-r border-border/80 dark:border-white/10 glass-1 flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
-            onClick={() => setIsEditorCollapsed(false)}
-            title="Expand Config Editor"
-            role="region"
-            aria-label="Config editor rail"
-          >
-            <IconButton
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEditorCollapsed(false);
-              }}
-              className="mb-3 text-muted-foreground group-hover:text-foreground"
-              aria-label="Expand Config Editor"
+          <>
+            <aside
+              style={{ width: `${RAIL_WIDTH}px` }}
+              className="h-full border-r border-border glass-1 flex flex-col items-center py-2.5 shrink-0 cursor-pointer hover:bg-muted/40 transition-colors group select-none"
+              onClick={() => setIsEditorCollapsed(false)}
+              title="Expand Config Editor"
+              role="region"
+              aria-label="Config editor rail"
             >
-              <FileCode className="w-4 h-4" />
-            </IconButton>
-            <div className="flex-1 flex items-center justify-center">
-              <span className="[writing-mode:vertical-lr] rotate-180 text-[12px] font-medium text-muted-foreground group-hover:text-foreground tracking-wider select-none">
-                Config
-              </span>
-            </div>
-          </aside>
-        ) : (
-          <section
-            style={{ width: `${editorWidth}px` }}
-            aria-label="Code Editor and Validation Panel"
-            className="h-full flex flex-col border-r border-border bg-card shrink-0 min-w-[320px] overflow-hidden"
-            role="region"
-          >
-            {/* Editor Panel Header: 36px (h-9) consistent with Preview header, styled with glass-1 */}
-            <div className="h-9 px-4 border-b border-border/80 dark:border-white/10 glass-1 flex items-center justify-between shrink-0 select-none">
-              <div className="flex items-center gap-2">
-                <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-[13px] font-medium text-foreground">
-                  Config
-                </span>
-              </div>
               <IconButton
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsEditorCollapsed(true)}
-                className="text-muted-foreground hover:text-foreground"
-                aria-label="Collapse Config Editor to slim rail"
-                title="Collapse to slim rail"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditorCollapsed(false);
+                }}
+                className="mb-3 text-muted-foreground group-hover:text-foreground"
+                aria-label="Expand Config Editor"
               >
-                <PanelLeftClose className="w-3.5 h-3.5" />
+                <FileCode className="w-4 h-4" />
               </IconButton>
-            </div>
+              <div className="flex-1 flex items-center justify-center">
+                <span className="[writing-mode:vertical-lr] rotate-180 text-[12px] font-medium text-muted-foreground group-hover:text-foreground tracking-wider select-none">
+                  Config
+                </span>
+              </div>
+            </aside>
 
-            {/* Monaco Editor (automaticLayout: true) */}
-            <div className="flex-1 min-h-0 relative bg-card overflow-hidden">
-              <ConfigEditor
-                value={configStr}
-                onChange={(val) => setConfigStr(val || "")}
-              />
-              {/* Floating Copilot Chat Pill anchored at bottom-right corner of Monaco editor pane */}
-              <CopilotFloatingPill
-                isOpen={isCopilotOpen}
-                onOpenChange={setIsCopilotOpen}
-                onApply={handleApplyCopilotComponents}
-                onStreamStart={handleStreamStart}
-                onStreamEnd={handleStreamEnd}
-                initialPrompt={initialPrompt}
-                externalInputRef={copilotInputRef}
-              />
-            </div>
+            {/* PANE 2: PREVIEW (RIGHT) when editor is collapsed */}
+            <section
+              aria-label="Application Live Preview Canvas"
+              className="flex-1 min-w-[400px] flex flex-col h-full bg-background overflow-hidden"
+              role="region"
+            >
+              <div className="h-9 px-4 border-b border-border glass-1 flex items-center justify-between shrink-0 select-none">
+                <div className="flex items-center gap-2">
+                  <Layout className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-[13px] font-medium text-foreground">
+                    Preview
+                  </span>
+                </div>
 
-            {/* Validation Log */}
-            <ValidationPanel
-              errors={errors}
-              warnings={warnings}
-              isGenerating={isGenerating}
-            />
-          </section>
-        )}
+                <div className="flex items-center gap-1 glass-2-nested p-0.5 rounded-full border border-border">
+                  <button
+                    type="button"
+                    onClick={() => setViewport("desktop")}
+                    className={`p-1 rounded-full transition-colors ${viewport === "desktop"
+                        ? "bg-card text-foreground shadow-xs font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    title="Desktop"
+                    aria-label="Desktop viewport"
+                  >
+                    <Monitor className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewport("tablet")}
+                    className={`p-1 rounded-full transition-colors ${viewport === "tablet"
+                        ? "bg-card text-foreground shadow-xs font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    title="Tablet"
+                    aria-label="Tablet viewport"
+                  >
+                    <Tablet className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewport("mobile")}
+                    className={`p-1 rounded-full transition-colors ${viewport === "mobile"
+                        ? "bg-card text-foreground shadow-xs font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    title="Mobile"
+                    aria-label="Mobile viewport"
+                  >
+                    <Smartphone className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
 
-        {/* DIVIDER: Between Editor and Preview */}
-        {!isEditorCollapsed && (
-          <div
-            role="separator"
-            aria-orientation="vertical"
-            aria-valuenow={Math.round(editorWidth)}
-            aria-valuemin={MIN_EDITOR_WIDTH}
-            aria-valuemax={1000}
-            aria-label="Resize Config Editor panel"
-            tabIndex={0}
-            onMouseDown={() => setActiveDrag("editor")}
-            onDoubleClick={() => setEditorWidth(DEFAULT_EDITOR_WIDTH)}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowLeft") {
-                e.preventDefault();
-                setEditorWidth((w) => Math.max(MIN_EDITOR_WIDTH, w - 10));
-              } else if (e.key === "ArrowRight") {
-                e.preventDefault();
-                setEditorWidth((w) => w + 10);
-              } else if (e.key === "Home" || e.key === "Enter") {
-                e.preventDefault();
-                setEditorWidth(DEFAULT_EDITOR_WIDTH);
-              }
-            }}
-            className={`relative w-[6px] -mx-[3px] h-full cursor-col-resize z-30 shrink-0 group outline-none select-none transition-colors ${
-              activeDrag === "editor"
-                ? "bg-brand/30"
-                : "hover:bg-brand/20 focus-visible:bg-brand/30"
-            }`}
-            title="Drag to resize, double-click to reset, arrow keys to adjust"
+              <div className="flex-1 min-h-0 bg-background overflow-hidden relative">
+                <LivePreview
+                  configStr={configStr}
+                  appId={appId}
+                  viewport={viewport}
+                  onViewportChange={setViewport}
+                  showInnerToolbar={true}
+                />
+              </div>
+            </section>
+          </>
+        ) : (
+          <ResizablePanelGroup
+            direction="horizontal"
+            onLayout={handlePanelLayout}
+            className="flex-1 h-full w-full flex overflow-hidden"
           >
-            <div
-              className={`absolute inset-y-0 left-1/2 -translate-x-1/2 transition-all duration-150 ${
-                activeDrag === "editor"
-                  ? "bg-brand w-[3px]"
-                  : "bg-transparent group-hover:bg-brand/70 group-focus-visible:bg-brand w-[2px]"
-              }`}
+            {/* PANE 1: CONFIG EDITOR (LEFT) */}
+            <ResizablePanel
+              ref={editorPanelRef}
+              defaultSize={panelSizes[0]}
+              minSize={22}
+              maxSize={70}
+              id="builder-editor-panel"
+              order={1}
+              className="h-full flex flex-col border-r border-border bg-card shrink-0 min-w-[280px] overflow-hidden"
+              role="region"
+              aria-label="Code Editor and Validation Panel"
+            >
+              {/* Editor Panel Header: 36px (h-9) consistent with Preview header, styled with glass-1 */}
+              <div className="h-9 px-4 border-b border-border glass-1 flex items-center justify-between shrink-0 select-none">
+                <div className="flex items-center gap-2">
+                  <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-[13px] font-medium text-foreground">
+                    Config
+                  </span>
+                </div>
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditorCollapsed(true)}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="Collapse Config Editor to slim rail"
+                  title="Collapse to slim rail"
+                >
+                  <PanelLeftClose className="w-3.5 h-3.5" />
+                </IconButton>
+              </div>
+
+              {/* Monaco Editor (automaticLayout: true + ResizeObserver) */}
+              <div className="flex-1 min-h-0 relative bg-card overflow-hidden">
+                <ConfigEditor
+                  value={configStr}
+                  onChange={(val) => setConfigStr(val || "")}
+                />
+                {/* Floating Copilot Chat Pill anchored at bottom-right corner of Monaco editor pane */}
+                <CopilotFloatingPill
+                  isOpen={isCopilotOpen}
+                  onOpenChange={setIsCopilotOpen}
+                  onApply={handleApplyCopilotComponents}
+                  onStreamStart={handleStreamStart}
+                  onStreamEnd={handleStreamEnd}
+                  initialPrompt={initialPrompt}
+                  externalInputRef={copilotInputRef}
+                />
+              </div>
+
+              {/* Validation Log */}
+              <ValidationPanel
+                errors={errors}
+                warnings={warnings}
+                isGenerating={isGenerating}
+              />
+            </ResizablePanel>
+
+            {/* RESIZABLE HANDLE with 8px hit area, 1px line, small grip, col-resize, brand hover/drag, double-click reset */}
+            <ResizableHandle
+              id="builder-split-handle"
+              onDragging={handleDraggingChange}
+              onReset={handleResetPanels}
+              isDragging={isHandleDragging}
+              role="separator"
+              aria-orientation="vertical"
+              aria-valuenow={Math.round(panelSizes[0])}
+              aria-valuemin={22}
+              aria-valuemax={70}
+              aria-label="Resize Config Editor and Preview panels"
+              tabIndex={0}
+              title="Drag to resize, double-click to reset, arrow keys to adjust"
             />
-          </div>
+
+            {/* PANE 2: PREVIEW (RIGHT) - fills remaining space, sits on solid surface */}
+            <ResizablePanel
+              defaultSize={panelSizes[1]}
+              minSize={30}
+              id="builder-preview-panel"
+              order={2}
+              className="flex-1 min-w-[360px] flex flex-col h-full bg-background overflow-hidden"
+              role="region"
+              aria-label="Application Live Preview Canvas"
+            >
+              {/* Preview Panel Header: 36px (h-9) consistent with Editor header, styled with glass-1 */}
+              <div className="h-9 px-4 border-b border-border glass-1 flex items-center justify-between shrink-0 select-none">
+                <div className="flex items-center gap-2">
+                  <Layout className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-[13px] font-medium text-foreground">
+                    Preview
+                  </span>
+                </div>
+
+                {/* Viewport Width Controls in preview panel header - styled with glass-2-nested */}
+                <div className="flex items-center gap-1 glass-2-nested p-0.5 rounded-full border border-border">
+                  <button
+                    type="button"
+                    onClick={() => setViewport("desktop")}
+                    className={`p-1 rounded-full transition-colors ${viewport === "desktop"
+                        ? "bg-card text-foreground shadow-xs font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    title="Desktop"
+                    aria-label="Desktop viewport"
+                  >
+                    <Monitor className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewport("tablet")}
+                    className={`p-1 rounded-full transition-colors ${viewport === "tablet"
+                        ? "bg-card text-foreground shadow-xs font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    title="Tablet"
+                    aria-label="Tablet viewport"
+                  >
+                    <Tablet className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewport("mobile")}
+                    className={`p-1 rounded-full transition-colors ${viewport === "mobile"
+                        ? "bg-card text-foreground shadow-xs font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    title="Mobile"
+                    aria-label="Mobile viewport"
+                  >
+                    <Smartphone className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Framed Browser Viewport Container on solid surface */}
+              <div className="flex-1 min-h-0 bg-background overflow-hidden relative">
+                <LivePreview
+                  configStr={configStr}
+                  appId={appId}
+                  viewport={viewport}
+                  onViewportChange={setViewport}
+                  showInnerToolbar={true}
+                />
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         )}
 
-        {/* PANE 2: PREVIEW (RIGHT) - fills remaining space, sits on solid surface */}
-        <section
-          aria-label="Application Live Preview Canvas"
-          className="flex-1 min-w-[400px] flex flex-col h-full bg-background overflow-hidden"
-          role="region"
-        >
-          {/* Preview Panel Header: 36px (h-9) consistent with Editor header, styled with glass-1 */}
-          <div className="h-9 px-4 border-b border-border/80 dark:border-white/10 glass-1 flex items-center justify-between shrink-0 select-none">
-            <div className="flex items-center gap-2">
-              <Layout className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-[13px] font-medium text-foreground">
-                Preview
-              </span>
-            </div>
-
-            {/* Viewport Width Controls in preview panel header - styled with glass-2-nested */}
-            <div className="flex items-center gap-1 glass-2-nested p-0.5 rounded-full border border-border/80 dark:border-white/10">
-              <button
-                type="button"
-                onClick={() => setViewport("desktop")}
-                className={`p-1 rounded-full transition-colors ${
-                  viewport === "desktop"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Desktop"
-                aria-label="Desktop viewport"
-              >
-                <Monitor className="w-3 h-3" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewport("tablet")}
-                className={`p-1 rounded-full transition-colors ${
-                  viewport === "tablet"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Tablet"
-                aria-label="Tablet viewport"
-              >
-                <Tablet className="w-3 h-3" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewport("mobile")}
-                className={`p-1 rounded-full transition-colors ${
-                  viewport === "mobile"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Mobile"
-                aria-label="Mobile viewport"
-              >
-                <Smartphone className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-
-          {/* Framed Browser Viewport Container on solid surface */}
-          <div className="flex-1 min-h-0 bg-background overflow-hidden relative">
-            <LivePreview
-              configStr={configStr}
-              appId={appId}
-              viewport={viewport}
-              onViewportChange={setViewport}
-              showInnerToolbar={true}
-            />
-          </div>
-        </section>
+        {/* Transparent Drag Overlay: while dragging, prevents Monaco / iframe from swallowing mouse events or hiding cursor */}
+        {isHandleDragging && (
+          <div
+            className="fixed inset-0 z-50 cursor-col-resize select-none bg-transparent pointer-events-auto"
+            aria-hidden="true"
+          />
+        )}
       </main>
 
       {/* Publish Confirmation Dialog */}
@@ -1103,11 +1204,10 @@ function BuilderContent() {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in duration-200">
             <h2
-              className={`text-[17px] font-semibold mb-2 ${
-                notificationModal.type === "error"
+              className={`text-[17px] font-semibold mb-2 ${notificationModal.type === "error"
                   ? "text-destructive"
                   : "text-foreground"
-              }`}
+                }`}
             >
               {notificationModal.title}
             </h2>

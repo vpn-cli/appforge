@@ -48,7 +48,7 @@ export function PromptBox({ isPending }: Props) {
   const hasText = prompt.trim().length > 0;
 
   return (
-    <div className="w-full flex flex-col rounded-[20px] glass-1 shadow-lg border border-white/80 dark:border-white/10 transition-all overflow-hidden">
+    <div className="w-full flex flex-col rounded-[20px] glass-1 shadow-lg border border-border transition-all overflow-hidden">
       {/* Primary Input Row: 64px tall */}
       <form
         onSubmit={handleGenerate}
@@ -97,7 +97,7 @@ export function PromptBox({ isPending }: Props) {
               key={idx}
               type="button"
               onClick={() => handleExampleClick(example)}
-              className="inline-flex items-center h-6 sm:h-7 px-2.5 sm:px-3 rounded-full text-[12px] font-medium bg-slate-200/50 hover:bg-slate-300/60 dark:bg-white/5 dark:hover:bg-white/10 text-foreground border border-slate-300/40 dark:border-white/10 transition-all cursor-pointer truncate max-w-[220px] sm:max-w-none active:scale-98"
+              className="inline-flex items-center h-6 sm:h-7 px-2.5 sm:px-3 rounded-full text-[12px] font-medium bg-slate-200/50 hover:bg-slate-300/60 dark:bg-white/5 dark:hover:bg-white/10 text-foreground border border-border transition-all cursor-pointer truncate max-w-[220px] sm:max-w-none active:scale-98"
             >
               {example}
             </button>

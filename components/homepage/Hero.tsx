@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { LayoutTemplate } from "lucide-react";
-import { motion, Variants } from "framer-motion";
+import { motion, type Variants } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { RenderNode } from "@/registry";
 

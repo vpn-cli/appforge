@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 export function HomeHero() {
   return (
     <div className="w-full text-center px-4 sm:px-6 relative z-10 flex flex-col items-center shrink-0">
-      <div className="relative flex flex-col items-center max-w-[620px] mx-auto">
+      <div className="relative flex flex-col items-center max-w-[620px] xl:max-w-none mx-auto">
         {/* Tight legibility scrim behind headline and subtext only (~1.2x text block) */}
         <div
           aria-hidden="true"
@@ -15,7 +15,7 @@ export function HomeHero() {
               "radial-gradient(ellipse 85% 80% at 50% 50%, var(--canvas) 75%, transparent 100%)",
           }}
         />
-        <h1 className="text-[36px] sm:text-[48px] lg:text-[56px] font-bold tracking-[-0.035em] leading-[1.08] text-foreground mb-4">
+        <h1 className="text-[36px] sm:text-[48px] lg:text-[56px] xl:text-[56px] font-bold tracking-[-0.035em] leading-[1.08] text-foreground mb-4 whitespace-normal xl:whitespace-nowrap">
           <span>Live Config-</span>
           <span className="headline-gradient">driven Apps</span>
         </h1>

@@ -31,7 +31,7 @@ export function SegmentedNav({
     <nav
       aria-label="Segmented Navigation"
       className={cn(
-        "inline-flex items-center p-1 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-300/40 dark:border-white/10 select-none",
+        "inline-flex items-center p-1 rounded-full bg-slate-200/50 dark:bg-white/5 border border-border select-none",
         className
       )}
     >

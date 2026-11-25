@@ -32,7 +32,7 @@ export function ValidationPanel({
       <button
         type="button"
         onClick={() => setIsExpanded(true)}
-        className="w-full h-8 border-t border-border/80 dark:border-white/10 glass-1 hover:bg-muted/50 px-3 flex items-center justify-between transition-colors text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-ring shrink-0 select-none cursor-pointer"
+        className="w-full h-8 border-t border-border glass-1 hover:bg-muted/50 px-3 flex items-center justify-between transition-colors text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-ring shrink-0 select-none cursor-pointer"
         aria-label="Expand validation log"
       >
         <div className="flex items-center gap-2 min-w-0">
@@ -73,11 +73,11 @@ export function ValidationPanel({
 
   // Expanded upward: 32px header status bar + scrollable issues list - styled with glass-1
   return (
-    <div className="w-full h-44 glass-1 flex flex-col border-t border-border/80 dark:border-white/10 overflow-hidden shrink-0 transition-all">
+    <div className="w-full h-44 glass-1 flex flex-col border-t border-border overflow-hidden shrink-0 transition-all">
       <button
         type="button"
         onClick={() => setIsExpanded(false)}
-        className="h-8 border-b border-border/80 dark:border-white/10 flex items-center px-3 justify-between bg-muted/40 hover:bg-muted/70 transition-colors shrink-0 cursor-pointer select-none"
+        className="h-8 border-b border-border flex items-center px-3 justify-between bg-muted/40 hover:bg-muted/70 transition-colors shrink-0 cursor-pointer select-none"
         aria-label="Collapse validation log"
       >
         <div className="flex items-center gap-2 min-w-0">

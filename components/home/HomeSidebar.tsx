@@ -24,8 +24,8 @@ export function HomeSidebar() {
           href="/"
           className="flex items-center gap-3 px-2 py-1.5 rounded-lg outline-none group"
         >
-          <div className="w-9 h-9 rounded-lg bg-brand-500/10 dark:bg-brand-400/20 flex items-center justify-center text-brand-link">
-            <AppForgeLogo size={22} className="text-brand-link" />
+          <div className="w-8 h-8 rounded-[10px] bg-foreground text-background flex items-center justify-center shadow-xs transition-colors shrink-0">
+            <AppForgeLogo size={18} className="text-background" />
           </div>
           <span className="font-semibold text-lg tracking-tight text-foreground">
             AppForge
@@ -42,11 +42,10 @@ export function HomeSidebar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`h-[44px] px-3.5 rounded-xl flex items-center gap-3 text-[15px] font-medium transition-all ${
-                  isActive
+                className={`h-[44px] px-3.5 rounded-xl flex items-center gap-3 text-[15px] font-medium transition-all ${isActive
                     ? "bg-brand-100 dark:bg-brand-950/60 text-brand-link shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
+                  }`}
               >
                 <Icon className="w-5 h-5 shrink-0" strokeWidth={1.75} />
                 <span>{item.label}</span>

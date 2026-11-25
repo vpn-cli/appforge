@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
-import { MOTION_TOKENS } from "@/lib/motion-tokens";
 import { Menu, X } from "lucide-react";
 import { AppForgeLogo } from "@/components/ui/appforge-logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -28,6 +26,37 @@ export function HomeTopBar() {
   const pathname = usePathname();
   const { isLoaded, isSignedIn } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [indicatorStyle, setIndicatorStyle] = useState<{
+    left: number;
+    width: number;
+    opacity: number;
+  }>({ left: 0, width: 0, opacity: 0 });
+  const navRef = useRef<HTMLElement>(null);
+  const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  useEffect(() => {
+    const updateIndicator = () => {
+      const activeIndex = NAV_SEGMENTS.findIndex(
+        (seg) => pathname === seg.href || (seg.href === "/apps" && pathname.startsWith("/apps"))
+      );
+      if (activeIndex !== -1 && linkRefs.current[activeIndex]) {
+        const el = linkRefs.current[activeIndex];
+        if (el) {
+          setIndicatorStyle({
+            left: el.offsetLeft,
+            width: el.offsetWidth,
+            opacity: 1,
+          });
+          return;
+        }
+      }
+      setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
+    };
+
+    updateIndicator();
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [pathname]);
 
   const isUserSignedIn = Boolean(isLoaded && isSignedIn);
 
@@ -47,35 +76,45 @@ export function HomeTopBar() {
           </span>
         </Link>
 
-        {/* Desktop Nav with Sliding Active Pill */}
+        {/* Desktop Nav with Sliding Active Pill (CSS-only transform transition) */}
         <nav
+          ref={navRef}
           aria-label="Primary navigation"
           className="hidden sm:flex items-center p-1 rounded-full bg-surface-sunken border border-border relative"
         >
-          {NAV_SEGMENTS.map((seg) => {
+          {/* Positioned sliding indicator with CSS transform transition */}
+          <span
+            aria-hidden="true"
+            className="absolute top-1 bottom-1 rounded-full bg-surface shadow-xs pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-0"
+            style={{
+              left: 0,
+              width: `${indicatorStyle.width}px`,
+              transform: `translateX(${indicatorStyle.left}px)`,
+              opacity: indicatorStyle.opacity,
+              transitionProperty: "transform, width, opacity",
+            }}
+          />
+
+          {NAV_SEGMENTS.map((seg, idx) => {
             const isActive = pathname === seg.href || (seg.href === "/apps" && pathname.startsWith("/apps"));
             return (
               <Link
                 key={seg.label}
+                ref={(el) => {
+                  linkRefs.current[idx] = el;
+                }}
                 href={seg.href}
                 prefetch={false}
-                className={`relative px-4 py-1.5 rounded-full text-[14px] font-medium transition-colors inline-flex items-center gap-1.5 ${
+                className={`relative px-4 py-1.5 rounded-full text-[14px] font-medium transition-colors inline-flex items-center gap-1.5 z-10 ${
                   isActive
                     ? "text-brand-link font-semibold"
                     : "text-text-secondary hover:text-foreground"
                 }`}
               >
                 {isActive && (
-                  <motion.span
-                    layoutId="nav-sliding-pill"
-                    className="absolute inset-0 rounded-full bg-surface shadow-xs z-0"
-                    transition={MOTION_TOKENS.springStandard}
-                  />
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-link shrink-0" />
                 )}
-                {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-link shrink-0 relative z-10" />
-                )}
-                <span className="relative z-10">{seg.label}</span>
+                <span>{seg.label}</span>
               </Link>
             );
           })}
