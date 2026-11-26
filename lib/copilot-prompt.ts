@@ -125,17 +125,23 @@ ${schemaDoc}
 
 CRITICAL COMPONENT CONSTRAINTS:
 1. Statistic: STRICTLY for numeric KPIs and aggregated metrics (e.g. "$42.8K", "99.98%", "14"). At most 4 statistics in a Grid row. NEVER use Statistic for names, labels, individual records, or text descriptions. Allowed variant: "default" | "panel" | "gradient".
-2. DataTable: Any collection or list of records (incidents, users, orders, tickets, servers, fleet units) MUST be rendered as a DataTable with structured columns, NEVER as Cards of Statistics. For status columns, ALWAYS use type: "status" with an explicit \`colors\` map assigning each status value to one of ${statusTonesList} (e.g. { key: "status", label: "Status", type: "status", colors: { Running: "success", Pending: "warning", Critical: "danger", Idle: "info" } }).
+   - By default, ALWAYS use variant: "default" (or omit variant) for clean, production-grade KPI cards with semantic styling. Do NOT use "panel" or "gradient" across standard dashboard rows.
+   - Trend values, directions, and sentiments MUST be semantically truthful and context-aware:
+     * When higher is good (Revenue, Throughput, Uptime, Success Rate): an increase is positive (direction: "up", sentiment: "positive"); a decrease is negative (direction: "down", sentiment: "negative").
+     * When lower is good (Latency, Error Rate, Churn, Incidents): a decrease is good (direction: "down", sentiment: "positive"); an increase is bad (direction: "up", sentiment: "negative").
+     * For static counts (Active Endpoints, Servers, Regions) without changes: omit trend or use direction: "neutral", sentiment: "neutral".
+   - NEVER repeat the exact same trend value (such as "+12%") across different metrics in a dashboard.
+2. DataTable: Any collection or list of records (incidents, users, orders, tickets, servers, fleet units, endpoints, routes) MUST be rendered as a DataTable with structured columns, NEVER as Cards of Statistics. For status columns, ALWAYS use type: "status" with an explicit \`colors\` map assigning each status value to one of ${statusTonesList} (e.g. { key: "status", label: "Status", type: "status", colors: { Running: "success", Pending: "warning", Critical: "danger", Idle: "info" } }).
 3. Card: Card title is primary (semibold, larger); subtitle is secondary description.
 4. Grid: Responsive grid layout. Allowed columns and gap. Never exceed 4 columns for KPI rows.
 5. Strict Keys: NEVER emit unrecognized or custom attributes (such as onClick, dangerouslySetInnerHTML, style, or arbitrary properties). Component schemas are strictly checked.
 
 Architectural Rules:
-1. Top-level layout typically starts with a Header.
-2. Below the Header, use a Grid (columns: 3 or 4) containing at most 3-4 numeric Statistic KPIs.
-3. For lists of records (e.g. incidents, orders, users, tickets), always render a DataTable with a status column using type: "status" and a \`colors\` map mapping every status value to ${statusTonesList}.
+1. Top-level layout typically starts with a Header (title, subtitle, size: "lg").
+2. Below the Header, use a Grid (columns: 4 or 3, gap: 3) containing 3-4 numeric Statistic KPIs with variant: "default".
+3. Operational Dashboards (e.g. API Gateway, Monitoring, E-commerce, Incident Command Center, CRM): ALWAYS pair the top-level KPI metrics with an operational DataTable below (e.g. displaying endpoint routes, services, requests, transactions, or logs) with status badges and metrics, creating a complete, production-grade application interface rather than empty disconnected cards.
 4. Mock data dates: If including date/timestamp values in mock data (e.g. DataTable rows, timestamps), always use recent dates relative to today (current year 2026), NEVER outdated dates.
-5. Entity and Database Names: When generating, naming, or referencing schema entities or database tables, entity names MUST be snake_case (e.g. "incident_reports", "user_tasks") and at most 22 characters in length. Never exceed 22 characters.
+5. Entity and Database Names: When generating, naming, or referencing schema entities or database tables, entity names MUST be snake_case (e.g. "gateway_routes", "incident_reports", "user_tasks") and at most 22 characters in length. Never exceed 22 characters.
 6. Output must be a direct JSON array, e.g. [{ type: "Header", ... }, { type: "Grid", ... }, { type: "DataTable", ... }]`;
 }
 

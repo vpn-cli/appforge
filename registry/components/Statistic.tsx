@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown, Minus, Users, ArrowUpRight } from "lucide-rea
 import { useState, useEffect } from "react";
 import { useCardContext } from "../context";
 import { AnimatedSparkline } from "@/components/ui/animated-sparkline";
+import { cn } from "@/lib/utils";
 
 export interface TrendObject {
   value?: string;
@@ -125,9 +126,6 @@ export function Statistic({
     trendStrValue = trendValue || "";
   } else if (trendValue) {
     trendStrValue = trendValue;
-  } else if (isPanel) {
-    trendStrValue = "+12%";
-    sentiment = "positive";
   }
 
   // Arrow direction follows the sign:
@@ -322,7 +320,7 @@ export function Statistic({
                 {effectiveLabel}
               </p>
             </div>
-            {icon === "users" || isPanel ? (
+            {icon === "users" ? (
               <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-400/30 text-brand-link flex items-center justify-center shrink-0 shadow-sm">
                 <Users className="w-4 h-4 text-brand-link" strokeWidth={1.75} />
               </div>
@@ -336,8 +334,23 @@ export function Statistic({
             </div>
 
             {trendStrValue && (
-              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-status-success-bg text-status-success-text border border-status-success-border shrink-0 select-none">
-                <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2.2} />
+              <div
+                className={cn(
+                  "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold shrink-0 select-none border",
+                  sentiment === "negative"
+                    ? "bg-status-danger-bg text-status-danger-text border-status-danger-border"
+                    : sentiment === "positive"
+                    ? "bg-status-success-bg text-status-success-text border-status-success-border"
+                    : "bg-status-neutral-bg text-status-neutral-text border-status-neutral-border"
+                )}
+              >
+                {direction === "down" ? (
+                  <TrendingDown className="w-3.5 h-3.5" />
+                ) : direction === "up" ? (
+                  <TrendingUp className="w-3.5 h-3.5" />
+                ) : (
+                  <Minus className="w-3.5 h-3.5" />
+                )}
                 <span>{trendStrValue}</span>
               </div>
             )}
